@@ -1,0 +1,232 @@
+﻿<Window x:Class="Sistema_de_Cobros_2._0.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Sistema_de_Cobros_2._0"
+        mc:Ignorable="d"
+        Title="Sistema de Cobros 2.0" Height="600" Width="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F5F5">
+
+    <Window.Resources>
+        <!-- Colores -->
+        <SolidColorBrush x:Key="ColorPrimario" Color="#2196F3"/>
+        <SolidColorBrush x:Key="ColorPrimarioOscuro" Color="#1976D2"/>
+        <SolidColorBrush x:Key="ColorExito" Color="#4CAF50"/>
+        <SolidColorBrush x:Key="ColorTexto" Color="#333333"/>
+        <SolidColorBrush x:Key="ColorTextoSecundario" Color="#666666"/>
+        <SolidColorBrush x:Key="ColorFondo" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="ColorBorde" Color="#E0E0E0"/>
+
+        <!-- Estilo para botones -->
+        <Style x:Key="BotonPrimario" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource ColorPrimario}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource ColorPrimarioOscuro}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Estilo para TextBox -->
+        <Style x:Key="TextBoxEstilo" TargetType="TextBox">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ColorBorde}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <!-- Estilo para ComboBox -->
+        <Style x:Key="ComboBoxEstilo" TargetType="ComboBox">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ColorBorde}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <!-- Estilo para Label -->
+        <Style x:Key="LabelEstilo" TargetType="Label">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource ColorTexto}"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Barra superior con botones de administración -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+            <Button x:Name="btnGestionUsuarios"
+                    Content="Gestión de Usuarios"
+                    Style="{StaticResource BotonPrimario}"
+                    Click="BtnGestionUsuarios_Click"
+                    Visibility="Collapsed"
+                    Margin="0,0,10,0"/>
+            <Button x:Name="btnAuditoria"
+                    Content="Auditoría"
+                    Style="{StaticResource BotonPrimario}"
+                    Click="BtnAuditoria_Click"
+                    Visibility="Collapsed"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="350"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Panel Izquierdo: Formulario y Dashboard -->
+        <StackPanel Grid.Column="0" Margin="0,0,20,0">
+
+            <!-- Dashboard de Caja -->
+            <Border Background="{StaticResource ColorExito}"
+                    CornerRadius="8"
+                    Padding="20"
+                    Margin="0,0,0,20">
+                <StackPanel>
+                    <TextBlock Text="Total Ingresado Hoy"
+                               Foreground="White"
+                               FontSize="14"
+                               Opacity="0.9"/>
+                    <TextBlock x:Name="txtTotalHoy"
+                               Text="$0.00"
+                               Foreground="White"
+                               FontSize="32"
+                               FontWeight="Bold"
+                               Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Formulario de Registro -->
+            <Border Background="{StaticResource ColorFondo}"
+                    CornerRadius="8"
+                    Padding="20"
+                    BorderBrush="{StaticResource ColorBorde}"
+                    BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="Registrar Pago"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource ColorTexto}"
+                               Margin="0,0,0,15"/>
+
+                    <!-- Nombre del Estudiante -->
+                    <Label Content="Nombre completo del estudiante" Style="{StaticResource LabelEstilo}"/>
+                    <TextBox x:Name="txtNombreEstudiante"
+                             Style="{StaticResource TextBoxEstilo}"
+                             Margin="0,0,0,15"/>
+
+                    <!-- Concepto de Pago -->
+                    <Label Content="Concepto de pago" Style="{StaticResource LabelEstilo}"/>
+                    <ComboBox x:Name="cmbConcepto"
+                              Style="{StaticResource ComboBoxEstilo}"
+                              Margin="0,0,0,15">
+                        <ComboBoxItem Content="Inscripción" IsSelected="True"/>
+                        <ComboBoxItem Content="Mensualidad"/>
+                        <ComboBoxItem Content="Certificado"/>
+                    </ComboBox>
+
+                    <!-- Monto -->
+                    <Label Content="Monto a pagar" Style="{StaticResource LabelEstilo}"/>
+                    <TextBox x:Name="txtMonto"
+                             Style="{StaticResource TextBoxEstilo}"
+                             Margin="0,0,0,15"/>
+
+                    <!-- Método de Pago -->
+                    <Label Content="Método de pago" Style="{StaticResource LabelEstilo}"/>
+                    <ComboBox x:Name="cmbMetodoPago"
+                              Style="{StaticResource ComboBoxEstilo}"
+                              Margin="0,0,0,20">
+                        <ComboBoxItem Content="Efectivo" IsSelected="True"/>
+                        <ComboBoxItem Content="Pago Móvil"/>
+                        <ComboBoxItem Content="Transferencia"/>
+                        <ComboBoxItem Content="Divisas"/>
+                    </ComboBox>
+
+                    <!-- Botón Registrar -->
+                    <Button x:Name="btnRegistrar"
+                            Content="Registrar Pago"
+                            Style="{StaticResource BotonPrimario}"
+                            Click="BtnRegistrar_Click"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- Panel Derecho: Historial de Operaciones -->
+        <Border Grid.Column="1"
+                Background="{StaticResource ColorFondo}"
+                CornerRadius="8"
+                Padding="20"
+                BorderBrush="{StaticResource ColorBorde}"
+                BorderThickness="1">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"
+                           Text="Historial de Operaciones"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource ColorTexto}"
+                           Margin="0,0,0,15"/>
+
+                <DataGrid Grid.Row="1"
+                          x:Name="dgHistorial"
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          GridLinesVisibility="Horizontal"
+                          BorderThickness="0"
+                          Background="Transparent"
+                          RowBackground="White"
+                          AlternatingRowBackground="#F9F9F9"
+                          HeadersVisibility="Column">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Nombre Estudiante"
+                                            Binding="{Binding NombreEstudiante}"
+                                            Width="*"/>
+                        <DataGridTextColumn Header="Concepto"
+                                            Binding="{Binding Concepto}"
+                                            Width="120"/>
+                        <DataGridTextColumn Header="Monto"
+                                            Binding="{Binding Monto, StringFormat=C}"
+                                            Width="100"/>
+                        <DataGridTextColumn Header="Método"
+                                            Binding="{Binding MetodoPago}"
+                                            Width="120"/>
+                        <DataGridTextColumn Header="Fecha"
+                                            Binding="{Binding FechaRegistro, StringFormat=dd/MM/yyyy HH:mm}"
+                                            Width="140"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+        </Grid>
+    </Grid>
+</Window>

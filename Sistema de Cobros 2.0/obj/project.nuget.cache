@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "9MmIPxswXsY=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\Ángel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\Sistema de Cobros 2.0\\Sistema de Cobros 2.0.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\7.0.1\\microsoft.extensions.logging.abstractions.7.0.1.nupkg.sha512",
+    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\mysqlconnector\\2.3.7\\mysqlconnector.2.3.7.nupkg.sha512",
+    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\system.configuration.configurationmanager\\8.0.0\\system.configuration.configurationmanager.8.0.0.nupkg.sha512",
+    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\system.diagnostics.eventlog\\8.0.0\\system.diagnostics.eventlog.8.0.0.nupkg.sha512",
+    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\system.security.cryptography.protecteddata\\8.0.0\\system.security.cryptography.protecteddata.8.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

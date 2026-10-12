@@ -1,0 +1,15 @@
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\bin\Debug\net8.0\CapaDatos.deps.json
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\bin\Debug\net8.0\CapaDatos.dll
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\bin\Debug\net8.0\CapaDatos.pdb
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\bin\Debug\net8.0\Entidades.dll
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\bin\Debug\net8.0\Entidades.pdb
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\CapaDatos.csproj.AssemblyReference.cache
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\CapaDatos.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\CapaDatos.AssemblyInfoInputs.cache
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\CapaDatos.AssemblyInfo.cs
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\CapaDatos.csproj.CoreCompileInputs.cache
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\CapaDatos.csproj.Up2Date
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\CapaDatos.dll
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\refint\CapaDatos.dll
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\CapaDatos.pdb
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\ref\CapaDatos.dll

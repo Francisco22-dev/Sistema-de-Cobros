@@ -1,0 +1,37 @@
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\bin\Debug\net8.0-windows\Sistema de Cobros 2.0.exe
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\bin\Debug\net8.0-windows\Sistema de Cobros 2.0.deps.json
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\bin\Debug\net8.0-windows\Sistema de Cobros 2.0.runtimeconfig.json
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\bin\Debug\net8.0-windows\Sistema de Cobros 2.0.dll
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\bin\Debug\net8.0-windows\Sistema de Cobros 2.0.pdb
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\bin\Debug\net8.0-windows\CapaDatos.dll
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\bin\Debug\net8.0-windows\CapaNegocio.dll
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\bin\Debug\net8.0-windows\Entidades.dll
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\bin\Debug\net8.0-windows\CapaNegocio.pdb
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\bin\Debug\net8.0-windows\Entidades.pdb
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\bin\Debug\net8.0-windows\CapaDatos.pdb
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\Sistema de Cobros 2.0.csproj.AssemblyReference.cache
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\GestionUsuariosWindow.baml
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\LoginWindow.baml
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\GestionUsuariosWindow.g.cs
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\LoginWindow.g.cs
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\MainWindow.g.cs
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\App.g.cs
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\Sistema de Cobros 2.0_MarkupCompile.cache
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\Sistema de Cobros 2.0_MarkupCompile.lref
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\MainWindow.baml
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\Sistema de Cobros 2.0.g.resources
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\Sistema de Cobros 2.0.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\Sistema de Cobros 2.0.AssemblyInfoInputs.cache
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\Sistema de Cobros 2.0.AssemblyInfo.cs
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\Sistema de Cobros 2.0.csproj.CoreCompileInputs.cache
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\Sistema .BF9B8FFE.Up2Date
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\Sistema de Cobros 2.0.dll
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\refint\Sistema de Cobros 2.0.dll
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\Sistema de Cobros 2.0.pdb
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\Sistema de Cobros 2.0.genruntimeconfig.cache
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\ref\Sistema de Cobros 2.0.dll
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\bin\Debug\net8.0-windows\Sistema de Cobros 2.0.dll.config
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\bin\Debug\net8.0-windows\Microsoft.Extensions.Logging.Abstractions.dll
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\bin\Debug\net8.0-windows\MySqlConnector.dll
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\AuditoriaWindow.baml
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\AuditoriaWindow.g.cs

@@ -1,0 +1,72 @@
+<Window x:Class="Sistema_de_Cobros_2._0.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Iniciar Sesión" Height="420" Width="380"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="ColorPrimario" Color="#2196F3"/>
+        <SolidColorBrush x:Key="ColorPrimarioOscuro" Color="#1976D2"/>
+        <SolidColorBrush x:Key="ColorTexto" Color="#333333"/>
+        <SolidColorBrush x:Key="ColorTextoSecundario" Color="#666666"/>
+        <SolidColorBrush x:Key="ColorBorde" Color="#E0E0E0"/>
+    </Window.Resources>
+
+    <Border Background="White" CornerRadius="12" Padding="30">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="20" ShadowDepth="2" Opacity="0.15"/>
+        </Border.Effect>
+
+        <StackPanel>
+            <!-- Logo / Título -->
+            <TextBlock Text="Sistema de Cobros 2.0"
+                       FontSize="22" FontWeight="Bold"
+                       Foreground="{StaticResource ColorPrimario}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,5"/>
+            <TextBlock Text="Ingrese sus credenciales"
+                       FontSize="13"
+                       Foreground="{StaticResource ColorTextoSecundario}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,25"/>
+
+            <!-- Usuario -->
+            <TextBlock Text="Usuario" FontSize="13" FontWeight="SemiBold"
+                       Foreground="{StaticResource ColorTexto}" Margin="0,0,0,5"/>
+            <TextBox x:Name="txtUsername" Padding="12,10" FontSize="14"
+                     BorderBrush="{StaticResource ColorBorde}" BorderThickness="1"
+                     Margin="0,0,0,15"/>
+
+            <!-- Contraseña -->
+            <TextBlock Text="Contraseña" FontSize="13" FontWeight="SemiBold"
+                       Foreground="{StaticResource ColorTexto}" Margin="0,0,0,5"/>
+            <PasswordBox x:Name="txtPassword" Padding="12,10" FontSize="14"
+                         BorderBrush="{StaticResource ColorBorde}" BorderThickness="1"
+                         Margin="0,0,0,20"/>
+
+            <!-- Botón Login -->
+            <Button x:Name="btnLogin" Content="Iniciar Sesión"
+                    Background="{StaticResource ColorPrimario}"
+                    Foreground="White" Padding="12,10" FontSize="14" FontWeight="SemiBold"
+                    BorderThickness="0" Cursor="Hand" Click="BtnLogin_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <!-- Error -->
+            <TextBlock x:Name="txtError" Text=""
+                       Foreground="#D32F2F" FontSize="12"
+                       HorizontalAlignment="Center"
+                       Margin="0,15,0,0"/>
+        </StackPanel>
+    </Border>
+</Window>

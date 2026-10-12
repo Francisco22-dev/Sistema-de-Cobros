@@ -1,0 +1,53 @@
+<Window x:Class="Sistema_de_Cobros_2._0.AuditoriaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Auditoría del Sistema" Height="550" Width="900"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F5F5">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="ColorPrimario" Color="#2196F3"/>
+        <SolidColorBrush x:Key="ColorExito" Color="#4CAF50"/>
+        <SolidColorBrush x:Key="ColorPeligro" Color="#F44336"/>
+        <SolidColorBrush x:Key="ColorTexto" Color="#333333"/>
+        <SolidColorBrush x:Key="ColorBorde" Color="#E0E0E0"/>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Encabezado -->
+        <StackPanel Grid.Row="0" Margin="0,0,0,15">
+            <TextBlock Text="Auditoría del Sistema"
+                       FontSize="20" FontWeight="Bold"
+                       Foreground="{StaticResource ColorTexto}"/>
+            <TextBlock Text="Registro de todas las operaciones realizadas en el sistema"
+                       FontSize="12" Foreground="#666666" Margin="0,5,0,0"/>
+        </StackPanel>
+
+        <!-- DataGrid de auditoría -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8" Padding="15"
+                BorderBrush="{StaticResource ColorBorde}" BorderThickness="1">
+            <DataGrid x:Name="dgAuditoria"
+                      AutoGenerateColumns="False" IsReadOnly="True"
+                      GridLinesVisibility="Horizontal" BorderThickness="0"
+                      Background="Transparent" RowBackground="White"
+                      AlternatingRowBackground="#F9F9F9"
+                      HeadersVisibility="Column">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Fecha/Hora" Binding="{Binding FechaHora, StringFormat=dd/MM/yyyy HH:mm:ss}" Width="130"/>
+                    <DataGridTextColumn Header="Usuario" Binding="{Binding Usuario}" Width="90"/>
+                    <DataGridTextColumn Header="Acción" Binding="{Binding Accion}" Width="80"/>
+                    <DataGridTextColumn Header="Tabla" Binding="{Binding TablaAfectada}" Width="70"/>
+                    <DataGridTextColumn Header="Computadora" Binding="{Binding Computadora}" Width="100"/>
+                    <DataGridTextColumn Header="Datos Anteriores" Binding="{Binding DatosAnteriores}" Width="*"/>
+                    <DataGridTextColumn Header="Datos Nuevos" Binding="{Binding DatosNuevos}" Width="*"/>
+                    <DataGridTextColumn Header="Éxito" Binding="{Binding Exito}" Width="50"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+    </Grid>
+</Window>

@@ -1,0 +1,150 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{9D7FC803-4994-453C-8A4C-BC604BAEF7E6}|Sistema de Cobros 2.0\\Sistema de Cobros 2.0.csproj|c:\\users\\lorenzo serrano.desktop-llbmagr\\desktop\\\u00E1ngel y fran\\francisco\\sistema de cobro v2\\sistema de cobros 2.0\\sistema de cobros 2.0\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{9D7FC803-4994-453C-8A4C-BC604BAEF7E6}|Sistema de Cobros 2.0\\Sistema de Cobros 2.0.csproj|solutionrelative:sistema de cobros 2.0\\app.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9D7FC803-4994-453C-8A4C-BC604BAEF7E6}|Sistema de Cobros 2.0\\Sistema de Cobros 2.0.csproj|c:\\users\\lorenzo serrano.desktop-llbmagr\\desktop\\\u00E1ngel y fran\\francisco\\sistema de cobro v2\\sistema de cobros 2.0\\sistema de cobros 2.0\\loginwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9D7FC803-4994-453C-8A4C-BC604BAEF7E6}|Sistema de Cobros 2.0\\Sistema de Cobros 2.0.csproj|solutionrelative:sistema de cobros 2.0\\loginwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9D7FC803-4994-453C-8A4C-BC604BAEF7E6}|Sistema de Cobros 2.0\\Sistema de Cobros 2.0.csproj|c:\\users\\lorenzo serrano.desktop-llbmagr\\desktop\\\u00E1ngel y fran\\francisco\\sistema de cobro v2\\sistema de cobros 2.0\\sistema de cobros 2.0\\loginwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{9D7FC803-4994-453C-8A4C-BC604BAEF7E6}|Sistema de Cobros 2.0\\Sistema de Cobros 2.0.csproj|solutionrelative:sistema de cobros 2.0\\loginwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9D7FC803-4994-453C-8A4C-BC604BAEF7E6}|Sistema de Cobros 2.0\\Sistema de Cobros 2.0.csproj|c:\\users\\lorenzo serrano.desktop-llbmagr\\desktop\\\u00E1ngel y fran\\francisco\\sistema de cobro v2\\sistema de cobros 2.0\\sistema de cobros 2.0\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
+      "RelativeMoniker": "D:0:0:{9D7FC803-4994-453C-8A4C-BC604BAEF7E6}|Sistema de Cobros 2.0\\Sistema de Cobros 2.0.csproj|solutionrelative:sistema de cobros 2.0\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C9991CB-45B9-4A8C-99B0-0823A3C08A46}|CapaDatos\\CapaDatos.csproj|c:\\users\\lorenzo serrano.desktop-llbmagr\\desktop\\\u00E1ngel y fran\\francisco\\sistema de cobro v2\\sistema de cobros 2.0\\capadatos\\usuariorepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1C9991CB-45B9-4A8C-99B0-0823A3C08A46}|CapaDatos\\CapaDatos.csproj|solutionrelative:capadatos\\usuariorepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9D7FC803-4994-453C-8A4C-BC604BAEF7E6}|Sistema de Cobros 2.0\\Sistema de Cobros 2.0.csproj|c:\\users\\lorenzo serrano.desktop-llbmagr\\desktop\\\u00E1ngel y fran\\francisco\\sistema de cobro v2\\sistema de cobros 2.0\\sistema de cobros 2.0\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9D7FC803-4994-453C-8A4C-BC604BAEF7E6}|Sistema de Cobros 2.0\\Sistema de Cobros 2.0.csproj|solutionrelative:sistema de cobros 2.0\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1C9991CB-45B9-4A8C-99B0-0823A3C08A46}|CapaDatos\\CapaDatos.csproj|c:\\users\\lorenzo serrano.desktop-llbmagr\\desktop\\\u00E1ngel y fran\\francisco\\sistema de cobro v2\\sistema de cobros 2.0\\capadatos\\databaseconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1C9991CB-45B9-4A8C-99B0-0823A3C08A46}|CapaDatos\\CapaDatos.csproj|solutionrelative:capadatos\\databaseconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 200,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "LoginWindow.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\Sistema de Cobros 2.0\\LoginWindow.xaml.cs",
+              "RelativeDocumentMoniker": "Sistema de Cobros 2.0\\LoginWindow.xaml.cs",
+              "ToolTip": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\Sistema de Cobros 2.0\\LoginWindow.xaml.cs",
+              "RelativeToolTip": "Sistema de Cobros 2.0\\LoginWindow.xaml.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAAQwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-10T19:52:59.338Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "LoginWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\Sistema de Cobros 2.0\\LoginWindow.xaml",
+              "RelativeDocumentMoniker": "Sistema de Cobros 2.0\\LoginWindow.xaml",
+              "ToolTip": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\Sistema de Cobros 2.0\\LoginWindow.xaml",
+              "RelativeToolTip": "Sistema de Cobros 2.0\\LoginWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-10-10T19:52:54.948Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "UsuarioRepository.cs",
+              "DocumentMoniker": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\CapaDatos\\UsuarioRepository.cs",
+              "RelativeDocumentMoniker": "CapaDatos\\UsuarioRepository.cs",
+              "ToolTip": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\CapaDatos\\UsuarioRepository.cs",
+              "RelativeToolTip": "CapaDatos\\UsuarioRepository.cs",
+              "ViewState": "AgIAACoAAAAAAAAAAAAowDkAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-10T19:51:46.924Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "App.config",
+              "DocumentMoniker": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\Sistema de Cobros 2.0\\App.config",
+              "RelativeDocumentMoniker": "Sistema de Cobros 2.0\\App.config",
+              "ToolTip": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\Sistema de Cobros 2.0\\App.config",
+              "RelativeToolTip": "Sistema de Cobros 2.0\\App.config",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000601|",
+              "WhenOpened": "2026-10-10T15:24:28.663Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "MainWindow.xaml",
+              "DocumentMoniker": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\Sistema de Cobros 2.0\\MainWindow.xaml",
+              "RelativeDocumentMoniker": "Sistema de Cobros 2.0\\MainWindow.xaml",
+              "ToolTip": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\Sistema de Cobros 2.0\\MainWindow.xaml",
+              "RelativeToolTip": "Sistema de Cobros 2.0\\MainWindow.xaml",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
+              "WhenOpened": "2026-10-02T23:40:56.07Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "DatabaseConfig.cs",
+              "DocumentMoniker": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\CapaDatos\\DatabaseConfig.cs",
+              "RelativeDocumentMoniker": "CapaDatos\\DatabaseConfig.cs",
+              "ToolTip": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\CapaDatos\\DatabaseConfig.cs",
+              "RelativeToolTip": "CapaDatos\\DatabaseConfig.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAARAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-10T15:04:49.045Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "MainWindow.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\Sistema de Cobros 2.0\\MainWindow.xaml.cs",
+              "RelativeDocumentMoniker": "Sistema de Cobros 2.0\\MainWindow.xaml.cs",
+              "ToolTip": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\\u00C1ngel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\Sistema de Cobros 2.0\\MainWindow.xaml.cs",
+              "RelativeToolTip": "Sistema de Cobros 2.0\\MainWindow.xaml.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-10-02T23:40:54.165Z"
+            }
+          ]
+        },
+        {
+          "DockedHeight": 195,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
