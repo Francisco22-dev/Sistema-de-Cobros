@@ -13,7 +13,6 @@ namespace CapaDatos
         {
             var lista = new List<Curso>();
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand("SELECT * FROM Cursos WHERE Activo = TRUE ORDER BY Nombre", conn);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -35,7 +34,6 @@ namespace CapaDatos
         public void Agregar(Curso curso)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand(
                 "INSERT INTO Cursos (Codigo, Nombre, Descripcion, DuracionSemanas, PrecioInscripcion, PrecioMensualidad, Activo) " +
                 "VALUES (@codigo, @nombre, @desc, @duracion, @precioIns, @precioMen, @activo)", conn);
@@ -52,7 +50,6 @@ namespace CapaDatos
         public void Actualizar(Curso curso)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand(
                 "UPDATE Cursos SET Nombre = @nombre, Descripcion = @desc, DuracionSemanas = @duracion, " +
                 "PrecioInscripcion = @precioIns, PrecioMensualidad = @precioMen, Activo = @activo WHERE Codigo = @codigo", conn);
@@ -69,7 +66,6 @@ namespace CapaDatos
         public void Desactivar(string codigo)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand("UPDATE Cursos SET Activo = FALSE WHERE Codigo = @codigo", conn);
             cmd.Parameters.AddWithValue("@codigo", codigo);
             cmd.ExecuteNonQuery();

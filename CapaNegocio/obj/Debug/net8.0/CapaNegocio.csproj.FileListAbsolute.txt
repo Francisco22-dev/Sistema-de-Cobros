@@ -10,6 +10,7 @@ C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaNegocio\obj\Debug\net8.0\CapaNegocio.AssemblyInfoInputs.cache
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaNegocio\obj\Debug\net8.0\CapaNegocio.AssemblyInfo.cs
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaNegocio\obj\Debug\net8.0\CapaNegocio.csproj.CoreCompileInputs.cache
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaNegocio\obj\Debug\net8.0\CapaNegocio.sourcelink.json
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaNegocio\obj\Debug\net8.0\CapaNego.81B9D119.Up2Date
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaNegocio\obj\Debug\net8.0\CapaNegocio.dll
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaNegocio\obj\Debug\net8.0\refint\CapaNegocio.dll

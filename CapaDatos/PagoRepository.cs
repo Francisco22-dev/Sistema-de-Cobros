@@ -5,20 +5,17 @@ using Entidades;
 
 namespace CapaDatos
 {
-    /// <summary>
-    /// Repositorio de pagos en MariaDB con transacciones y anti-SQL injection.
-    /// </summary>
     public class PagoRepository
     {
-        public List<Pago> ObtenerTodos()
+        public List<Pago> ObtenerRecientes(int limite = 100)
         {
             var lista = new List<Pago>();
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand(
                 "SELECT Id, NumeroRecibo, EstudianteCedula, InscripcionId, ConceptoId, " +
                 "FechaPago, FechaVencimiento, Total, TotalEnVes, MonedaCodigo, UsuarioRegistra, Estado, Observaciones " +
-                "FROM Pagos ORDER BY FechaPago DESC", conn);
+                "FROM Pagos ORDER BY FechaPago DESC LIMIT @limite", conn);
+            cmd.Parameters.AddWithValue("@limite", limite);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -27,15 +24,26 @@ namespace CapaDatos
             return lista;
         }
 
+        // NUEVO: Revisa si el estudiante tiene al menos 1 pago vencido
+        public bool TieneDeuda(string cedula)
+        {
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            using var cmd = new MySqlCommand(
+                "SELECT COUNT(*) FROM Pagos WHERE EstudianteCedula = @cedula " +
+                "AND (Estado = 'Vencido' OR (Estado = 'Vigente' AND FechaVencimiento < CURDATE()))", conn);
+            cmd.Parameters.AddWithValue("@cedula", cedula);
+
+            int pagosVencidos = Convert.ToInt32(cmd.ExecuteScalar());
+            return pagosVencidos > 0;
+        }
+
         public int Agregar(Pago pago, List<PagoDetalle> detalles)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var transaction = conn.BeginTransaction();
 
             try
             {
-                // Insertar pago
                 using var cmdPago = new MySqlCommand(
                     "INSERT INTO Pagos (NumeroRecibo, EstudianteCedula, InscripcionId, ConceptoId, " +
                     "FechaPago, FechaVencimiento, Total, TotalEnVes, MonedaCodigo, UsuarioRegistra, Estado, Observaciones) " +
@@ -57,7 +65,6 @@ namespace CapaDatos
 
                 int pagoId = (int)cmdPago.LastInsertedId;
 
-                // Insertar detalles
                 foreach (var detalle in detalles)
                 {
                     using var cmdDetalle = new MySqlCommand(
@@ -87,7 +94,6 @@ namespace CapaDatos
         public decimal ObtenerTotalHoy()
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand(
                 "SELECT COALESCE(SUM(TotalEnVes), 0) FROM Pagos " +
                 "WHERE DATE(FechaPago) = CURDATE() AND Estado = 'Vigente'", conn);

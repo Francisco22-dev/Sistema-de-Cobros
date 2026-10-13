@@ -19,9 +19,9 @@ namespace CapaNegocio
             _auditoria = new AuditorService();
         }
 
-        public List<Pago> ObtenerPagos()
+        public List<Pago> ObtenerPagos(int limite = 100)
         {
-            return _repository.ObtenerTodos();
+            return _repository.ObtenerRecientes(limite);
         }
 
         public void RegistrarPago(string numeroRecibo, string estudianteCedula, int inscripcionId,

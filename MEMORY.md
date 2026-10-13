@@ -25,6 +25,17 @@ aporte.
 - Script SQL manual en database/crear_tablas.sql.
 - MySqlConnector como driver de base de datos.
 - Paleta: azul (#2196F3), verde (#4CAF50), gris claro (#F5F5F5).
+- Rendimiento: Se desaprueba el uso de `ObtenerTodos()`. En su lugar, se usa `ObtenerRecientes(int limite=100)` con LIMIT en SQL para evitar saturar la memoria y la red.
+- Morosidad: La clase `InscripcionService` bloquea nuevas inscripciones lanzando una excepción si `PagoRepository.TieneDeuda()` detecta pagos vencidos.
+- Impresión: Se utiliza `FlowDocument` nativo de WPF configurado para papel térmico de 80mm (~302px). Evita depender de librerías externas (iText/PDF). La lógica visual reside puramente en la Capa UI (`ImpresorRecibo.cs`).
+- Módulo Caja (Fase 3): Implementado control de flujo. La UI desactiva el botón de cobro (`btnRegistrar`) y muestra "CAJA CERRADA" si la tabla `Caja` no tiene un registro en estado 'Abierta'.
+- Se optó por un inicio de caja manual (Opción C) donde el cajero indica el fondo físico diario en un popup modal.
+- Devoluciones Inmutables (Fase 4): Los recibos nunca se eliminan. Se cambia el `Estado = 'Devuelto'` y se guarda un registro detallado en la tabla `Devoluciones`. Usa transacciones SQL en `DevolucionRepository` para garantizar la consistencia atómica.
+- Se agregó el campo Estado al DataGrid. El método `ActualizarTotalHoy()` ignora automáticamente los pagos 'Devueltos', manteniendo la caja diaria cuadrada de manera automática y precisa.
+- UX: Se añadió prevención de doble-clic inhabilitando temporalmente el botón de pago.
+- UI Principal (Fase 5 y 6): Rediseño moderno con sombras y tarjetas. Todos los MessageBox han sido reemplazados por el nuevo `AlertaWindow` que incluye colores y tipografía unificada.
+- Multimoneda: El sistema exige cargar la tasa USD/VES diariamente en la tabla `TasasCambio` al abrir la app.
+- Pagos Mixtos: El usuario puede seleccionar la moneda base de la factura (VES o USD) y agregar a un DataGrid múltiples métodos de pago (Efectivo + Zelle) que se suman solos, insertando múltiples registros a `PagoDetalles`.
 
 ## Aprendizajes y errores a evitar
 - `dotnet build` funciona (SDK-style). Antes fallaba con .NET Framework 4.8.

@@ -13,7 +13,6 @@ namespace CapaDatos
         {
             var lista = new List<Estudiante>();
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand("SELECT * FROM Estudiantes WHERE Activo = TRUE ORDER BY NombreCompleto", conn);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -26,7 +25,6 @@ namespace CapaDatos
         public Estudiante? ObtenerPorCedula(string cedula)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand("SELECT * FROM Estudiantes WHERE Cedula = @cedula", conn);
             cmd.Parameters.AddWithValue("@cedula", cedula);
             using var reader = cmd.ExecuteReader();
@@ -38,7 +36,6 @@ namespace CapaDatos
         public void Agregar(Estudiante estudiante)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand(
                 "INSERT INTO Estudiantes (Cedula, NombreCompleto, Telefono, Email, FechaNacimiento, Direccion, Activo) " +
                 "VALUES (@cedula, @nombre, @telefono, @email, @nacimiento, @direccion, @activo)", conn);
@@ -55,7 +52,6 @@ namespace CapaDatos
         public void Actualizar(Estudiante estudiante)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand(
                 "UPDATE Estudiantes SET NombreCompleto = @nombre, Telefono = @telefono, " +
                 "Email = @email, FechaNacimiento = @nacimiento, Direccion = @direccion, Activo = @activo " +
@@ -73,7 +69,6 @@ namespace CapaDatos
         public void Desactivar(string cedula)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand("UPDATE Estudiantes SET Activo = FALSE WHERE Cedula = @cedula", conn);
             cmd.Parameters.AddWithValue("@cedula", cedula);
             cmd.ExecuteNonQuery();

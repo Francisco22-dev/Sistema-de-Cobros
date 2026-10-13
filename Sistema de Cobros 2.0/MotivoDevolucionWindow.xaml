@@ -1,0 +1,22 @@
+﻿<Window x:Class="Sistema_de_Cobros_2._0.MotivoDevolucionWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Motivo de Devolución" Height="270" Width="400"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="#F5F5F5">
+    <Border Background="White" CornerRadius="8" Padding="20" Margin="10">
+        <StackPanel>
+            <TextBlock Text="Registrar Devolución" FontSize="18" FontWeight="Bold" Foreground="#F44336" Margin="0,0,0,5"/>
+            <TextBlock Text="Por favor, explique detalladamente el motivo de la devolución:" 
+                       TextWrapping="Wrap" Foreground="#666" FontSize="12" Margin="0,0,0,10"/>
+
+            <TextBox x:Name="txtMotivo" Height="60" TextWrapping="Wrap" AcceptsReturn="True" 
+                     Padding="5" FontSize="13" BorderBrush="#ccc" BorderThickness="1" Margin="0,0,0,15"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Cancelar" Padding="15,8" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BtnCancelar_Click"/>
+                <Button Content="Confirmar Devolución" Padding="15,8" Background="#F44336" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0" Click="BtnConfirmar_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>

@@ -13,7 +13,6 @@ namespace CapaDatos
         {
             var lista = new List<Usuario>();
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand("SELECT * FROM Usuarios", conn);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
@@ -26,7 +25,6 @@ namespace CapaDatos
         public void Agregar(Usuario usuario)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand(
                 "INSERT INTO Usuarios (Username, PasswordHash, NombreCompleto, Rol, Email, Telefono, Activo) " +
                 "VALUES (@username, @hash, @nombre, @rol, @email, @telefono, @activo)", conn);
@@ -43,7 +41,6 @@ namespace CapaDatos
         public void Actualizar(Usuario usuario)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand(
                 "UPDATE Usuarios SET NombreCompleto = @nombre, Rol = @rol, Activo = @activo, " +
                 "PasswordHash = COALESCE(@hash, PasswordHash), Email = @email, Telefono = @telefono " +
@@ -61,7 +58,6 @@ namespace CapaDatos
         public void Eliminar(string username)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand("DELETE FROM Usuarios WHERE Username = @username", conn);
             cmd.Parameters.AddWithValue("@username", username);
             cmd.ExecuteNonQuery();

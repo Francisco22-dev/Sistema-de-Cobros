@@ -27,9 +27,9 @@ namespace CapaNegocio
             _repository.Registrar(auditoria);
         }
 
-        public List<Auditoria> ObtenerRegistros()
+        public List<Auditoria> ObtenerRegistros(int limite = 100)
         {
-            return _repository.ObtenerTodos();
+            return _repository.ObtenerRecientes(limite);
         }
 
         private static string ObtenerIpLocal()

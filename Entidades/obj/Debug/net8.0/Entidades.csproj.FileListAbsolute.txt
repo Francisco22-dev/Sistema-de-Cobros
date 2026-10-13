@@ -5,6 +5,7 @@ C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Entidades\obj\Debug\net8.0\Entidades.AssemblyInfoInputs.cache
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Entidades\obj\Debug\net8.0\Entidades.AssemblyInfo.cs
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Entidades\obj\Debug\net8.0\Entidades.csproj.CoreCompileInputs.cache
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Entidades\obj\Debug\net8.0\Entidades.sourcelink.json
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Entidades\obj\Debug\net8.0\Entidades.dll
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Entidades\obj\Debug\net8.0\refint\Entidades.dll
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Entidades\obj\Debug\net8.0\Entidades.pdb

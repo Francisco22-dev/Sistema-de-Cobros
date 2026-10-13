@@ -5,15 +5,11 @@ using Entidades;
 
 namespace CapaDatos
 {
-    /// <summary>
-    /// Repositorio de auditoría en MariaDB con IP y anti-SQL injection.
-    /// </summary>
     public class AuditoriaRepository
     {
         public void Registrar(Auditoria auditoria)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand(
                 "INSERT INTO Auditoria (Usuario, Accion, TablaAfectada, RegistroId, DatosAnteriores, DatosNuevos, Computadora, Ip, FechaHora, Exito) " +
                 "VALUES (@usuario, @accion, @tabla, @registroId, @antes, @despues, @pc, @ip, @fecha, @exito)", conn);
@@ -30,12 +26,12 @@ namespace CapaDatos
             cmd.ExecuteNonQuery();
         }
 
-        public List<Auditoria> ObtenerTodos()
+        public List<Auditoria> ObtenerRecientes(int limite = 100)
         {
             var lista = new List<Auditoria>();
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
-            using var cmd = new MySqlCommand("SELECT * FROM Auditoria ORDER BY FechaHora DESC", conn);
+            using var cmd = new MySqlCommand("SELECT * FROM Auditoria ORDER BY FechaHora DESC LIMIT @limite", conn);
+            cmd.Parameters.AddWithValue("@limite", limite);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {

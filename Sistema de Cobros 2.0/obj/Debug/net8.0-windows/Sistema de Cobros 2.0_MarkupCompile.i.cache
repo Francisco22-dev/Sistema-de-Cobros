@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\App.xaml
-4-1986533092
+82099404914
 
-9320725263
+14-67024972
 2031466056842
-AuditoriaWindow.xaml;GestionUsuariosWindow.xaml;LoginWindow.xaml;MainWindow.xaml;
+AlertaWindow.xaml;AperturaCajaWindow.xaml;AuditoriaWindow.xaml;ConfigurarTasaWindow.xaml;GestionUsuariosWindow.xaml;LoginWindow.xaml;MainWindow.xaml;MotivoDevolucionWindow.xaml;
 
 False
 

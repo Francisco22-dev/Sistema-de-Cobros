@@ -8,6 +8,7 @@ C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\CapaDatos.AssemblyInfoInputs.cache
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\CapaDatos.AssemblyInfo.cs
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\CapaDatos.csproj.CoreCompileInputs.cache
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\CapaDatos.sourcelink.json
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\CapaDatos.csproj.Up2Date
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\CapaDatos.dll
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\CapaDatos\obj\Debug\net8.0\refint\CapaDatos.dll

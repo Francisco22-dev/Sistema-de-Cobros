@@ -4,17 +4,14 @@ using Entidades;
 
 namespace CapaDatos
 {
-    /// <summary>
-    /// Repositorio de inscripciones en MariaDB con anti-SQL injection.
-    /// </summary>
     public class InscripcionRepository
     {
-        public List<Inscripcion> ObtenerTodos()
+        public List<Inscripcion> ObtenerRecientes(int limite = 100)
         {
             var lista = new List<Inscripcion>();
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
-            using var cmd = new MySqlCommand("SELECT * FROM Inscripciones ORDER BY FechaInscripcion DESC", conn);
+            using var cmd = new MySqlCommand("SELECT * FROM Inscripciones ORDER BY FechaInscripcion DESC LIMIT @limite", conn);
+            cmd.Parameters.AddWithValue("@limite", limite);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -34,7 +31,6 @@ namespace CapaDatos
         public void Agregar(Inscripcion inscripcion)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            conn.Open();
             using var cmd = new MySqlCommand(
                 "INSERT INTO Inscripciones (EstudianteCedula, GrupoId, FechaInscripcion, Estado, Observaciones) " +
                 "VALUES (@cedula, @grupo, @fecha, @estado, @obs)", conn);
