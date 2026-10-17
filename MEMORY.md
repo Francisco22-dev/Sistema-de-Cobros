@@ -36,6 +36,7 @@ aporte.
 - UI Principal (Fase 5 y 6): Rediseño moderno con sombras y tarjetas. Todos los MessageBox han sido reemplazados por el nuevo `AlertaWindow` que incluye colores y tipografía unificada.
 - Multimoneda: El sistema exige cargar la tasa USD/VES diariamente en la tabla `TasasCambio` al abrir la app.
 - Pagos Mixtos: El usuario puede seleccionar la moneda base de la factura (VES o USD) y agregar a un DataGrid múltiples métodos de pago (Efectivo + Zelle) que se suman solos, insertando múltiples registros a `PagoDetalles`.
+- Arqueo de Caja (Fase 8): El cierre de caja ya no es directo. Al pulsar "Cerrar Caja" se invoca un arqueo que cruza la tabla `Pagos` y `PagoDetalles` para mostrarle al cajero exactamente cuánto debe tener por cada Método y Moneda antes de irse.
 
 ## Aprendizajes y errores a evitar
 - `dotnet build` funciona (SDK-style). Antes fallaba con .NET Framework 4.8.

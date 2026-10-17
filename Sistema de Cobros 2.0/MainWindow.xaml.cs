@@ -1,12 +1,13 @@
-﻿using System;
+﻿using CapaNegocio;
+using Entidades;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using CapaNegocio;
-using Entidades;
 
 namespace Sistema_de_Cobros_2._0
 {
@@ -41,6 +42,7 @@ namespace Sistema_de_Cobros_2._0
             _cajaService = new CajaService();
             _devolucionService = new DevolucionService();
             _tasaService = new TasaCambioService();
+            CargarEstudiantes();
 
             // Vincular la lista en memoria con la tabla en pantalla
             dgDetalles.ItemsSource = _listaDetalles;
@@ -64,21 +66,21 @@ namespace Sistema_de_Cobros_2._0
         {
             _tasas = _tasaService.ObtenerTasasDelDia();
 
-            if (_tasas["USD"] <= 0)
+            if (_tasas["BCV"] <= 0)
             {
                 txtTasaDia.Text = "TASAS NO CONFIGURADAS";
                 txtTasaDia.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F44336")); // Rojo
             }
             else
             {
-                txtTasaDia.Text = $"USD: {_tasas["USD"]:N2} | EUR: {_tasas["EUR"]:N2} | USDT: {_tasas["USDT"]:N2}";
+                txtTasaDia.Text = $"BCV: {_tasas["BCV"]:N2} | EUR: {_tasas["EUR"]:N2} | USDT: {_tasas["USDT"]:N2}";
                 txtTasaDia.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1976D2")); // Azul
             }
         }
 
         private void BtnConfigurarTasa_Click(object sender, RoutedEventArgs e)
         {
-            if (_tasas["USD"] > 0)
+            if (_tasas["BCV"] > 0)
             {
                 AlertaWindow.MostrarInfo("Las tasas de hoy ya fueron configuradas.\nPor seguridad, no se pueden alterar a mitad del día.");
                 return;
@@ -138,18 +140,12 @@ namespace Sistema_de_Cobros_2._0
 
         private void BtnCerrarCaja_Click(object sender, RoutedEventArgs e)
         {
-            if (AlertaWindow.SolicitarConfirmacion("¿Está seguro de que desea CERRAR la caja de hoy?", "Cierre de Caja"))
+            var ventanaCierre = new CierreCajaWindow { Owner = this };
+            ventanaCierre.ShowDialog();
+
+            if (ventanaCierre.CajaCerradaExitosamente)
             {
-                try
-                {
-                    _cajaService.CerrarCaja();
-                    AlertaWindow.MostrarExito("Caja cerrada exitosamente.");
-                    ValidarEstadoCaja();
-                }
-                catch (Exception ex)
-                {
-                    AlertaWindow.MostrarError(ex.Message);
-                }
+                ValidarEstadoCaja();
             }
         }
 
@@ -158,7 +154,7 @@ namespace Sistema_de_Cobros_2._0
         private decimal ConvertirMoneda(decimal monto, string monedaOrigen, string monedaDestino)
         {
             if (monedaOrigen == monedaDestino) return monto;
-            if (_tasas["USD"] <= 0) return 0; // Previene fallos si no hay tasas configuradas
+            if (_tasas["BCV"] <= 0) return 0; // Previene fallos si no hay tasas configuradas
 
             // 1. Llevamos todo a Bolívares (Moneda Base Nacional)
             decimal montoEnBs = monto * _tasas[monedaOrigen];
@@ -183,9 +179,23 @@ namespace Sistema_de_Cobros_2._0
 
         private void BtnAgregarDetalle_Click(object sender, RoutedEventArgs e)
         {
-            if (!decimal.TryParse(txtMontoDetalle.Text.Replace(".", ","), out decimal monto) || monto <= 0)
+            if (_tasas["BCV"] <= 0)
             {
-                AlertaWindow.MostrarAdvertencia("Ingrese un monto numérico válido mayor a cero.");
+                AlertaWindow.MostrarError("Debe configurar las tasas de cambio del día antes de empezar a cobrar.");
+                return;
+            }
+
+            // 1. FORMATO A PRUEBA DE BALAS
+            var formatoEstricto = new System.Globalization.NumberFormatInfo
+            {
+                NumberDecimalSeparator = ",",
+                NumberGroupSeparator = "."
+            };
+
+            // 2. Usamos NumberStyles.Number para que acepte tanto puntos como comas
+            if (!decimal.TryParse(txtMontoDetalle.Text.Trim(), System.Globalization.NumberStyles.Number, formatoEstricto, out decimal monto) || monto <= 0)
+            {
+                AlertaWindow.MostrarAdvertencia("Ingrese un monto numérico válido mayor a cero (Ej. 1.250,50).");
                 return;
             }
 
@@ -217,17 +227,30 @@ namespace Sistema_de_Cobros_2._0
 
         // --- REGISTRO PRINCIPAL DEL PAGO (FACTURA) ---
 
+        // (En la parte de arriba, añade este servicio a los declarados)
+        private readonly InscripcionService _inscripcionService = new InscripcionService();
+
+        // Llama a este método en el constructor public MainWindow()
+        private void CargarEstudiantes()
+        {
+            cmbEstudiante.ItemsSource = _inscripcionService.ObtenerInscripcionesActivas();
+        }
+
+        // --- ARREGLO DEL PARSEO DE NÚMEROS ---
         private void BtnRegistrar_Click(object sender, RoutedEventArgs e)
         {
-            string cedula = txtCedula.Text.Trim();
-            string nombre = txtNombreEstudiante.Text.Trim();
-            string monedaFactura = ((ComboBoxItem)cmbMonedaRecibo.SelectedItem).Content.ToString()!;
-
-            if (string.IsNullOrWhiteSpace(cedula) || string.IsNullOrWhiteSpace(nombre))
+            // OBTENER EL ESTUDIANTE REAL SELECCIONADO
+            if (!(cmbEstudiante.SelectedItem is InscripcionInfo estudianteSeleccionado))
             {
-                AlertaWindow.MostrarAdvertencia("Por favor ingrese la Cédula y el Nombre del estudiante.");
+                AlertaWindow.MostrarAdvertencia("Debe buscar y seleccionar un estudiante de la lista.");
                 return;
             }
+
+            string cedula = estudianteSeleccionado.Cedula;
+            string nombre = estudianteSeleccionado.NombreCompleto;
+            int inscripcionId = estudianteSeleccionado.InscripcionId;
+
+            string monedaFactura = ((ComboBoxItem)cmbMonedaRecibo.SelectedItem).Content.ToString()!;
 
             if (_listaDetalles.Count == 0)
             {
@@ -235,48 +258,35 @@ namespace Sistema_de_Cobros_2._0
                 return;
             }
 
-            if (_tasas["USD"] <= 0)
-            {
-                AlertaWindow.MostrarError("Debe configurar las tasas del día (Botón superior) antes de poder procesar pagos.");
-                return;
-            }
-
             string numeroRecibo = "REC-" + DateTime.Now.ToString("yyyyMMddHHmmss");
             int conceptoId = int.Parse(((ComboBoxItem)cmbConcepto.SelectedItem).Tag.ToString()!);
             decimal totalFacturaConvertida = 0m;
 
-            // Convertir la UI a Entidades reales para la Base de Datos
             var listaBd = new List<PagoDetalle>();
             foreach (var d in _listaDetalles)
             {
                 totalFacturaConvertida += ConvertirMoneda(d.Monto, d.Moneda, monedaFactura);
                 decimal montoEnBs = d.Monto * _tasas[d.Moneda];
-
-                listaBd.Add(new PagoDetalle(0, d.MetodoId, d.Monto, d.Moneda, _tasas[d.Moneda], montoEnBs, d.Referencia));
+                listaBd.Add(new PagoDetalle(0, d.MetodoId, d.Monto, d.Moneda, _tasas[d.Moneda], montoEnBs, d.Referencia) { MetodoNombre = d.MetodoNombre });
             }
 
-            // Prevención de Doble-Clic
             btnRegistrar.IsEnabled = false;
 
             try
             {
-                // NOTA: InscripcionId está fijo en '1' hasta la Fase 7 (Gestión Estudiantes)
-                _pagoService.RegistrarPago(numeroRecibo, cedula, 1, conceptoId, totalFacturaConvertida, monedaFactura, DateTime.Now.AddDays(30), listaBd);
+                // AHORA PASAMOS EL INSCRIPCION_ID REAL
+                _pagoService.RegistrarPago(numeroRecibo, cedula, inscripcionId, conceptoId, totalFacturaConvertida, monedaFactura, DateTime.Now.AddDays(30), listaBd);
 
                 ValidarEstadoCaja();
                 ActualizarHistorial();
 
                 if (AlertaWindow.SolicitarConfirmacion("Pago registrado exitosamente.\n\n¿Desea imprimir el recibo?", "Imprimir Factura"))
                 {
-                    var pagoTemp = new Pago(numeroRecibo, cedula, 1, conceptoId, totalFacturaConvertida, monedaFactura, SesionService.Instancia.UsuarioActual?.Username ?? "Cajero", DateTime.Now)
-                    { FechaPago = DateTime.Now };
-
-                    ImpresorRecibo.Imprimir(pagoTemp, nombre, ((ComboBoxItem)cmbConcepto.SelectedItem).Content.ToString()!, "Pago Mixto");
+                    var pagoTemp = new Pago(numeroRecibo, cedula, inscripcionId, conceptoId, totalFacturaConvertida, monedaFactura, SesionService.Instancia.UsuarioActual?.Username ?? "Cajero", DateTime.Now) { FechaPago = DateTime.Now };
+                    ImpresorRecibo.Imprimir(pagoTemp, nombre, ((ComboBoxItem)cmbConcepto.SelectedItem).Content.ToString()!, listaBd);
                 }
 
-                // Limpiar formulario tras éxito
-                txtCedula.Clear();
-                txtNombreEstudiante.Clear();
+                cmbEstudiante.SelectedIndex = -1; // Limpiar buscador
                 _listaDetalles.Clear();
                 CalcularTotalRecibo();
             }
@@ -286,9 +296,16 @@ namespace Sistema_de_Cobros_2._0
             }
             finally
             {
-                // Habilitar de nuevo el botón solo si la caja sigue abierta
                 btnRegistrar.IsEnabled = _cajaService.ObtenerCajaAbierta() != null;
             }
+        }
+
+        // Evento para abrir la ventana de estudiantes
+        private void BtnNuevoEstudiante_Click(object sender, RoutedEventArgs e)
+        {
+            var ventana = new EstudiantesWindow { Owner = this };
+            ventana.ShowDialog();
+            CargarEstudiantes(); // Recargar el combobox por si se creó uno nuevo
         }
 
         // --- ACCIONES EN EL HISTORIAL (DATA GRID) ---
@@ -297,7 +314,9 @@ namespace Sistema_de_Cobros_2._0
         {
             if (sender is FrameworkElement element && element.DataContext is Pago pagoSeleccionado)
             {
-                ImpresorRecibo.Imprimir(pagoSeleccionado, "Estudiante (Ver Cédula)", "Concepto ID: " + pagoSeleccionado.ConceptoId, "Múltiples / Ver Sistema");
+                // Ahora SÍ cargamos el detalle real desde la Base de Datos
+                var detalles = _pagoService.ObtenerDetalles(pagoSeleccionado.Id);
+                ImpresorRecibo.Imprimir(pagoSeleccionado, "Estudiante (Ver Cédula)", "Concepto ID: " + pagoSeleccionado.ConceptoId, detalles);
             }
         }
 

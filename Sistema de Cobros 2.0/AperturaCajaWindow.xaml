@@ -4,6 +4,7 @@
         Title="Apertura de Caja" Height="270" Width="350"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         Background="#F5F5F5">
+    <Grid>
     <Border Background="White" CornerRadius="8" Padding="20" Margin="10">
         <StackPanel>
             <TextBlock Text="Apertura de Caja" FontSize="18" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
@@ -18,4 +19,5 @@
             </StackPanel>
         </StackPanel>
     </Border>
+    </Grid>
 </Window>

@@ -52,5 +52,34 @@ namespace CapaDatos
             cmd.Parameters.AddWithValue("@id", cajaId);
             cmd.ExecuteNonQuery();
         }
+        public System.Collections.Generic.List<ArqueoItem> ObtenerArqueoCaja(DateTime fechaApertura)
+        {
+            var lista = new System.Collections.Generic.List<ArqueoItem>();
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+
+            // Sumamos los detalles de los pagos VIGENTES realizados desde que se abrió esta caja
+            using var cmd = new MySqlCommand(
+                "SELECT mp.Nombre AS Metodo, pd.MonedaCodigo AS Moneda, SUM(pd.Monto) AS Total " +
+                "FROM PagoDetalles pd " +
+                "JOIN Pagos p ON pd.PagoId = p.Id " +
+                "JOIN MetodosPago mp ON pd.MetodoPagoId = mp.Id " +
+                "WHERE p.FechaPago >= @fechaApertura AND p.Estado = 'Vigente' " +
+                "GROUP BY mp.Nombre, pd.MonedaCodigo " +
+                "ORDER BY pd.MonedaCodigo, mp.Nombre", conn);
+
+            cmd.Parameters.AddWithValue("@fechaApertura", fechaApertura);
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                lista.Add(new ArqueoItem
+                {
+                    Metodo = reader.GetString("Metodo"),
+                    Moneda = reader.GetString("Moneda"),
+                    Total = reader.GetDecimal("Total")
+                });
+            }
+            return lista;
+        }
     }
 }

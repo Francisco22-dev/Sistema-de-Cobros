@@ -41,5 +41,29 @@ namespace CapaDatos
             cmd.Parameters.AddWithValue("@obs", inscripcion.Observaciones ?? (object)DBNull.Value);
             cmd.ExecuteNonQuery();
         }
+        public List<InscripcionInfo> ObtenerInscripcionesActivas()
+        {
+            var lista = new List<InscripcionInfo>();
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            using var cmd = new MySqlCommand(
+                "SELECT i.Id AS InscripcionId, e.Cedula, e.NombreCompleto, g.Codigo AS GrupoCodigo " +
+                "FROM Inscripciones i " +
+                "JOIN Estudiantes e ON i.EstudianteCedula = e.Cedula " +
+                "JOIN Grupos g ON i.GrupoId = g.Id " +
+                "WHERE i.Estado = 'Activa'", conn);
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                lista.Add(new InscripcionInfo
+                {
+                    InscripcionId = reader.GetInt32("InscripcionId"),
+                    Cedula = reader.GetString("Cedula"),
+                    NombreCompleto = reader.GetString("NombreCompleto"),
+                    GrupoCodigo = reader.GetString("GrupoCodigo")
+                });
+            }
+            return lista;
+        }
     }
 }

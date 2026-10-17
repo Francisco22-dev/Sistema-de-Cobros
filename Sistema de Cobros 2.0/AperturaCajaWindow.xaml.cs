@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Windows;
 using CapaNegocio;
 
@@ -18,7 +19,13 @@ namespace Sistema_de_Cobros_2._0
 
         private void BtnAbrir_Click(object sender, RoutedEventArgs e)
         {
-            if (decimal.TryParse(txtSaldoInicial.Text, out decimal saldoInicial) && saldoInicial >= 0)
+            var formatoEstricto = new System.Globalization.NumberFormatInfo
+            {
+                NumberDecimalSeparator = ",",
+                NumberGroupSeparator = "."
+            };
+
+            if (decimal.TryParse(txtSaldoInicial.Text.Trim(), System.Globalization.NumberStyles.Number, formatoEstricto, out decimal saldoInicial) && saldoInicial >= 0)
             {
                 try
                 {
@@ -28,12 +35,12 @@ namespace Sistema_de_Cobros_2._0
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    AlertaWindow.MostrarError(ex.Message);
                 }
             }
             else
             {
-                MessageBox.Show("Por favor, ingrese un monto numérico válido mayor o igual a cero.", "Validación", MessageBoxButton.OK, MessageBoxImage.Warning);
+                AlertaWindow.MostrarAdvertencia("Ingrese un monto válido (Ej. 1.500,00).");
             }
         }
 

@@ -85,7 +85,7 @@
             <StackPanel Grid.Column="1" Orientation="Horizontal">
                 <Button x:Name="btnAbrirCaja" Content="Abrir Caja" Style="{StaticResource BotonRedondeado}" Background="{StaticResource Success}" Foreground="White" Padding="15,8" Click="BtnAbrirCaja_Click" Margin="0,0,10,0"/>
                 <Button x:Name="btnCerrarCaja" Content="Cerrar Caja" Style="{StaticResource BotonRedondeado}" Background="{StaticResource Danger}" Foreground="White" Padding="15,8" Click="BtnCerrarCaja_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
-                <Button x:Name="btnConfigurarTasa" Content="Tasa USD" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnConfigurarTasa_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
+                <Button x:Name="btnConfigurarTasa" Content="Tasa BCV" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnConfigurarTasa_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
                 <Button x:Name="btnGestionUsuarios" Content="Usuarios" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnGestionUsuarios_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
                 <Button x:Name="btnAuditoria" Content="Auditoría" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnAuditoria_Click" Visibility="Collapsed"/>
             </StackPanel>
@@ -115,19 +115,23 @@
 
                         <TextBlock Text="Nuevo Cobro" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextDark}" Margin="0,0,0,15"/>
 
-                        <!-- DATOS BÁSICOS -->
+                        <!-- DATOS BÁSICOS (BUSCADOR DE ESTUDIANTES) -->
                         <Grid Margin="0,0,0,15">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1*"/>
-                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                <TextBlock Text="Cédula" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtCedula" Style="{StaticResource ModernTextBox}"/>
+                                <TextBlock Text="Buscar Estudiante (Cédula o Nombre)" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,5"/>
+                                <!-- Este ComboBox autocompleta mientras escribes -->
+                                <ComboBox x:Name="cmbEstudiante" Style="{StaticResource ModernComboBox}" 
+                                          IsEditable="True" IsTextSearchEnabled="True" 
+                                          TextSearch.TextPath="Display" DisplayMemberPath="Display"/>
                             </StackPanel>
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="Nombre Completo" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,5"/>
-                                <TextBox x:Name="txtNombreEstudiante" Style="{StaticResource ModernTextBox}"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Bottom">
+                                <Button x:Name="btnNuevoEstudiante" Content="Nuevo" Style="{StaticResource BotonRedondeado}" 
+                                        Background="#E3F2FD" Foreground="#1976D2" FontWeight="Bold" Padding="15,9" 
+                                        Click="BtnNuevoEstudiante_Click"/>
                             </StackPanel>
                         </Grid>
 
@@ -147,7 +151,7 @@
                                 <TextBlock Text="Moneda Base" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,5"/>
                                 <ComboBox x:Name="cmbMonedaRecibo" Style="{StaticResource ModernComboBox}">
                                     <ComboBoxItem Content="BS" IsSelected="True"/>
-                                    <ComboBoxItem Content="USD"/>
+                                    <ComboBoxItem Content="BCV"/>
                                     <ComboBoxItem Content="EUR"/>
                                     <ComboBoxItem Content="USDT"/>
                                 </ComboBox>
@@ -161,9 +165,12 @@
 
                         <Grid Margin="0,0,0,10">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1.5*"/>
                             </Grid.ColumnDefinitions>
+
+                            <!-- COLUMNA 0: MÉTODO -->
                             <StackPanel Grid.Column="0" Margin="0,0,5,0">
                                 <TextBlock Text="Método" FontSize="11" Foreground="#666"/>
                                 <ComboBox x:Name="cmbMetodoPago" Style="{StaticResource ModernComboBox}" Margin="0,2,0,0">
@@ -173,23 +180,25 @@
                                     <ComboBoxItem Content="Pago Móvil" Tag="5"/>
                                     <ComboBoxItem Content="Divisas (Físico)" Tag="8"/>
                                 </ComboBox>
-                              
                             </StackPanel>
+
+                            <!-- COLUMNA 1: MONEDA -->
                             <StackPanel Grid.Column="1" Margin="5,0,5,0">
                                 <TextBlock Text="Moneda" FontSize="11" Foreground="#666"/>
                                 <ComboBox x:Name="cmbMonedaDetalle" Style="{StaticResource ModernComboBox}" Margin="0,2,0,0">
                                     <ComboBoxItem Content="BS" IsSelected="True"/>
-                                    <ComboBoxItem Content="USD"/>
+                                    <ComboBoxItem Content="BCV"/>
                                     <ComboBoxItem Content="EUR"/>
                                     <ComboBoxItem Content="USDT"/>
                                 </ComboBox>
                             </StackPanel>
-                            <StackPanel Grid.Column="1" Margin="5,0,0,0">
+
+                            <!-- COLUMNA 2: MONTO -->
+                            <StackPanel Grid.Column="2" Margin="5,0,0,0">
                                 <TextBlock Text="Monto" FontSize="11" Foreground="#666"/>
                                 <TextBox x:Name="txtMontoDetalle" Style="{StaticResource ModernTextBox}" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Grid>
-
                         <StackPanel Margin="0,0,0,10">
                             <TextBlock Text="Referencia (opcional)" FontSize="11" Foreground="#666"/>
                             <Grid>

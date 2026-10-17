@@ -120,5 +120,34 @@ namespace CapaDatos
                 Observaciones = reader.IsDBNull(reader.GetOrdinal("Observaciones")) ? null : reader.GetString("Observaciones")
             };
         }
+        public List<PagoDetalle> ObtenerDetalles(int pagoId)
+        {
+            var lista = new List<PagoDetalle>();
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            using var cmd = new MySqlCommand(
+                "SELECT pd.*, mp.Nombre AS MetodoNombre " +
+                "FROM PagoDetalles pd " +
+                "JOIN MetodosPago mp ON pd.MetodoPagoId = mp.Id " +
+                "WHERE pd.PagoId = @pagoId", conn);
+            cmd.Parameters.AddWithValue("@pagoId", pagoId);
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                var detalle = new PagoDetalle(
+                    reader.GetInt32("PagoId"),
+                    reader.GetInt32("MetodoPagoId"),
+                    reader.GetDecimal("Monto"),
+                    reader.GetString("MonedaCodigo"),
+                    reader.GetDecimal("TasaCambio"),
+                    reader.GetDecimal("MontoEnVes"),
+                    reader.IsDBNull(reader.GetOrdinal("Referencia")) ? null : reader.GetString("Referencia")
+                );
+                detalle.Id = reader.GetInt32("Id");
+                detalle.MetodoNombre = reader.GetString("MetodoNombre"); // El nombre real ("Zelle", "Divisas")
+                lista.Add(detalle);
+            }
+            return lista;
+        }
     }
 }

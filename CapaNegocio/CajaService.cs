@@ -26,10 +26,19 @@ namespace CapaNegocio
                 throw new InvalidOperationException("Ya existe una caja abierta. Debe cerrarla primero.");
 
             string usuario = SesionService.Instancia.UsuarioActual?.Username ?? "Desconocido";
-            var caja = new Caja(usuario, saldoInicial, "VES");
+            var caja = new Caja(usuario, saldoInicial, "BS");
 
             _repository.AbrirCaja(caja);
-            _auditoria.Registrar("APERTURA", "Caja", null, null, $"Saldo Inicial: {saldoInicial} VES", true);
+            _auditoria.Registrar("APERTURA", "Caja", null, null, $"Saldo Inicial: {saldoInicial} BS", true);
+        }
+
+        // NUEVO: Obtener la lista de ingresos agrupados
+        public System.Collections.Generic.List<ArqueoItem> GenerarArqueo()
+        {
+            var caja = ObtenerCajaAbierta();
+            if (caja == null) throw new InvalidOperationException("No hay ninguna caja abierta.");
+
+            return _repository.ObtenerArqueoCaja(caja.FechaApertura);
         }
 
         public void CerrarCaja()
@@ -40,8 +49,7 @@ namespace CapaNegocio
 
             string usuario = SesionService.Instancia.UsuarioActual?.Username ?? "Desconocido";
 
-            // Nota: En una fase más avanzada se calculará el saldo exacto cruzando Pagos vs Devoluciones
-            // Por ahora, cerramos con el saldo declarado como 0 hasta implementar el arqueo.
+            // Cerramos la caja con 0 como saldo final temporal, ya que el desglose real queda en Pagos
             _repository.CerrarCaja(caja.Id, usuario, 0);
 
             _auditoria.Registrar("CIERRE", "Caja", caja.Id.ToString(), null, $"Caja Cerrada por {usuario}", true);

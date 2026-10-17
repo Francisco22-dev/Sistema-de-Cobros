@@ -18,6 +18,10 @@ namespace CapaNegocio
             _repository = new PagoRepository();
             _auditoria = new AuditorService();
         }
+        public List<PagoDetalle> ObtenerDetalles(int pagoId)
+        {
+            return _repository.ObtenerDetalles(pagoId);
+        }
 
         public List<Pago> ObtenerPagos(int limite = 100)
         {

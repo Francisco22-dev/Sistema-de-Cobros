@@ -25,6 +25,10 @@ namespace CapaNegocio
         {
             return _repository.ObtenerRecientes(limite);
         }
+        public List<InscripcionInfo> ObtenerInscripcionesActivas()
+        {
+            return _repository.ObtenerInscripcionesActivas();
+        }
 
         public void RegistrarInscripcion(string estudianteCedula, int grupoId, string? observaciones = null)
         {

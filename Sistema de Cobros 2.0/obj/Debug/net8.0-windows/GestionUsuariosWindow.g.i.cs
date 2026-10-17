@@ -132,7 +132,7 @@ namespace Sistema_de_Cobros_2._0 {
                 return;
             }
             _contentLoaded = true;
-            System.Uri resourceLocater = new System.Uri("/Sistema de Cobros 2.0;component/gestionusuarioswindow.xaml", System.UriKind.Relative);
+            System.Uri resourceLocater = new System.Uri("/Sistema de Cobros 2.0;V1.0.0.0;component/gestionusuarioswindow.xaml", System.UriKind.Relative);
             
             #line 1 "..\..\..\GestionUsuariosWindow.xaml"
             System.Windows.Application.LoadComponent(this, resourceLocater);

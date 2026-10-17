@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Globalization;
+using System.Windows;
 using CapaNegocio;
 
 namespace Sistema_de_Cobros_2._0
@@ -14,17 +15,23 @@ namespace Sistema_de_Cobros_2._0
 
         private void BtnGuardar_Click(object sender, RoutedEventArgs e)
         {
-            if (decimal.TryParse(txtUSD.Text.Replace(".", ","), out decimal usd) &&
-                decimal.TryParse(txtEUR.Text.Replace(".", ","), out decimal eur) &&
-                decimal.TryParse(txtUSDT.Text.Replace(".", ","), out decimal usdt))
+            var formatoEstricto = new System.Globalization.NumberFormatInfo
             {
-                _tasaService.FijarTasas(usd, eur, usdt);
+                NumberDecimalSeparator = ",",
+                NumberGroupSeparator = "."
+            };
+
+            if (decimal.TryParse(txtBCV.Text.Trim(), System.Globalization.NumberStyles.Number, formatoEstricto, out decimal bcv) &&
+                decimal.TryParse(txtEUR.Text.Trim(), System.Globalization.NumberStyles.Number, formatoEstricto, out decimal eur) &&
+                decimal.TryParse(txtUSDT.Text.Trim(), System.Globalization.NumberStyles.Number, formatoEstricto, out decimal usdt))
+            {
+                _tasaService.FijarTasas(bcv, eur, usdt);
                 AlertaWindow.MostrarExito("Tasas guardadas exitosamente.");
                 this.Close();
             }
             else
             {
-                AlertaWindow.MostrarAdvertencia("Por favor verifique que todos los campos tengan números válidos.");
+                AlertaWindow.MostrarAdvertencia("Por favor verifique que todos los campos tengan números válidos (Ej. 1.250,50).");
             }
         }
     }

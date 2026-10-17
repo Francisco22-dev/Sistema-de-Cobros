@@ -1,13 +1,11 @@
 namespace Entidades
 {
-    /// <summary>
-    /// Representa un detalle de pago (para pagos mixtos).
-    /// </summary>
     public class PagoDetalle
     {
         public int Id { get; set; }
         public int PagoId { get; set; }
         public int MetodoPagoId { get; set; }
+        public string? MetodoNombre { get; set; } // NUEVO: Para saber si fue Zelle, Efectivo, etc.
         public decimal Monto { get; set; }
         public string MonedaCodigo { get; set; } = string.Empty;
         public decimal TasaCambio { get; set; }
