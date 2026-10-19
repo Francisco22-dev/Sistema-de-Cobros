@@ -54,15 +54,15 @@ namespace Sistema_de_Cobros_2._0
             }
             catch (Exception ex)
             {
-                // Log del error real para diagnóstico
-                System.Diagnostics.Debug.WriteLine($"Error login: {ex}");
-                txtError.Text = "Error de conexión con la base de datos. Verifique su red e intente nuevamente.";
+                // Ahora mostrará la causa REAL del error en la pantalla si algo falla
+                txtError.Text = $"Error del sistema: {ex.Message}";
             }
             finally
             {
                 btnLogin.IsEnabled = true;
                 btnLogin.Content = "Iniciar Sesión";
             }
+           
         }
     }
 }

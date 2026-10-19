@@ -1,0 +1,133 @@
+﻿<Window x:Class="Sistema_de_Cobros_2._0.CursosWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Gestión de Cursos y Horarios" Height="650" Width="900"
+        WindowStartupLocation="CenterOwner" Background="#F5F5F5">
+
+    <Grid Margin="15">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1.2*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- LADO IZQUIERDO: CURSOS -->
+        <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="15" Margin="0,0,10,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Text="Cursos de la Academia" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                <DataGrid x:Name="dgCursos" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" SelectionChanged="DgCursos_SelectionChanged">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Cod" Binding="{Binding Codigo}" Width="60"/>
+                        <DataGridTextColumn Header="Nombre" Binding="{Binding Nombre}" Width="*"/>
+                        <DataGridTextColumn Header="$ Inscr." Binding="{Binding PrecioInscripcion}" Width="60"/>
+                        <DataGridTextColumn Header="$ Clase" Binding="{Binding PrecioMensualidad}" Width="60"/>
+                        <DataGridTextColumn Header="Activo" Binding="{Binding Activo}" Width="50"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <StackPanel Grid.Row="2" Margin="0,15,0,0">
+                    <TextBlock x:Name="txtAccionCurso" Text="Crear / Editar Curso" FontWeight="SemiBold" Foreground="#2196F3" Margin="0,0,0,10"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                            <TextBlock Text="Código" FontSize="11" Foreground="#666"/>
+                            <TextBox x:Name="txtCodigoCurso" Padding="5" BorderBrush="#ccc" BorderThickness="1" Margin="0,0,0,5"/>
+                            <TextBlock Text="Duración (Meses)" FontSize="11" Foreground="#666"/>
+                            <TextBox x:Name="txtMeses" Padding="5" BorderBrush="#ccc" BorderThickness="1" Margin="0,0,0,5"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                            <TextBlock Text="Nombre Curso" FontSize="11" Foreground="#666"/>
+                            <TextBox x:Name="txtNombreCurso" Padding="5" BorderBrush="#ccc" BorderThickness="1" Margin="0,0,0,5"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Margin="0,0,2,0">
+                                    <TextBlock Text="$ Inscripción" FontSize="11" Foreground="#666"/>
+                                    <TextBox x:Name="txtPrecioInsc" Padding="5"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="2,0,0,0">
+                                    <TextBlock Text="$ Por Clase" FontSize="11" Foreground="#666"/>
+                                    <TextBox x:Name="txtPrecioClase" Padding="5"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <Button x:Name="btnGuardarCurso" Content="Guardar Curso" Background="#2196F3" Foreground="White" Padding="10,5" BorderThickness="0" Cursor="Hand" Click="BtnGuardarCurso_Click"/>
+                        <Button x:Name="btnLimpiarCurso" Content="Limpiar" Background="Transparent" Foreground="#666" Padding="10,5" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0" Click="BtnLimpiarCurso_Click"/>
+                        <Button x:Name="btnActivarCurso" Content="Desactivar" Background="#F44336" Foreground="White" Padding="10,5" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0" Visibility="Collapsed" Click="BtnActivarCurso_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- LADO DERECHO: HORARIOS (GRUPOS) -->
+        <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="15" Margin="10,0,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock x:Name="txtTituloHorarios" Text="Seleccione un Curso..." FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+
+                <DataGrid x:Name="dgHorarios" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Cód. Auto" Binding="{Binding Codigo}" Width="100"/>
+                        <DataGridTextColumn Header="Horario Asignado" Binding="{Binding Nombre}" Width="*"/>
+                        <DataGridTextColumn Header="Inicia" Binding="{Binding FechaInicio, StringFormat=dd/MM/yyyy}" Width="80"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <StackPanel Grid.Row="2" Margin="0,15,0,0" IsEnabled="False" x:Name="panelHorarios">
+                    <TextBlock Text="Agregar Horario al Curso" FontWeight="SemiBold" Foreground="#4CAF50" Margin="0,0,0,10"/>
+
+                    <TextBlock Text="Días de Clase (Ej. Sábados)" FontSize="11" Foreground="#666"/>
+                    <ComboBox x:Name="cmbDias" Padding="5" Margin="0,0,0,5">
+                        <ComboBoxItem Content="Lunes"/>
+                        <ComboBoxItem Content="Martes"/>
+                        <ComboBoxItem Content="Miércoles"/>
+                        <ComboBoxItem Content="Jueves"/>
+                        <ComboBoxItem Content="Viernes"/>
+                        <ComboBoxItem Content="Sábados" IsSelected="True"/>
+                        <ComboBoxItem Content="Domingos"/>
+                        <ComboBoxItem Content="Lunes y Miércoles"/>
+                        <ComboBoxItem Content="Martes y Jueves"/>
+                    </ComboBox>
+
+                    <Grid Margin="0,0,0,5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                            <TextBlock Text="Desde (Hora)" FontSize="11" Foreground="#666"/>
+                            <TextBox x:Name="txtHoraInicio" Text="08:00 AM" Padding="5"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                            <TextBlock Text="Hasta (Hora)" FontSize="11" Foreground="#666"/>
+                            <TextBox x:Name="txtHoraFin" Text="12:00 PM" Padding="5"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="Fecha Oficial de Inicio" FontSize="11" Foreground="#666"/>
+                    <DatePicker x:Name="dpFechaInicio" Margin="0,0,0,15"/>
+
+                    <Button Content="Agregar Horario (Grupo)" Background="#4CAF50" Foreground="White" Padding="10,8" BorderThickness="0" Cursor="Hand" Click="BtnAgregarHorario_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

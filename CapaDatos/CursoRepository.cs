@@ -13,7 +13,7 @@ namespace CapaDatos
         {
             var lista = new List<Curso>();
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            using var cmd = new MySqlCommand("SELECT * FROM Cursos WHERE Activo = TRUE ORDER BY Nombre", conn);
+            using var cmd = new MySqlCommand("SELECT * FROM Cursos ORDER BY Nombre", conn);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {

@@ -15,7 +15,7 @@
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button Content="Cancelar" Padding="15,8" Background="Transparent" BorderThickness="0" Cursor="Hand" Click="BtnCancelar_Click"/>
-                <Button Content="Confirmar Devolución" Padding="15,8" Background="#F44336" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0" Click="BtnConfirmar_Click"/>
+                <Button Content="Confirmar Devolución" IsDefault="True" Padding="15,8" Background="#F44336" Foreground="White" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0" Click="BtnConfirmar_Click"/>
             </StackPanel>
         </StackPanel>
     </Border>

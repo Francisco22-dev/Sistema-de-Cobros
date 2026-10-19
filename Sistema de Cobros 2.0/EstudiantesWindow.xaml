@@ -1,24 +1,38 @@
 ﻿<Window x:Class="Sistema_de_Cobros_2._0.EstudiantesWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Gestión de Estudiantes" Height="400" Width="400"
+        Title="Gestión de Estudiantes" Height="500" Width="400"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize" Background="#F5F5F5">
-
+<Grid Margin="20">
     <Border Background="White" CornerRadius="8" Padding="20" Margin="10">
         <StackPanel>
-            <TextBlock Text="Registrar Nuevo Estudiante" FontSize="18" FontWeight="Bold" Margin="0,0,0,5"/>
-            <TextBlock Text="El estudiante será inscrito automáticamente en el curso activo." Foreground="#666" FontSize="12" Margin="0,0,0,15"/>
+            <TextBlock Text="Registrar e Inscribir" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
 
-            <TextBlock Text="Cédula" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,5"/>
-            <TextBox x:Name="txtCedula" Padding="8" FontSize="14" BorderBrush="#ccc" BorderThickness="1" Margin="0,0,0,10"/>
+            <TextBlock Text="Cédula" FontSize="12" FontWeight="SemiBold" Foreground="#666"/>
+            <TextBox x:Name="txtCedula" Padding="8" FontSize="14" BorderBrush="#ccc" BorderThickness="1" Margin="0,2,0,10"/>
 
-            <TextBlock Text="Nombre Completo" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,5"/>
-            <TextBox x:Name="txtNombre" Padding="8" FontSize="14" BorderBrush="#ccc" BorderThickness="1" Margin="0,0,0,10"/>
+            <TextBlock Text="Nombre Completo" FontSize="12" FontWeight="SemiBold" Foreground="#666"/>
+            <TextBox x:Name="txtNombre" Padding="8" FontSize="14" BorderBrush="#ccc" BorderThickness="1" Margin="0,2,0,10"/>
 
-            <TextBlock Text="Teléfono" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,5"/>
-            <TextBox x:Name="txtTelefono" Padding="8" FontSize="14" BorderBrush="#ccc" BorderThickness="1" Margin="0,0,0,20"/>
+            <Grid Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                    <TextBlock Text="Teléfono" FontSize="12" FontWeight="SemiBold" Foreground="#666"/>
+                    <TextBox x:Name="txtTelefono" Padding="8" FontSize="14" BorderBrush="#ccc" BorderThickness="1" Margin="0,2,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                    <TextBlock Text="Correo Electrónico" FontSize="12" FontWeight="SemiBold" Foreground="#666"/>
+                    <TextBox x:Name="txtEmail" Padding="8" FontSize="14" BorderBrush="#ccc" BorderThickness="1" Margin="0,2,0,0"/>
+                </StackPanel>
+            </Grid>
 
-            <Button Content="Registrar e Inscribir" Background="#2196F3" Foreground="White" BorderThickness="0" Padding="15,10" Cursor="Hand" Click="BtnGuardar_Click">
+            <TextBlock Text="Seleccione Curso y Horario" FontSize="12" FontWeight="SemiBold" Foreground="#2196F3" Margin="0,10,0,5"/>
+            <ComboBox x:Name="cmbGrupos" Padding="8" FontSize="14" BorderBrush="#ccc" DisplayMemberPath="Display" SelectedValuePath="Id" Margin="0,0,0,20"/>
+
+            <Button IsDefault="True" Content="Finalizar Inscripción" Background="#2196F3" Foreground="White" BorderThickness="0" Padding="15,10" Cursor="Hand" Click="BtnGuardar_Click">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
@@ -29,4 +43,5 @@
             </Button>
         </StackPanel>
     </Border>
+    </Grid>
 </Window>

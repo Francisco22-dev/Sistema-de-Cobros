@@ -53,6 +53,7 @@ namespace Sistema_de_Cobros_2._0
                 btnConfigurarTasa.Visibility = Visibility.Visible;
                 btnGestionUsuarios.Visibility = Visibility.Visible;
                 btnAuditoria.Visibility = Visibility.Visible;
+                btnCursos.Visibility = Visibility.Visible;
             }
 
             ActualizarVistaTasa();
@@ -123,7 +124,11 @@ namespace Sistema_de_Cobros_2._0
 
         private void ActualizarTotalHoy()
         {
-            txtTotalHoy.Text = $"Bs. {_pagoService.ObtenerTotalHoy():N2}";
+            var caja = _cajaService.ObtenerCajaAbierta();
+            if (caja != null)
+            {
+                txtTotalHoy.Text = $"Bs. {_pagoService.ObtenerTotalHoy(caja.FechaApertura):N2}";
+            }
         }
 
         private void ActualizarHistorial()
@@ -350,12 +355,21 @@ namespace Sistema_de_Cobros_2._0
                 }
             }
         }
+        private void TxtBuscarPago_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            // Busca automáticamente a medida que el usuario escribe
+            dgHistorial.ItemsSource = _pagoService.ObtenerPagos(100, txtBuscarPago.Text.Trim());
+        }
 
         // --- OTROS MÓDULOS ---
 
         private void BtnGestionUsuarios_Click(object sender, RoutedEventArgs e)
         {
             new GestionUsuariosWindow().ShowDialog();
+        }
+        private void BtnCursos_Click(object sender, RoutedEventArgs e)
+        {
+            new CursosWindow { Owner = this }.ShowDialog();
         }
 
         private void BtnAuditoria_Click(object sender, RoutedEventArgs e)

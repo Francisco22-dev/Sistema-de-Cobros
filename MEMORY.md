@@ -37,6 +37,10 @@ aporte.
 - Multimoneda: El sistema exige cargar la tasa USD/VES diariamente en la tabla `TasasCambio` al abrir la app.
 - Pagos Mixtos: El usuario puede seleccionar la moneda base de la factura (VES o USD) y agregar a un DataGrid múltiples métodos de pago (Efectivo + Zelle) que se suman solos, insertando múltiples registros a `PagoDetalles`.
 - Arqueo de Caja (Fase 8): El cierre de caja ya no es directo. Al pulsar "Cerrar Caja" se invoca un arqueo que cruza la tabla `Pagos` y `PagoDetalles` para mostrarle al cajero exactamente cuánto debe tener por cada Método y Moneda antes de irse.
+- Se registrará que el modelo de negocio es por "Clase Semanal".
+- Se documentará que el cálculo de ObtenerTotalHoy() depende de la Caja.FechaApertura activa y no del día calendario del reloj, para prevenir descuadres en turnos nocturnos o cierres tardíos.
+- Módulo Cursos/Grupos: Se reemplaza el formulario básico por una vista Maestro-Detalle. Los "Horarios" del mundo real se mapean directamente a la tabla Grupos concatenando día y horas en el campo Nombre.
+- Módulo Estudiantes: Se integra la selección real del Grupo durante la creación, vinculando definitivamente el flujo de inscripción con el cobro.
 
 ## Aprendizajes y errores a evitar
 - `dotnet build` funciona (SDK-style). Antes fallaba con .NET Framework 4.8.

@@ -47,3 +47,5 @@ C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\EstudiantesWindow.g.cs
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\CierreCajaWindow.baml
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\CierreCajaWindow.g.cs
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\CursosWindow.baml
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Debug\net8.0-windows\CursosWindow.g.cs

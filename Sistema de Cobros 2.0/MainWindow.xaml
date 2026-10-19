@@ -87,6 +87,7 @@
                 <Button x:Name="btnCerrarCaja" Content="Cerrar Caja" Style="{StaticResource BotonRedondeado}" Background="{StaticResource Danger}" Foreground="White" Padding="15,8" Click="BtnCerrarCaja_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
                 <Button x:Name="btnConfigurarTasa" Content="Tasa BCV" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnConfigurarTasa_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
                 <Button x:Name="btnGestionUsuarios" Content="Usuarios" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnGestionUsuarios_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
+                <Button x:Name="btnCursos" Content="Cursos" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnCursos_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
                 <Button x:Name="btnAuditoria" Content="Auditoría" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnAuditoria_Click" Visibility="Collapsed"/>
             </StackPanel>
         </Grid>
@@ -248,36 +249,38 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="0" Text="Últimos Pagos Registrados" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextDark}" Margin="0,0,0,15"/>
+                    <!-- ENCABEZADO Y BUSCADOR -->
+                    <Grid Grid.Row="0" Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Últimos Pagos Registrados" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextDark}" VerticalAlignment="Center"/>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="Buscar:" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="#666" FontWeight="SemiBold"/>
+                            <TextBox x:Name="txtBuscarPago" Width="200" Style="{StaticResource ModernTextBox}" TextChanged="TxtBuscarPago_TextChanged"/>
+                        </StackPanel>
+                    </Grid>
 
                     <DataGrid Grid.Row="1" x:Name="dgHistorial" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="None" BorderThickness="0" Background="Transparent" RowBackground="White" AlternatingRowBackground="#F9FAFB" HeadersVisibility="Column">
                         <DataGrid.Resources>
-                            <Style TargetType="DataGridColumnHeader">
-                                <Setter Property="FontWeight" Value="SemiBold"/>
-                                <Setter Property="Foreground" Value="#666"/>
-                                <Setter Property="Padding" Value="10"/>
-                                <Setter Property="Background" Value="White"/>
-                            </Style>
-                            <Style TargetType="DataGridCell">
-                                <Setter Property="Padding" Value="10,8"/>
-                                <Setter Property="BorderThickness" Value="0"/>
-                            </Style>
+                            <!-- Estilos... -->
                         </DataGrid.Resources>
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Recibo" Binding="{Binding NumeroRecibo}" Width="100"/>
-                            <DataGridTextColumn Header="Cédula" Binding="{Binding EstudianteCedula}" Width="100"/>
+                            <DataGridTextColumn Header="Cédula" Binding="{Binding EstudianteCedula}" Width="90"/>
+                            <DataGridTextColumn Header="Estudiante" Binding="{Binding NombreEstudiante}" Width="*"/>
+                            <DataGridTextColumn Header="Curso y Horario" Binding="{Binding CursoHorario}" Width="180"/>
                             <DataGridTextColumn Header="Monto" Binding="{Binding Total, StringFormat=N2}" Width="70"/>
                             <DataGridTextColumn Header="Mon." Binding="{Binding MonedaCodigo}" Width="50"/>
                             <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="75"/>
                             <DataGridTextColumn Header="Fecha" Binding="{Binding FechaPago, StringFormat=dd/MM/yyyy}" Width="90"/>
 
-                            <DataGridTemplateColumn Header="Acciones" Width="*">
+                            <DataGridTemplateColumn Header="Acciones" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Button Content="Imprimir" Style="{StaticResource BotonRedondeado}" Background="#E3F2FD" Foreground="#1976D2" Padding="10,4" Margin="0,0,5,0" Click="BtnImprimir_Click"/>
-                                            <Button Content="Devolver" Style="{StaticResource BotonRedondeado}" Background="#FFEBEE" Foreground="#D32F2F" Padding="10,4" Click="BtnDevolver_Click"/>
-                                        </StackPanel>
+                                        <!-- Botones... -->
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

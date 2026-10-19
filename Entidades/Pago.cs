@@ -2,9 +2,6 @@ using System;
 
 namespace Entidades
 {
-    /// <summary>
-    /// Representa un pago registrado en el sistema.
-    /// </summary>
     public class Pago
     {
         public int Id { get; set; }
@@ -21,6 +18,12 @@ namespace Entidades
         public string Estado { get; set; } = "Vigente";
         public string? Observaciones { get; set; }
 
+        // Propiedades de UI (Traídas por los JOINs)
+        public string NombreEstudiante { get; set; } = string.Empty;
+        public string CursoHorario { get; set; } = string.Empty;
+
+        public Pago() { }
+
         public Pago(string numeroRecibo, string estudianteCedula, int inscripcionId, int conceptoId,
             decimal total, string monedaCodigo, string usuarioRegistra, DateTime fechaVencimiento)
         {
@@ -34,7 +37,5 @@ namespace Entidades
             FechaPago = DateTime.Now;
             FechaVencimiento = fechaVencimiento;
         }
-
-        public Pago() { }
     }
 }

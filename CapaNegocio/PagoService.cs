@@ -5,9 +5,6 @@ using Entidades;
 
 namespace CapaNegocio
 {
-    /// <summary>
-    /// Servicio de negocio para la gestión de pagos con transacciones y auditoría.
-    /// </summary>
     public class PagoService
     {
         private readonly PagoRepository _repository;
@@ -18,14 +15,15 @@ namespace CapaNegocio
             _repository = new PagoRepository();
             _auditoria = new AuditorService();
         }
+
         public List<PagoDetalle> ObtenerDetalles(int pagoId)
         {
             return _repository.ObtenerDetalles(pagoId);
         }
 
-        public List<Pago> ObtenerPagos(int limite = 100)
+        public List<Pago> ObtenerPagos(int limite = 100, string filtro = "")
         {
-            return _repository.ObtenerRecientes(limite);
+            return _repository.ObtenerRecientes(limite, filtro);
         }
 
         public void RegistrarPago(string numeroRecibo, string estudianteCedula, int inscripcionId,
@@ -34,10 +32,17 @@ namespace CapaNegocio
         {
             try
             {
+                // CORRECCIÓN: Sumar el equivalente exacto en BS a partir de los detalles
+                decimal sumaBs = 0;
+                foreach (var d in detalles) sumaBs += d.MontoEnVes;
+
                 var pago = new Pago(numeroRecibo, estudianteCedula, inscripcionId, conceptoId,
                     total, monedaCodigo,
                     SesionService.Instancia.UsuarioActual?.Username ?? "desconocido",
-                    fechaVencimiento);
+                    fechaVencimiento)
+                {
+                    TotalEnVes = sumaBs // AQUÍ ESTÁ LA MAGIA: Ahora sí enviamos el total en BS a la BD
+                };
 
                 _repository.Agregar(pago, detalles);
 
@@ -52,9 +57,9 @@ namespace CapaNegocio
             }
         }
 
-        public decimal ObtenerTotalHoy()
+        public decimal ObtenerTotalHoy(DateTime fechaAperturaCaja)
         {
-            return _repository.ObtenerTotalHoy();
+            return _repository.ObtenerTotalHoy(fechaAperturaCaja);
         }
     }
 }

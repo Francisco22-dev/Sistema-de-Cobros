@@ -46,10 +46,11 @@ namespace CapaDatos
             var lista = new List<InscripcionInfo>();
             using var conn = DatabaseConnection.AbrirConexionConReintento();
             using var cmd = new MySqlCommand(
-                "SELECT i.Id AS InscripcionId, e.Cedula, e.NombreCompleto, g.Codigo AS GrupoCodigo " +
+                "SELECT i.Id AS InscripcionId, e.Cedula, e.NombreCompleto, c.Nombre AS CursoNombre, g.Nombre AS GrupoNombre " +
                 "FROM Inscripciones i " +
                 "JOIN Estudiantes e ON i.EstudianteCedula = e.Cedula " +
                 "JOIN Grupos g ON i.GrupoId = g.Id " +
+                "JOIN Cursos c ON g.CursoCodigo = c.Codigo " +
                 "WHERE i.Estado = 'Activa'", conn);
 
             using var reader = cmd.ExecuteReader();
@@ -60,7 +61,10 @@ namespace CapaDatos
                     InscripcionId = reader.GetInt32("InscripcionId"),
                     Cedula = reader.GetString("Cedula"),
                     NombreCompleto = reader.GetString("NombreCompleto"),
-                    GrupoCodigo = reader.GetString("GrupoCodigo")
+                    CursoNombre = reader.GetString("CursoNombre"),
+
+                    // AQUÍ ESTABA EL DETALLE: Lo protegemos contra grupos sin nombre (datos de prueba)
+                    GrupoNombre = reader.IsDBNull(reader.GetOrdinal("GrupoNombre")) ? "Sin horario" : reader.GetString("GrupoNombre")
                 });
             }
             return lista;
