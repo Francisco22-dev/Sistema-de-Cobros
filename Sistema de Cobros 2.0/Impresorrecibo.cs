@@ -1,8 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Printing;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using Microsoft.Win32;
 using Entidades;
 
 namespace Sistema_de_Cobros_2._0
@@ -11,17 +16,16 @@ namespace Sistema_de_Cobros_2._0
     {
         public static void Imprimir(Pago pago, string nombreEstudiante, string nombreConcepto, List<PagoDetalle> detalles)
         {
-            PrintDialog printDialog = new PrintDialog();
-
-            if (printDialog.ShowDialog() == true)
+            try
             {
                 FlowDocument doc = new FlowDocument
                 {
-                    PageWidth = 302,
+                    PageWidth = 302, // Ancho exacto de impresora térmica 80mm
                     PagePadding = new Thickness(10),
                     FontFamily = new FontFamily("Consolas"),
                     FontSize = 12,
-                    TextAlignment = TextAlignment.Center
+                    TextAlignment = TextAlignment.Center,
+                    ColumnWidth = 302
                 };
 
                 doc.Blocks.Add(new Paragraph(new Run("CEVENCA")) { FontWeight = FontWeights.Bold, FontSize = 16 });
@@ -37,7 +41,6 @@ namespace Sistema_de_Cobros_2._0
                 cuerpo.Inlines.Add(new Run($"Concepto: {nombreConcepto}\n"));
                 cuerpo.Inlines.Add(new Run(new string('-', 32) + "\n"));
 
-                // NUEVO: DESGLOSE DE PAGOS EN SU MONEDA REAL
                 cuerpo.Inlines.Add(new Run("DETALLE DE ABONOS:\n") { FontWeight = FontWeights.Bold });
                 foreach (var d in detalles)
                 {
@@ -53,7 +56,75 @@ namespace Sistema_de_Cobros_2._0
 
                 doc.Blocks.Add(new Paragraph(new Run("¡Gracias por su pago!\nConserve este recibo para cualquier reclamo.")) { FontSize = 10, FontStyle = FontStyles.Italic });
 
-                printDialog.PrintDocument(((IDocumentPaginatorSource)doc).DocumentPaginator, $"Recibo {pago.NumeroRecibo}");
+                // 1. GUARDADO DE IMAGEN (DIGITAL)
+                SaveFileDialog saveDialog = new SaveFileDialog
+                {
+                    Title = "Guardar Copia Digital del Recibo",
+                    FileName = pago.NumeroRecibo, // Nombre por defecto
+                    DefaultExt = ".png",
+                    Filter = "Imagen PNG (*.png)|*.png"
+                };
+
+                if (saveDialog.ShowDialog() == true)
+                {
+                    IDocumentPaginatorSource idpSourceImg = doc;
+                    var paginatorImg = idpSourceImg.DocumentPaginator;
+                    // Forzamos un alto fijo suficiente para la imagen digital
+                    paginatorImg.PageSize = new Size(302, 700);
+
+                    DocumentPage page = paginatorImg.GetPage(0);
+
+                    // Creamos un lienzo visual con fondo blanco (para que no quede transparente/negro)
+                    DrawingVisual visual = new DrawingVisual();
+                    using (DrawingContext dc = visual.RenderOpen())
+                    {
+                        dc.DrawRectangle(Brushes.White, null, new Rect(page.Size));
+                        dc.DrawRectangle(new VisualBrush(page.Visual), null, new Rect(page.Size));
+                    }
+
+                    RenderTargetBitmap rtb = new RenderTargetBitmap((int)page.Size.Width * 2, (int)page.Size.Height * 2, 192, 192, PixelFormats.Pbgra32);
+                    rtb.Render(visual);
+
+                    PngBitmapEncoder encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(BitmapFrame.Create(rtb));
+
+                    using (var fs = System.IO.File.Create(saveDialog.FileName))
+                    {
+                        encoder.Save(fs);
+                    }
+                }
+
+                // 2. IMPRESIÓN FÍSICA SILENCIOSA A LA TÉRMICA (POS-80)
+                PrintDialog printDialog = new PrintDialog();
+                try
+                {
+                    var printServer = new LocalPrintServer();
+                    // Buscar una impresora instalada cuyo nombre contenga "POS-80"
+                    var posPrinter = printServer.GetPrintQueues().FirstOrDefault(q => q.Name.IndexOf("POS-80", StringComparison.OrdinalIgnoreCase) >= 0);
+
+                    if (posPrinter != null)
+                    {
+                        printDialog.PrintQueue = posPrinter;
+                    }
+
+                    // Altura infinita para que el rollo térmico corte donde termina el texto
+                    IDocumentPaginatorSource idpSourcePrint = doc;
+                    var paginatorPrint = idpSourcePrint.DocumentPaginator;
+                    paginatorPrint.PageSize = new Size(302, 3000);
+
+                    printDialog.PrintDocument(paginatorPrint, $"Recibo {pago.NumeroRecibo}");
+                }
+                catch
+                {
+                    // Si no tiene permisos de servidor de impresión, usamos la impresora por defecto de Windows
+                    IDocumentPaginatorSource idpFallback = doc;
+                    idpFallback.DocumentPaginator.PageSize = new Size(302, 3000);
+                    printDialog.PrintDocument(idpFallback.DocumentPaginator, $"Recibo {pago.NumeroRecibo}");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error al generar el recibo.\nDetalle: " + ex.Message, "Error de Impresora", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
     }

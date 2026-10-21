@@ -285,11 +285,18 @@ namespace Sistema_de_Cobros_2._0
                 ValidarEstadoCaja();
                 ActualizarHistorial();
 
-                if (AlertaWindow.SolicitarConfirmacion("Pago registrado exitosamente.\n\n¿Desea imprimir el recibo?", "Imprimir Factura"))
+                // NOMBRES DE LOS MÉTODOS PARA EL RECIBO
+                foreach (var d in listaBd)
                 {
-                    var pagoTemp = new Pago(numeroRecibo, cedula, inscripcionId, conceptoId, totalFacturaConvertida, monedaFactura, SesionService.Instancia.UsuarioActual?.Username ?? "Cajero", DateTime.Now) { FechaPago = DateTime.Now };
-                    ImpresorRecibo.Imprimir(pagoTemp, nombre, ((ComboBoxItem)cmbConcepto.SelectedItem).Content.ToString()!, listaBd);
+                    d.MetodoNombre = _listaDetalles.First(x => x.MetodoId == d.MetodoPagoId).MetodoNombre;
                 }
+
+                // IMPRESIÓN Y GUARDADO DIRECTO (Sin preguntar)
+                var pagoTemp = new Pago(numeroRecibo, cedula, inscripcionId, conceptoId, totalFacturaConvertida, monedaFactura, SesionService.Instancia.UsuarioActual?.Username ?? "Cajero", DateTime.Now) { FechaPago = DateTime.Now };
+                ImpresorRecibo.Imprimir(pagoTemp, nombre, ((ComboBoxItem)cmbConcepto.SelectedItem).Content.ToString()!, listaBd);
+
+                // Solo mostramos éxito al final
+                AlertaWindow.MostrarExito("Factura procesada con éxito.");
 
                 cmbEstudiante.SelectedIndex = -1; // Limpiar buscador
                 _listaDetalles.Clear();
@@ -375,6 +382,15 @@ namespace Sistema_de_Cobros_2._0
         private void BtnAuditoria_Click(object sender, RoutedEventArgs e)
         {
             new AuditoriaWindow().ShowDialog();
+        }
+        private void BtnMorosos_Click(object sender, RoutedEventArgs e)
+        {
+            new MorosidadWindow { Owner = this }.ShowDialog();
+        }
+
+        private void BtnCalendario_Click(object sender, RoutedEventArgs e)
+        {
+            new CalendarioWindow { Owner = this }.ShowDialog();
         }
     }
 }

@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Sistema de Cobros 2.0" Height="700" Width="1100"
-        WindowStartupLocation="CenterScreen" Background="#F0F2F5">
+        WindowState="Maximized" Background="#F0F2F5">
 
     <Window.Resources>
         <SolidColorBrush x:Key="Primary" Color="#2196F3"/>
@@ -83,6 +83,8 @@
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button x:Name="btnMorosos" Content="Morosidad" Style="{StaticResource BotonRedondeado}" Background="#FFEBEE" Foreground="#D32F2F" BorderThickness="0" Padding="15,8" Click="BtnMorosos_Click" Margin="0,0,10,0"/>
+                <Button x:Name="btnCalendario" Content="Calendario" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnCalendario_Click" Margin="0,0,10,0"/>
                 <Button x:Name="btnAbrirCaja" Content="Abrir Caja" Style="{StaticResource BotonRedondeado}" Background="{StaticResource Success}" Foreground="White" Padding="15,8" Click="BtnAbrirCaja_Click" Margin="0,0,10,0"/>
                 <Button x:Name="btnCerrarCaja" Content="Cerrar Caja" Style="{StaticResource BotonRedondeado}" Background="{StaticResource Danger}" Foreground="White" Padding="15,8" Click="BtnCerrarCaja_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
                 <Button x:Name="btnConfigurarTasa" Content="Tasa BCV" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnConfigurarTasa_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
@@ -144,8 +146,12 @@
                             <StackPanel Grid.Column="0" Margin="0,0,10,0">
                                 <TextBlock Text="Concepto de Pago" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,5"/>
                                 <ComboBox x:Name="cmbConcepto" Style="{StaticResource ModernComboBox}">
-                                    <ComboBoxItem Content="Inscripción" Tag="1" IsSelected="True"/>
+                                    <ComboBoxItem Content="Semana (Clase)" Tag="3" IsSelected="True"/>
                                     <ComboBoxItem Content="Mensualidad" Tag="2"/>
+                                    <ComboBoxItem Content="Inscripción" Tag="1"/>
+                                    <ComboBoxItem Content="Material Didáctico" Tag="4"/>
+                                    <ComboBoxItem Content="Certificación" Tag="5"/>
+                                    <ComboBoxItem Content="Otro" Tag="6"/>
                                 </ComboBox>
                             </StackPanel>
                             <StackPanel Grid.Column="1">

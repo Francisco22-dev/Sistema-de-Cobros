@@ -26,10 +26,10 @@ namespace CapaNegocio
                 throw new InvalidOperationException("Ya existe una caja abierta. Debe cerrarla primero.");
 
             string usuario = SesionService.Instancia.UsuarioActual?.Username ?? "Desconocido";
-            var caja = new Caja(usuario, saldoInicial, "BS");
+            var caja = new Caja(usuario, saldoInicial, "USD");
 
             _repository.AbrirCaja(caja);
-            _auditoria.Registrar("APERTURA", "Caja", null, null, $"Saldo Inicial: {saldoInicial} BS", true);
+            _auditoria.Registrar("APERTURA", "Caja", null, null, $"Saldo Inicial: {saldoInicial} USD", true);
         }
 
         // NUEVO: Obtener la lista de ingresos agrupados

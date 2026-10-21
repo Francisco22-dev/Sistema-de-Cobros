@@ -8,7 +8,7 @@
     <Border Background="White" CornerRadius="8" Padding="20" Margin="10">
         <StackPanel>
             <TextBlock Text="Apertura de Caja" FontSize="18" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
-            <TextBlock Text="Indique el monto de dinero físico (fondo o base) con el que inicia la caja hoy:" 
+                <TextBlock Text="Indique el monto de dinero físico (fondo o base) en DÓLARES con el que inicia la caja hoy" 
                        TextWrapping="Wrap" Foreground="#666" FontSize="12" Margin="0,0,0,15"/>
 
             <TextBox x:Name="txtSaldoInicial" Padding="10" FontSize="16" BorderBrush="#ccc" BorderThickness="1" Text="0.00" Margin="0,0,0,20"/>
