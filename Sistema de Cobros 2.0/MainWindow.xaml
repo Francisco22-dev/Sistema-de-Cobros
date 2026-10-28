@@ -87,6 +87,7 @@
                 <Button x:Name="btnCalendario" Content="Calendario" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnCalendario_Click" Margin="0,0,10,0"/>
                 <Button x:Name="btnAbrirCaja" Content="Abrir Caja" Style="{StaticResource BotonRedondeado}" Background="{StaticResource Success}" Foreground="White" Padding="15,8" Click="BtnAbrirCaja_Click" Margin="0,0,10,0"/>
                 <Button x:Name="btnCerrarCaja" Content="Cerrar Caja" Style="{StaticResource BotonRedondeado}" Background="{StaticResource Danger}" Foreground="White" Padding="15,8" Click="BtnCerrarCaja_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
+                <Button x:Name="btnFlujoCaja" Content="Flujo de Caja (Egresos)" Style="{StaticResource BotonRedondeado}" Background="#FF9800" Foreground="White" BorderThickness="0" Padding="15,8" Click="BtnFlujoCaja_Click" Margin="0,0,10,0"/>
                 <Button x:Name="btnConfigurarTasa" Content="Tasa BCV" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnConfigurarTasa_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
                 <Button x:Name="btnGestionUsuarios" Content="Usuarios" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnGestionUsuarios_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
                 <Button x:Name="btnCursos" Content="Cursos" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnCursos_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
@@ -111,8 +112,22 @@
                         <!-- CAJA ESTADO -->
                         <Border x:Name="bdrEstadoCaja" Background="{StaticResource Success}" CornerRadius="6" Padding="15" Margin="0,0,0,20">
                             <StackPanel>
-                                <TextBlock Text="Total Recaudado Hoy" Foreground="White" FontSize="12" Opacity="0.9"/>
-                                <TextBlock x:Name="txtTotalHoy" Text="Bs. 0.00" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="Saldo Disponible (Neto)" Foreground="White" FontSize="12" Opacity="0.9" VerticalAlignment="Center"/>
+
+                                    <!-- Selector de moneda para visualizar el Saldo -->
+                                    <ComboBox x:Name="cmbMonedaSaldo" Grid.Column="1" FontSize="11" Padding="5,2" SelectionChanged="CmbMonedaSaldo_SelectionChanged">
+                                        <ComboBoxItem Content="BS" IsSelected="True"/>
+                                        <ComboBoxItem Content="BCV (Dólares)"/>
+                                        <ComboBoxItem Content="EUR"/>
+                                        <ComboBoxItem Content="USDT"/>
+                                    </ComboBox>
+                                </Grid>
+                                <TextBlock x:Name="txtTotalHoy" Text="Bs. 0.00" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,5,0,0"/>
                             </StackPanel>
                         </Border>
 

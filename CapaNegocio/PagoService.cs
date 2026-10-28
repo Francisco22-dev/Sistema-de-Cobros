@@ -26,22 +26,30 @@ namespace CapaNegocio
             return _repository.ObtenerRecientes(limite, filtro);
         }
 
+        public decimal ObtenerIngresosTotalesUSD()
+        {
+            return _repository.ObtenerIngresosTotalesUSD();
+        }
+
+        public decimal ObtenerTotalHoy(DateTime fechaAperturaCaja)
+        {
+            return _repository.ObtenerTotalHoy(fechaAperturaCaja);
+        }
+
         public void RegistrarPago(string numeroRecibo, string estudianteCedula, int inscripcionId,
-            int conceptoId, decimal total, string monedaCodigo, DateTime fechaVencimiento,
+            int conceptoId, decimal total, decimal totalEnUsd, string monedaCodigo, DateTime fechaVencimiento,
             List<PagoDetalle> detalles)
         {
             try
             {
-                // CORRECCIÓN: Sumar el equivalente exacto en BS a partir de los detalles
                 decimal sumaBs = 0;
                 foreach (var d in detalles) sumaBs += d.MontoEnVes;
 
                 var pago = new Pago(numeroRecibo, estudianteCedula, inscripcionId, conceptoId,
-                    total, monedaCodigo,
-                    SesionService.Instancia.UsuarioActual?.Username ?? "desconocido",
-                    fechaVencimiento)
+                    total, monedaCodigo, SesionService.Instancia.UsuarioActual?.Username ?? "desconocido", fechaVencimiento)
                 {
-                    TotalEnVes = sumaBs // AQUÍ ESTÁ LA MAGIA: Ahora sí enviamos el total en BS a la BD
+                    TotalEnVes = sumaBs,
+                    TotalEnUSD = totalEnUsd
                 };
 
                 _repository.Agregar(pago, detalles);
@@ -55,11 +63,6 @@ namespace CapaNegocio
                     $"Recibo:{numeroRecibo}, Cédula:{estudianteCedula}, Total:{total}", false);
                 throw;
             }
-        }
-
-        public decimal ObtenerTotalHoy(DateTime fechaAperturaCaja)
-        {
-            return _repository.ObtenerTotalHoy(fechaAperturaCaja);
         }
     }
 }

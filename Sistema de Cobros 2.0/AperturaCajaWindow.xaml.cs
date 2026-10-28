@@ -14,33 +14,19 @@ namespace Sistema_de_Cobros_2._0
         {
             InitializeComponent();
             _cajaService = new CajaService();
-            txtSaldoInicial.Focus();
         }
 
         private void BtnAbrir_Click(object sender, RoutedEventArgs e)
         {
-            var formatoEstricto = new System.Globalization.NumberFormatInfo
+            try
             {
-                NumberDecimalSeparator = ",",
-                NumberGroupSeparator = "."
-            };
-
-            if (decimal.TryParse(txtSaldoInicial.Text.Trim(), System.Globalization.NumberStyles.Number, formatoEstricto, out decimal saldoInicial) && saldoInicial >= 0)
-            {
-                try
-                {
-                    _cajaService.AbrirCaja(saldoInicial);
-                    CajaAbiertaExitosamente = true;
-                    this.Close();
-                }
-                catch (Exception ex)
-                {
-                    AlertaWindow.MostrarError(ex.Message);
-                }
+                _cajaService.AbrirCaja(0); // El saldo inicial ya no se usa, pasa 0 por defecto
+                CajaAbiertaExitosamente = true;
+                this.Close();
             }
-            else
+            catch (Exception ex)
             {
-                AlertaWindow.MostrarAdvertencia("Ingrese un monto válido (Ej. 1.500,00).");
+                AlertaWindow.MostrarError(ex.Message);
             }
         }
 

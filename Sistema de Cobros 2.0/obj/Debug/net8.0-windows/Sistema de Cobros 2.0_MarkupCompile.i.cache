@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET8_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\App.xaml
-13-130284071
+14-859011134
 
-19-31158268
+20-1353764082
 2031466056842
-AlertaWindow.xaml;AperturaCajaWindow.xaml;AuditoriaWindow.xaml;CalendarioWindow.xaml;CierreCajaWindow.xaml;ConfigurarTasaWindow.xaml;CursosWindow.xaml;EstudiantesWindow.xaml;GestionUsuariosWindow.xaml;LoginWindow.xaml;MainWindow.xaml;MorosidadWindow.xaml;MotivoDevolucionWindow.xaml;
+AlertaWindow.xaml;AperturaCajaWindow.xaml;AuditoriaWindow.xaml;CalendarioWindow.xaml;CierreCajaWindow.xaml;ConfigurarTasaWindow.xaml;CursosWindow.xaml;EstudiantesWindow.xaml;FlujoCajaWindow.xaml;GestionUsuariosWindow.xaml;LoginWindow.xaml;MainWindow.xaml;MorosidadWindow.xaml;MotivoDevolucionWindow.xaml;
 
 False
 

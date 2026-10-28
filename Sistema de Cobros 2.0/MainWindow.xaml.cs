@@ -28,6 +28,8 @@ namespace Sistema_de_Cobros_2._0
         private readonly CajaService _cajaService;
         private readonly DevolucionService _devolucionService;
         private readonly TasaCambioService _tasaService;
+        private readonly InscripcionService _inscripcionService;
+        private readonly MovimientoCajaService _movimientoService;
 
         // Diccionario de tasas del día (BS siempre será 1)
         private Dictionary<string, decimal> _tasas = new Dictionary<string, decimal>();
@@ -42,6 +44,9 @@ namespace Sistema_de_Cobros_2._0
             _cajaService = new CajaService();
             _devolucionService = new DevolucionService();
             _tasaService = new TasaCambioService();
+            _inscripcionService = new InscripcionService();
+            _movimientoService = new MovimientoCajaService();
+
             CargarEstudiantes();
 
             // Vincular la lista en memoria con la tabla en pantalla
@@ -53,7 +58,9 @@ namespace Sistema_de_Cobros_2._0
                 btnConfigurarTasa.Visibility = Visibility.Visible;
                 btnGestionUsuarios.Visibility = Visibility.Visible;
                 btnAuditoria.Visibility = Visibility.Visible;
-                btnCursos.Visibility = Visibility.Visible;
+
+                // Asegurar que el botón de Cursos aparezca si existe en el XAML
+                if (FindName("btnCursos") is Button btnCursos) btnCursos.Visibility = Visibility.Visible;
             }
 
             ActualizarVistaTasa();
@@ -124,16 +131,52 @@ namespace Sistema_de_Cobros_2._0
 
         private void ActualizarTotalHoy()
         {
-            var caja = _cajaService.ObtenerCajaAbierta();
-            if (caja != null)
+            var resumen = _movimientoService.CalcularResumenGlobal();
+            decimal saldo = resumen.SaldoNetoBS;
+            string moneda = "Bs.";
+
+            // Revisamos qué moneda seleccionó el usuario para mostrar el saldo
+            if (cmbMonedaSaldo != null && cmbMonedaSaldo.SelectedItem is ComboBoxItem item)
             {
-                txtTotalHoy.Text = $"Bs. {_pagoService.ObtenerTotalHoy(caja.FechaApertura):N2}";
+                string seleccion = item.Content.ToString()!;
+                if (seleccion.Contains("BCV") && _tasas.ContainsKey("BCV") && _tasas["BCV"] > 0)
+                {
+                    saldo /= _tasas["BCV"];
+                    moneda = "$";
+                }
+                else if (seleccion.Contains("EUR") && _tasas.ContainsKey("EUR") && _tasas["EUR"] > 0)
+                {
+                    saldo /= _tasas["EUR"];
+                    moneda = "€";
+                }
+                else if (seleccion.Contains("USDT") && _tasas.ContainsKey("USDT") && _tasas["USDT"] > 0)
+                {
+                    saldo /= _tasas["USDT"];
+                    moneda = "₮";
+                }
             }
+
+            txtTotalHoy.Text = $"{saldo:N2} {moneda}";
         }
 
         private void ActualizarHistorial()
         {
-            dgHistorial.ItemsSource = _pagoService.ObtenerPagos(100); // Límite por rendimiento (Fase 1)
+            // Pasa el texto del buscador a la base de datos
+            string busqueda = "";
+            if (FindName("txtBuscarPago") is TextBox txtBuscador) busqueda = txtBuscador.Text.Trim();
+
+            dgHistorial.ItemsSource = _pagoService.ObtenerPagos(100, busqueda);
+        }
+        private void CmbMonedaSaldo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (txtTotalHoy != null) // Evita errores al cargar la ventana por primera vez
+            {
+                ActualizarTotalHoy();
+            }
+        }
+        private void TxtBuscarPago_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ActualizarHistorial();
         }
 
         private void BtnAbrirCaja_Click(object sender, RoutedEventArgs e)
@@ -154,6 +197,19 @@ namespace Sistema_de_Cobros_2._0
             }
         }
 
+        private void BtnFlujoCaja_Click(object sender, RoutedEventArgs e)
+        {
+            var cajaAbierta = _cajaService.ObtenerCajaAbierta();
+            if (cajaAbierta == null)
+            {
+                AlertaWindow.MostrarAdvertencia("Debe Abrir la Caja primero para poder gestionar el flujo de dinero.");
+                return;
+            }
+
+            new FlujoCajaWindow { Owner = this }.ShowDialog();
+            ValidarEstadoCaja(); // Recalcula el total verde principal al regresar (restando los nuevos gastos)
+        }
+
         // --- MOTOR DE CONVERSIÓN Y PAGOS MIXTOS ---
 
         private decimal ConvertirMoneda(decimal monto, string monedaOrigen, string monedaDestino)
@@ -170,7 +226,8 @@ namespace Sistema_de_Cobros_2._0
 
         private void CalcularTotalRecibo()
         {
-            // Obtener la moneda principal de la factura
+            if (cmbMonedaRecibo.SelectedItem == null) return;
+
             string monedaFactura = ((ComboBoxItem)cmbMonedaRecibo.SelectedItem).Content.ToString()!;
             decimal sumaConvertida = 0m;
 
@@ -190,14 +247,12 @@ namespace Sistema_de_Cobros_2._0
                 return;
             }
 
-            // 1. FORMATO A PRUEBA DE BALAS
             var formatoEstricto = new System.Globalization.NumberFormatInfo
             {
                 NumberDecimalSeparator = ",",
                 NumberGroupSeparator = "."
             };
 
-            // 2. Usamos NumberStyles.Number para que acepte tanto puntos como comas
             if (!decimal.TryParse(txtMontoDetalle.Text.Trim(), System.Globalization.NumberStyles.Number, formatoEstricto, out decimal monto) || monto <= 0)
             {
                 AlertaWindow.MostrarAdvertencia("Ingrese un monto numérico válido mayor a cero (Ej. 1.250,50).");
@@ -232,16 +287,11 @@ namespace Sistema_de_Cobros_2._0
 
         // --- REGISTRO PRINCIPAL DEL PAGO (FACTURA) ---
 
-        // (En la parte de arriba, añade este servicio a los declarados)
-        private readonly InscripcionService _inscripcionService = new InscripcionService();
-
-        // Llama a este método en el constructor public MainWindow()
         private void CargarEstudiantes()
         {
             cmbEstudiante.ItemsSource = _inscripcionService.ObtenerInscripcionesActivas();
         }
 
-        // --- ARREGLO DEL PARSEO DE NÚMEROS ---
         private void BtnRegistrar_Click(object sender, RoutedEventArgs e)
         {
             // OBTENER EL ESTUDIANTE REAL SELECCIONADO
@@ -263,39 +313,42 @@ namespace Sistema_de_Cobros_2._0
                 return;
             }
 
+            if (_tasas["BCV"] <= 0)
+            {
+                AlertaWindow.MostrarError("Debe configurar las tasas del día (Botón superior) antes de poder procesar pagos.");
+                return;
+            }
+
             string numeroRecibo = "REC-" + DateTime.Now.ToString("yyyyMMddHHmmss");
             int conceptoId = int.Parse(((ComboBoxItem)cmbConcepto.SelectedItem).Tag.ToString()!);
+
             decimal totalFacturaConvertida = 0m;
 
+            // Convertir la UI a Entidades reales para la Base de Datos
             var listaBd = new List<PagoDetalle>();
             foreach (var d in _listaDetalles)
             {
                 totalFacturaConvertida += ConvertirMoneda(d.Monto, d.Moneda, monedaFactura);
                 decimal montoEnBs = d.Monto * _tasas[d.Moneda];
+
                 listaBd.Add(new PagoDetalle(0, d.MetodoId, d.Monto, d.Moneda, _tasas[d.Moneda], montoEnBs, d.Referencia) { MetodoNombre = d.MetodoNombre });
             }
 
+            // Prevención de Doble-Clic
             btnRegistrar.IsEnabled = false;
 
             try
             {
-                // AHORA PASAMOS EL INSCRIPCION_ID REAL
+                // CORRECCIÓN: Le pasamos los 8 parámetros originales, sin la variable vieja
                 _pagoService.RegistrarPago(numeroRecibo, cedula, inscripcionId, conceptoId, totalFacturaConvertida, monedaFactura, DateTime.Now.AddDays(30), listaBd);
 
                 ValidarEstadoCaja();
                 ActualizarHistorial();
 
-                // NOMBRES DE LOS MÉTODOS PARA EL RECIBO
-                foreach (var d in listaBd)
-                {
-                    d.MetodoNombre = _listaDetalles.First(x => x.MetodoId == d.MetodoPagoId).MetodoNombre;
-                }
-
-                // IMPRESIÓN Y GUARDADO DIRECTO (Sin preguntar)
+                // IMPRESIÓN Y GUARDADO DIRECTO
                 var pagoTemp = new Pago(numeroRecibo, cedula, inscripcionId, conceptoId, totalFacturaConvertida, monedaFactura, SesionService.Instancia.UsuarioActual?.Username ?? "Cajero", DateTime.Now) { FechaPago = DateTime.Now };
                 ImpresorRecibo.Imprimir(pagoTemp, nombre, ((ComboBoxItem)cmbConcepto.SelectedItem).Content.ToString()!, listaBd);
 
-                // Solo mostramos éxito al final
                 AlertaWindow.MostrarExito("Factura procesada con éxito.");
 
                 cmbEstudiante.SelectedIndex = -1; // Limpiar buscador
@@ -308,11 +361,11 @@ namespace Sistema_de_Cobros_2._0
             }
             finally
             {
+                // Habilitar de nuevo el botón solo si la caja sigue abierta
                 btnRegistrar.IsEnabled = _cajaService.ObtenerCajaAbierta() != null;
             }
         }
 
-        // Evento para abrir la ventana de estudiantes
         private void BtnNuevoEstudiante_Click(object sender, RoutedEventArgs e)
         {
             var ventana = new EstudiantesWindow { Owner = this };
@@ -326,9 +379,8 @@ namespace Sistema_de_Cobros_2._0
         {
             if (sender is FrameworkElement element && element.DataContext is Pago pagoSeleccionado)
             {
-                // Ahora SÍ cargamos el detalle real desde la Base de Datos
                 var detalles = _pagoService.ObtenerDetalles(pagoSeleccionado.Id);
-                ImpresorRecibo.Imprimir(pagoSeleccionado, "Estudiante (Ver Cédula)", "Concepto ID: " + pagoSeleccionado.ConceptoId, detalles);
+                ImpresorRecibo.Imprimir(pagoSeleccionado, pagoSeleccionado.NombreEstudiante, "Concepto ID: " + pagoSeleccionado.ConceptoId, detalles);
             }
         }
 
@@ -362,27 +414,14 @@ namespace Sistema_de_Cobros_2._0
                 }
             }
         }
-        private void TxtBuscarPago_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            // Busca automáticamente a medida que el usuario escribe
-            dgHistorial.ItemsSource = _pagoService.ObtenerPagos(100, txtBuscarPago.Text.Trim());
-        }
 
-        // --- OTROS MÓDULOS ---
+        // --- NAVEGACIÓN (OTROS MÓDULOS) ---
 
-        private void BtnGestionUsuarios_Click(object sender, RoutedEventArgs e)
-        {
-            new GestionUsuariosWindow().ShowDialog();
-        }
         private void BtnCursos_Click(object sender, RoutedEventArgs e)
         {
             new CursosWindow { Owner = this }.ShowDialog();
         }
 
-        private void BtnAuditoria_Click(object sender, RoutedEventArgs e)
-        {
-            new AuditoriaWindow().ShowDialog();
-        }
         private void BtnMorosos_Click(object sender, RoutedEventArgs e)
         {
             new MorosidadWindow { Owner = this }.ShowDialog();
@@ -391,6 +430,16 @@ namespace Sistema_de_Cobros_2._0
         private void BtnCalendario_Click(object sender, RoutedEventArgs e)
         {
             new CalendarioWindow { Owner = this }.ShowDialog();
+        }
+
+        private void BtnGestionUsuarios_Click(object sender, RoutedEventArgs e)
+        {
+            new GestionUsuariosWindow().ShowDialog();
+        }
+
+        private void BtnAuditoria_Click(object sender, RoutedEventArgs e)
+        {
+            new AuditoriaWindow().ShowDialog();
         }
     }
 }
