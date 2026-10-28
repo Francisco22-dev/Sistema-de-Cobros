@@ -7,13 +7,12 @@ namespace Sistema_de_Cobros_2._0
 {
     public partial class AperturaCajaWindow : Window
     {
-        private readonly CajaService _cajaService;
+        private readonly CajaService _cajaService = new CajaService();
         public bool CajaAbiertaExitosamente { get; private set; } = false;
 
         public AperturaCajaWindow()
         {
             InitializeComponent();
-            _cajaService = new CajaService();
         }
 
         private void BtnAbrir_Click(object sender, RoutedEventArgs e)
@@ -30,9 +29,6 @@ namespace Sistema_de_Cobros_2._0
             }
         }
 
-        private void BtnCancelar_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
+        private void BtnCancelar_Click(object sender, RoutedEventArgs e) => this.Close();
     }
 }

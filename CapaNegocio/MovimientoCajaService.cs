@@ -28,30 +28,33 @@ namespace CapaNegocio
             return categorias;
         }
 
-        // AHORA TRAE EL HISTORIAL COMPLETO DE GASTOS
         public List<MovimientoCaja> ObtenerTodosLosEgresos()
         {
             return _repository.ObtenerTodosLosEgresos();
         }
 
-        // CALCULA EL SALDO BANCARIO GLOBAL
         public ResumenFlujo CalcularResumenGlobal()
         {
             var tasas = _tasaService.ObtenerTasasDelDia();
-            decimal tasaBCV = tasas.ContainsKey("BCV") && tasas["BCV"] > 0 ? tasas["BCV"] : 1m;
+            decimal tasaBCV = tasas["BCV"] > 0 ? tasas["BCV"] : 1m;
 
-            // 1. Total Histórico Ingresado (Protegido en USD)
+            // 1. Total Histórico Ingresado (Protegido en USD directo de la BD)
             decimal ingresosTotalesUSD = _pagoService.ObtenerIngresosTotalesUSD();
 
-            // 2. Total Histórico Gastado (Llevamos cada gasto viejo a USD según la tasa actual para nivelar)
+            // 2. Total Histórico Gastado (Llevamos cada gasto viejo a USD)
             decimal egresosTotalesUSD = 0;
             var todosEgresos = _repository.ObtenerTodosLosEgresos();
             foreach (var eg in todosEgresos)
             {
-                if (eg.MonedaCodigo == "USD") egresosTotalesUSD += eg.Monto;
-                else if (eg.MonedaCodigo == "BS" || eg.MonedaCodigo == "BCV") egresosTotalesUSD += (eg.Monto / tasaBCV);
-                else if (eg.MonedaCodigo == "EUR" && tasas.ContainsKey("EUR") && tasas["EUR"] > 0) egresosTotalesUSD += ((eg.Monto * tasas["EUR"]) / tasaBCV);
-                else if (eg.MonedaCodigo == "USDT" && tasas.ContainsKey("USDT") && tasas["USDT"] > 0) egresosTotalesUSD += ((eg.Monto * tasas["USDT"]) / tasaBCV);
+                if (eg.MonedaCodigo == "BS")
+                    egresosTotalesUSD += (eg.Monto / tasaBCV);
+                // CORRECCIÓN: BCV y USD son Dólares, valen 1 a 1 en nuestra contabilidad base
+                else if (eg.MonedaCodigo == "BCV" || eg.MonedaCodigo == "USD")
+                    egresosTotalesUSD += eg.Monto;
+                else if (eg.MonedaCodigo == "EUR" && tasas["EUR"] > 0)
+                    egresosTotalesUSD += ((eg.Monto * tasas["EUR"]) / tasaBCV);
+                else if (eg.MonedaCodigo == "USDT" && tasas["USDT"] > 0)
+                    egresosTotalesUSD += ((eg.Monto * tasas["USDT"]) / tasaBCV);
             }
 
             // 3. Saldo Real de Banco (Ingresos - Gastos)
@@ -73,7 +76,12 @@ namespace CapaNegocio
             var resumen = CalcularResumenGlobal();
             var tasas = _tasaService.ObtenerTasasDelDia();
 
-            decimal montoGastoBS = (moneda == "BS" || moneda == "BCV") ? monto : monto * tasas[moneda];
+            // CORRECCIÓN MATEMÁTICA: Convertimos cualquier moneda a Bolívares Reales
+            decimal montoGastoBS = 0;
+            if (moneda == "BS") montoGastoBS = monto;
+            else if (moneda == "BCV") montoGastoBS = monto * tasas["BCV"];
+            else if (moneda == "EUR") montoGastoBS = monto * tasas["EUR"];
+            else if (moneda == "USDT") montoGastoBS = monto * tasas["USDT"];
 
             // VALIDACIÓN: No se puede gastar más de lo que tiene la academia
             if (montoGastoBS > resumen.SaldoNetoBS)

@@ -112,22 +112,8 @@
                         <!-- CAJA ESTADO -->
                         <Border x:Name="bdrEstadoCaja" Background="{StaticResource Success}" CornerRadius="6" Padding="15" Margin="0,0,0,20">
                             <StackPanel>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Saldo Disponible (Neto)" Foreground="White" FontSize="12" Opacity="0.9" VerticalAlignment="Center"/>
-
-                                    <!-- Selector de moneda para visualizar el Saldo -->
-                                    <ComboBox x:Name="cmbMonedaSaldo" Grid.Column="1" FontSize="11" Padding="5,2" SelectionChanged="CmbMonedaSaldo_SelectionChanged">
-                                        <ComboBoxItem Content="BS" IsSelected="True"/>
-                                        <ComboBoxItem Content="BCV (Dólares)"/>
-                                        <ComboBoxItem Content="EUR"/>
-                                        <ComboBoxItem Content="USDT"/>
-                                    </ComboBox>
-                                </Grid>
-                                <TextBlock x:Name="txtTotalHoy" Text="Bs. 0.00" Foreground="White" FontSize="26" FontWeight="Bold" Margin="0,5,0,0"/>
+                                <TextBlock Text="Total Recaudado Hoy" Foreground="White" FontSize="12" Opacity="0.9"/>
+                                <TextBlock x:Name="txtTotalHoy" Text="Bs. 0.00" Foreground="White" FontSize="26" FontWeight="Bold"/>
                             </StackPanel>
                         </Border>
 

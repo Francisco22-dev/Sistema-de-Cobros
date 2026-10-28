@@ -65,6 +65,8 @@
             <!-- Error -->
             <TextBlock x:Name="txtError" Text=""
                        Foreground="#D32F2F" FontSize="12"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
                        HorizontalAlignment="Center"
                        Height="50"
                        Margin="10,15,0,10"/>

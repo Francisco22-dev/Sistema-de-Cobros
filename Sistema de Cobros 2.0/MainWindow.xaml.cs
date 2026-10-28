@@ -131,33 +131,34 @@ namespace Sistema_de_Cobros_2._0
 
         private void ActualizarTotalHoy()
         {
-            var resumen = _movimientoService.CalcularResumenGlobal();
-            decimal saldo = resumen.SaldoNetoBS;
-            string moneda = "Bs.";
-
-            // Revisamos qué moneda seleccionó el usuario para mostrar el saldo
-            if (cmbMonedaSaldo != null && cmbMonedaSaldo.SelectedItem is ComboBoxItem item)
+            // VOLVEMOS A LA LÓGICA DIARIA: Muestra solo lo que el cajero ha cobrado desde que abrió la caja hoy
+            var caja = _cajaService.ObtenerCajaAbierta();
+            if (caja != null)
             {
-                string seleccion = item.Content.ToString()!;
-                if (seleccion.Contains("BCV") && _tasas.ContainsKey("BCV") && _tasas["BCV"] > 0)
-                {
-                    saldo /= _tasas["BCV"];
-                    moneda = "$";
-                }
-                else if (seleccion.Contains("EUR") && _tasas.ContainsKey("EUR") && _tasas["EUR"] > 0)
-                {
-                    saldo /= _tasas["EUR"];
-                    moneda = "€";
-                }
-                else if (seleccion.Contains("USDT") && _tasas.ContainsKey("USDT") && _tasas["USDT"] > 0)
-                {
-                    saldo /= _tasas["USDT"];
-                    moneda = "₮";
-                }
+                txtTotalHoy.Text = $"Bs. {_pagoService.ObtenerTotalHoy(caja.FechaApertura):N2}";
+            }
+        }
+
+        private void BtnFlujoCaja_Click(object sender, RoutedEventArgs e)
+        {
+            // PROTECCIÓN: Si no hay tasas hoy, el balance global se distorsiona. Lo bloqueamos.
+            if (_tasas["BCV"] <= 0)
+            {
+                AlertaWindow.MostrarError("Debe configurar las tasas de cambio de hoy (Botón Tasa BCV) para poder calcular el balance global financiero exacto.");
+                return;
             }
 
-            txtTotalHoy.Text = $"{saldo:N2} {moneda}";
+            var cajaAbierta = _cajaService.ObtenerCajaAbierta();
+            if (cajaAbierta == null)
+            {
+                AlertaWindow.MostrarAdvertencia("Debe Abrir la Caja primero para poder gestionar el flujo de dinero.");
+                return;
+            }
+
+            new FlujoCajaWindow { Owner = this }.ShowDialog();
+            ValidarEstadoCaja(); // Recalcula el total verde principal al regresar
         }
+
 
         private void ActualizarHistorial()
         {
@@ -167,13 +168,7 @@ namespace Sistema_de_Cobros_2._0
 
             dgHistorial.ItemsSource = _pagoService.ObtenerPagos(100, busqueda);
         }
-        private void CmbMonedaSaldo_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (txtTotalHoy != null) // Evita errores al cargar la ventana por primera vez
-            {
-                ActualizarTotalHoy();
-            }
-        }
+       
         private void TxtBuscarPago_TextChanged(object sender, TextChangedEventArgs e)
         {
             ActualizarHistorial();
@@ -195,19 +190,6 @@ namespace Sistema_de_Cobros_2._0
             {
                 ValidarEstadoCaja();
             }
-        }
-
-        private void BtnFlujoCaja_Click(object sender, RoutedEventArgs e)
-        {
-            var cajaAbierta = _cajaService.ObtenerCajaAbierta();
-            if (cajaAbierta == null)
-            {
-                AlertaWindow.MostrarAdvertencia("Debe Abrir la Caja primero para poder gestionar el flujo de dinero.");
-                return;
-            }
-
-            new FlujoCajaWindow { Owner = this }.ShowDialog();
-            ValidarEstadoCaja(); // Recalcula el total verde principal al regresar (restando los nuevos gastos)
         }
 
         // --- MOTOR DE CONVERSIÓN Y PAGOS MIXTOS ---

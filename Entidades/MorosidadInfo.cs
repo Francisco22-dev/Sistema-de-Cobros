@@ -14,7 +14,7 @@
         public decimal DeudaEUR { get; set; }
         public decimal DeudaUSDT { get; set; }
 
-        // Muestra la deuda base en USD, y su equivalente exacto convertido
-        public string DeudaStr => $"Deuda: {DeudaUSD:N2} $\n(En BCV: {DeudaBCV:N2} Bs. | En EUR: {DeudaEUR:N2} € | En USDT: {DeudaUSDT:N2} USDT)";
+        // FORMATO CLARO: Muestra la base en Dólares ($) y las conversiones exactas con sus símbolos
+        public string DeudaStr => $"{DeudaUSD:N2} $\n(BCV: {DeudaBCV:N2} Bs | EUR: {DeudaEUR:N2} € | USDT: {DeudaUSDT:N2} ₮)";
     }
 }

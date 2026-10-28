@@ -35,7 +35,7 @@ namespace CapaNegocio
             try
             {
                 // REGLA DE NEGOCIO: Bloquear si tiene deudas
-                if (_pagoRepository.TieneDeuda(estudianteCedula))
+                if (_pagoRepository.TieneDeuda(estudianteCedula, DateTime.Now.Date))
                 {
                     throw new InvalidOperationException("No se puede inscribir: El estudiante tiene pagos vencidos pendientes.");
                 }
