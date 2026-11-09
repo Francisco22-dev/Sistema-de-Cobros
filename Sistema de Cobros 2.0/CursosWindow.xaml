@@ -19,7 +19,13 @@
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Text="Cursos de la Academia" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                    <TextBlock Text="Cursos de la Academia" FontSize="16" FontWeight="Bold"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                        <TextBlock Text="Buscar:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBox x:Name="txtBuscarCurso" Width="150" Padding="5" TextChanged="TxtBuscarCurso_TextChanged"/>
+                    </StackPanel>
+                </StackPanel>
 
                 <DataGrid x:Name="dgCursos" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" SelectionChanged="DgCursos_SelectionChanged">
                     <DataGrid.Columns>
@@ -108,18 +114,18 @@
                     </ComboBox>
 
                     <Grid Margin="0,0,0,5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+
                         <StackPanel Grid.Column="0" Margin="0,0,5,0">
-                            <TextBlock Text="Desde (Hora)" FontSize="11" Foreground="#666"/>
-                            <TextBox x:Name="txtHoraInicio" Text="08:00 AM" Padding="5"/>
+                            <TextBlock Text="Bloque de Horario" FontSize="11" Foreground="#666" Margin="0,5,0,0"/>
+                            <ComboBox x:Name="cmbHoras" Padding="5" Margin="0,0,0,15">
+                                <ComboBoxItem Content="8:00 AM - 11:00 AM" IsSelected="True"/>
+                                <ComboBoxItem Content="11:00 AM - 2:00 PM"/>
+                                <ComboBoxItem Content="2:00 PM - 5:00 PM"/>
+                                <ComboBoxItem Content="2:00 PM - 3:30 PM"/>
+                                <ComboBoxItem Content="3:30 PM - 5:00 PM"/>
+                            </ComboBox>
                         </StackPanel>
-                        <StackPanel Grid.Column="1" Margin="5,0,0,0">
-                            <TextBlock Text="Hasta (Hora)" FontSize="11" Foreground="#666"/>
-                            <TextBox x:Name="txtHoraFin" Text="12:00 PM" Padding="5"/>
-                        </StackPanel>
+                        
                     </Grid>
 
                     <TextBlock Text="Fecha Oficial de Inicio" FontSize="11" Foreground="#666"/>

@@ -29,7 +29,7 @@ namespace Sistema_de_Cobros_2._0
                 };
 
                 doc.Blocks.Add(new Paragraph(new Run("CEVENCA")) { FontWeight = FontWeights.Bold, FontSize = 16 });
-                doc.Blocks.Add(new Paragraph(new Run("RIF: J-00000000-0\nTel: (0000) 000-0000")) { FontSize = 10, Margin = new Thickness(0, 0, 0, 15) });
+                doc.Blocks.Add(new Paragraph(new Run("Rif: J-507629082 | Registro MPPE: 0016-1904\n0414-4281527 / 0426-2355934\nDireccion: Av. Las Ferias, C.C. Isora," + "\npiso Mezzanina, local 07\n")) { FontSize = 10, Margin = new Thickness(0, 0, 0, 15) });
 
                 doc.Blocks.Add(new Paragraph(new Run("RECIBO DE PAGO")) { FontWeight = FontWeights.Bold, FontSize = 14 });
                 doc.Blocks.Add(new Paragraph(new Run($"Nro: {pago.NumeroRecibo}")) { Margin = new Thickness(0, 0, 0, 15) });

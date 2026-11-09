@@ -36,6 +36,21 @@ namespace Sistema_de_Cobros_2._0
             {
                 if (_usuarioService.ValidarCredenciales(username, password, out var usuario))
                 {
+                    // VERIFICACIÓN DE LICENCIA ANTES DE ENTRAR
+                    var _licenciaService = new LicenciaService();
+                    int diasRestantes = _licenciaService.ObtenerDiasRestantes();
+
+                    if (diasRestantes <= 0 && usuario!.Rol != "Programador")
+                    {
+                        txtError.Text = "La licencia del software ha expirado. Por favor, contacte al proveedor del sistema para su renovación.";
+                        return; // Bloquea la entrada
+                    }
+                    else if (diasRestantes <= 15 && usuario!.Rol == "Admin")
+                    {
+                        AlertaWindow.MostrarAdvertencia($"AVISO: La licencia de su sistema vencerá en {diasRestantes} días. Por favor, programe su renovación.");
+                    }
+
+                    // Entrar al sistema
                     SesionService.Instancia.IniciarSesion(usuario!);
                     var mainWindow = new MainWindow();
                     mainWindow.Show();
@@ -44,8 +59,6 @@ namespace Sistema_de_Cobros_2._0
                 else
                 {
                     txtError.Text = "Usuario o contraseña incorrectos.";
-                    txtPassword.Clear();
-                    txtPassword.Focus();
                 }
             }
             catch (InvalidOperationException ex)

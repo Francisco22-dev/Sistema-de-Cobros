@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using CapaNegocio;
 using Entidades;
+using System.Linq;
 
 namespace Sistema_de_Cobros_2._0
 {
@@ -23,6 +24,11 @@ namespace Sistema_de_Cobros_2._0
         private void CargarCursos()
         {
             dgCursos.ItemsSource = _cursoService.ObtenerCursos();
+        }
+        private void TxtBuscarCurso_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string filtro = txtBuscarCurso.Text.ToLower();
+            dgCursos.ItemsSource = _cursoService.ObtenerCursos().Where(c => c.Nombre.ToLower().Contains(filtro) || c.Codigo.ToLower().Contains(filtro)).ToList();
         }
 
         private void DgCursos_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -111,8 +117,7 @@ namespace Sistema_de_Cobros_2._0
         {
             if (_cursoSeleccionado == null || dpFechaInicio.SelectedDate == null) return;
 
-            string horarioConcat = $"{((ComboBoxItem)cmbDias.SelectedItem).Content} {txtHoraInicio.Text} - {txtHoraFin.Text}";
-
+            string horarioConcat = $"{((ComboBoxItem)cmbDias.SelectedItem).Content} {((ComboBoxItem)cmbHoras.SelectedItem).Content}";
             try
             {
                 _grupoService.GuardarHorario(_cursoSeleccionado.Codigo, horarioConcat, dpFechaInicio.SelectedDate.Value);

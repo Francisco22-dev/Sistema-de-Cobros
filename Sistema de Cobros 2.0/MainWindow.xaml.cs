@@ -18,8 +18,11 @@ namespace Sistema_de_Cobros_2._0
         public string MetodoNombre { get; set; } = string.Empty;
         public decimal Monto { get; set; }
         public string Referencia { get; set; } = string.Empty;
-        public string Moneda { get; set; } = string.Empty;
-        public string MontoStr => $"{Monto:N2} {Moneda}";
+        public string MonedaUI { get; set; } = string.Empty; // Muestra "$" o "BS"
+
+        // Traduce "$" a "BCV" para la Base de Datos internamente
+        public string MonedaBD => MonedaUI == "$" ? "BCV" : "BS";
+        public string MontoStr => $"{Monto:N2} {MonedaUI}";
     }
 
     public partial class MainWindow : Window
@@ -31,10 +34,7 @@ namespace Sistema_de_Cobros_2._0
         private readonly InscripcionService _inscripcionService;
         private readonly MovimientoCajaService _movimientoService;
 
-        // Diccionario de tasas del día (BS siempre será 1)
         private Dictionary<string, decimal> _tasas = new Dictionary<string, decimal>();
-
-        // Colección reactiva para la lista de pagos mixtos en pantalla
         private ObservableCollection<DetallePagoUI> _listaDetalles = new ObservableCollection<DetallePagoUI>();
 
         public MainWindow()
@@ -48,19 +48,25 @@ namespace Sistema_de_Cobros_2._0
             _movimientoService = new MovimientoCajaService();
 
             CargarEstudiantes();
-
-            // Vincular la lista en memoria con la tabla en pantalla
             dgDetalles.ItemsSource = _listaDetalles;
 
-            // Habilitar botones de administración según el rol
-            if (SesionService.Instancia.EsAdministrador())
-            {
-                btnConfigurarTasa.Visibility = Visibility.Visible;
-                btnGestionUsuarios.Visibility = Visibility.Visible;
-                btnAuditoria.Visibility = Visibility.Visible;
+            // CONTROL ESTRICTO DE ROLES
+            string rolActual = SesionService.Instancia.UsuarioActual?.Rol ?? "Cajero";
 
-                // Asegurar que el botón de Cursos aparezca si existe en el XAML
+            if (rolActual == "Admin" || rolActual == "Programador")
+            {
+                // Permisos de Administrador
+                if (FindName("btnConfigurarTasa") is Button btnTasa) btnTasa.Visibility = Visibility.Visible;
+                if (FindName("btnGestionUsuarios") is Button btnUsr) btnUsr.Visibility = Visibility.Visible;
+                if (FindName("btnAuditoria") is Button btnAud) btnAud.Visibility = Visibility.Visible;
                 if (FindName("btnCursos") is Button btnCursos) btnCursos.Visibility = Visibility.Visible;
+                if (FindName("btnMantenimiento") is Button btnMto) btnMto.Visibility = Visibility.Visible;
+            }
+
+            if (rolActual == "Programador")
+            {
+                // Permisos Únicos de Programador
+                if (FindName("btnLicencia") is Button btnLic) btnLic.Visibility = Visibility.Visible;
             }
 
             ActualizarVistaTasa();
@@ -77,12 +83,12 @@ namespace Sistema_de_Cobros_2._0
             if (_tasas["BCV"] <= 0)
             {
                 txtTasaDia.Text = "TASAS NO CONFIGURADAS";
-                txtTasaDia.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F44336")); // Rojo
+                txtTasaDia.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F44336"));
             }
             else
             {
-                txtTasaDia.Text = $"BCV: {_tasas["BCV"]:N2} | EUR: {_tasas["EUR"]:N2} | USDT: {_tasas["USDT"]:N2}";
-                txtTasaDia.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1976D2")); // Azul
+                txtTasaDia.Text = $"Tasa $: {_tasas["BCV"]:N2} Bs";
+                txtTasaDia.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1976D2"));
             }
         }
 
@@ -93,10 +99,7 @@ namespace Sistema_de_Cobros_2._0
                 AlertaWindow.MostrarInfo("Las tasas de hoy ya fueron configuradas.\nPor seguridad, no se pueden alterar a mitad del día.");
                 return;
             }
-
-            var ventanaTasa = new ConfigurarTasaWindow { Owner = this };
-            ventanaTasa.ShowDialog();
-
+            new ConfigurarTasaWindow { Owner = this }.ShowDialog();
             ActualizarVistaTasa();
         }
 
@@ -131,48 +134,19 @@ namespace Sistema_de_Cobros_2._0
 
         private void ActualizarTotalHoy()
         {
-            // VOLVEMOS A LA LÓGICA DIARIA: Muestra solo lo que el cajero ha cobrado desde que abrió la caja hoy
-            var caja = _cajaService.ObtenerCajaAbierta();
-            if (caja != null)
-            {
-                txtTotalHoy.Text = $"Bs. {_pagoService.ObtenerTotalHoy(caja.FechaApertura):N2}";
-            }
+            // MUESTRA EL SALDO NETO GLOBAL (Ingresos - Egresos) EN BS
+            var resumen = _movimientoService.CalcularResumenGlobal();
+            txtTotalHoy.Text = $"Bs. {resumen.SaldoNetoBS:N2}";
         }
-
-        private void BtnFlujoCaja_Click(object sender, RoutedEventArgs e)
-        {
-            // PROTECCIÓN: Si no hay tasas hoy, el balance global se distorsiona. Lo bloqueamos.
-            if (_tasas["BCV"] <= 0)
-            {
-                AlertaWindow.MostrarError("Debe configurar las tasas de cambio de hoy (Botón Tasa BCV) para poder calcular el balance global financiero exacto.");
-                return;
-            }
-
-            var cajaAbierta = _cajaService.ObtenerCajaAbierta();
-            if (cajaAbierta == null)
-            {
-                AlertaWindow.MostrarAdvertencia("Debe Abrir la Caja primero para poder gestionar el flujo de dinero.");
-                return;
-            }
-
-            new FlujoCajaWindow { Owner = this }.ShowDialog();
-            ValidarEstadoCaja(); // Recalcula el total verde principal al regresar
-        }
-
 
         private void ActualizarHistorial()
         {
-            // Pasa el texto del buscador a la base de datos
             string busqueda = "";
             if (FindName("txtBuscarPago") is TextBox txtBuscador) busqueda = txtBuscador.Text.Trim();
-
             dgHistorial.ItemsSource = _pagoService.ObtenerPagos(100, busqueda);
         }
-       
-        private void TxtBuscarPago_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ActualizarHistorial();
-        }
+
+        private void TxtBuscarPago_TextChanged(object sender, TextChangedEventArgs e) => ActualizarHistorial();
 
         private void BtnAbrirCaja_Click(object sender, RoutedEventArgs e)
         {
@@ -185,11 +159,18 @@ namespace Sistema_de_Cobros_2._0
         {
             var ventanaCierre = new CierreCajaWindow { Owner = this };
             ventanaCierre.ShowDialog();
+            if (ventanaCierre.CajaCerradaExitosamente) ValidarEstadoCaja();
+        }
 
-            if (ventanaCierre.CajaCerradaExitosamente)
+        private void BtnFlujoCaja_Click(object sender, RoutedEventArgs e)
+        {
+            if (_cajaService.ObtenerCajaAbierta() == null)
             {
-                ValidarEstadoCaja();
+                AlertaWindow.MostrarAdvertencia("Debe Abrir la Caja primero para poder gestionar el flujo de dinero.");
+                return;
             }
+            new FlujoCajaWindow { Owner = this }.ShowDialog();
+            ValidarEstadoCaja();
         }
 
         // --- MOTOR DE CONVERSIÓN Y PAGOS MIXTOS ---
@@ -197,59 +178,62 @@ namespace Sistema_de_Cobros_2._0
         private decimal ConvertirMoneda(decimal monto, string monedaOrigen, string monedaDestino)
         {
             if (monedaOrigen == monedaDestino) return monto;
-            if (_tasas["BCV"] <= 0) return 0; // Previene fallos si no hay tasas configuradas
+            if (_tasas["BCV"] <= 0) return 0;
 
-            // 1. Llevamos todo a Bolívares (Moneda Base Nacional)
             decimal montoEnBs = monto * _tasas[monedaOrigen];
-
-            // 2. Convertimos a la moneda destino
             return montoEnBs / _tasas[monedaDestino];
         }
 
         private void CalcularTotalRecibo()
         {
-            if (cmbMonedaRecibo.SelectedItem == null) return;
-
-            string monedaFactura = ((ComboBoxItem)cmbMonedaRecibo.SelectedItem).Content.ToString()!;
             decimal sumaConvertida = 0m;
-
             foreach (var detalle in _listaDetalles)
             {
-                sumaConvertida += ConvertirMoneda(detalle.Monto, detalle.Moneda, monedaFactura);
+                // Todos los pagos se suman convertidos a la moneda BASE de presentación (BS)
+                sumaConvertida += ConvertirMoneda(detalle.Monto, detalle.MonedaBD, "BS");
             }
+            txtSumaTotal.Text = $"{sumaConvertida:N2} BS";
+        }
 
-            txtSumaTotal.Text = $"{sumaConvertida:N2} {monedaFactura}";
+        // AUTO-SELECCIONAR MONEDA SEGÚN MÉTODO DE PAGO
+        private void CmbMetodoPago_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (cmbMonedaDetalle == null || cmbMetodoPago.SelectedItem == null) return;
+
+            var seleccionado = ((ComboBoxItem)cmbMetodoPago.SelectedItem).Content.ToString();
+
+            // Si es Divisas (Físico) o Zelle lo forzamos a "$"
+            if (seleccionado == "Divisas (Físico)" || seleccionado == "Zelle")
+                cmbMonedaDetalle.SelectedIndex = 1; // 1 = "$"
+            else
+                cmbMonedaDetalle.SelectedIndex = 0; // 0 = "BS"
         }
 
         private void BtnAgregarDetalle_Click(object sender, RoutedEventArgs e)
         {
             if (_tasas["BCV"] <= 0)
             {
-                AlertaWindow.MostrarError("Debe configurar las tasas de cambio del día antes de empezar a cobrar.");
+                AlertaWindow.MostrarError("Debe configurar la tasa de cambio del dólar antes de empezar a cobrar.");
                 return;
             }
 
-            var formatoEstricto = new System.Globalization.NumberFormatInfo
-            {
-                NumberDecimalSeparator = ",",
-                NumberGroupSeparator = "."
-            };
+            var formatoEstricto = new NumberFormatInfo { NumberDecimalSeparator = ",", NumberGroupSeparator = "." };
 
-            if (!decimal.TryParse(txtMontoDetalle.Text.Trim(), System.Globalization.NumberStyles.Number, formatoEstricto, out decimal monto) || monto <= 0)
+            if (!decimal.TryParse(txtMontoDetalle.Text.Trim(), NumberStyles.Number, formatoEstricto, out decimal monto) || monto <= 0)
             {
                 AlertaWindow.MostrarAdvertencia("Ingrese un monto numérico válido mayor a cero (Ej. 1.250,50).");
                 return;
             }
 
             var comboMetodo = (ComboBoxItem)cmbMetodoPago.SelectedItem;
-            string monedaDetalle = ((ComboBoxItem)cmbMonedaDetalle.SelectedItem).Content.ToString()!;
+            string monedaUI = ((ComboBoxItem)cmbMonedaDetalle.SelectedItem).Content.ToString()!;
 
             _listaDetalles.Add(new DetallePagoUI
             {
                 MetodoId = int.Parse(comboMetodo.Tag.ToString()!),
                 MetodoNombre = comboMetodo.Content.ToString()!,
                 Monto = monto,
-                Moneda = monedaDetalle,
+                MonedaUI = monedaUI,
                 Referencia = txtReferenciaDetalle.Text.Trim()
             });
 
@@ -269,25 +253,15 @@ namespace Sistema_de_Cobros_2._0
 
         // --- REGISTRO PRINCIPAL DEL PAGO (FACTURA) ---
 
-        private void CargarEstudiantes()
-        {
-            cmbEstudiante.ItemsSource = _inscripcionService.ObtenerInscripcionesActivas();
-        }
+        private void CargarEstudiantes() => cmbEstudiante.ItemsSource = _inscripcionService.ObtenerInscripcionesActivas();
 
         private void BtnRegistrar_Click(object sender, RoutedEventArgs e)
         {
-            // OBTENER EL ESTUDIANTE REAL SELECCIONADO
             if (!(cmbEstudiante.SelectedItem is InscripcionInfo estudianteSeleccionado))
             {
                 AlertaWindow.MostrarAdvertencia("Debe buscar y seleccionar un estudiante de la lista.");
                 return;
             }
-
-            string cedula = estudianteSeleccionado.Cedula;
-            string nombre = estudianteSeleccionado.NombreCompleto;
-            int inscripcionId = estudianteSeleccionado.InscripcionId;
-
-            string monedaFactura = ((ComboBoxItem)cmbMonedaRecibo.SelectedItem).Content.ToString()!;
 
             if (_listaDetalles.Count == 0)
             {
@@ -297,43 +271,72 @@ namespace Sistema_de_Cobros_2._0
 
             if (_tasas["BCV"] <= 0)
             {
-                AlertaWindow.MostrarError("Debe configurar las tasas del día (Botón superior) antes de poder procesar pagos.");
+                AlertaWindow.MostrarError("Falta la tasa del día.");
                 return;
             }
 
-            string numeroRecibo = "REC-" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            string cedula = estudianteSeleccionado.Cedula;
+            string nombre = estudianteSeleccionado.NombreCompleto;
+            int inscripcionId = estudianteSeleccionado.InscripcionId;
             int conceptoId = int.Parse(((ComboBoxItem)cmbConcepto.SelectedItem).Tag.ToString()!);
 
-            decimal totalFacturaConvertida = 0m;
+            // Atrapamos la Nota
+            string nota = "";
+            if (FindName("txtNotaPago") is TextBox txtNota) nota = txtNota.Text.Trim();
 
-            // Convertir la UI a Entidades reales para la Base de Datos
+            // INTELIGENCIA DE MONEDA BASE: Si TODO lo que pagó fue en Dólares, el recibo sale en Dólares. Si hay Bolívares mezclados, el recibo base sale en BS.
+            string monedaFacturaBD = _listaDetalles.All(d => d.MonedaBD == "BCV") ? "BCV" : "BS";
+            string monedaFacturaUI = monedaFacturaBD == "BCV" ? "$" : "BS";
+
+            // GENERADOR DE NÚMEROS SECUENCIALES (Ej: REC-20261108-00001)
+            string prefijo = $"REC-{DateTime.Now:yyyyMMdd}-";
+            string? ultimoRecibo = _pagoService.ObtenerUltimoReciboDelDia(prefijo);
+            int secuencial = 1;
+            if (!string.IsNullOrEmpty(ultimoRecibo))
+            {
+                string numStr = ultimoRecibo.Substring(prefijo.Length);
+                if (int.TryParse(numStr, out int num)) secuencial = num + 1;
+            }
+            string numeroRecibo = $"{prefijo}{secuencial:D5}";
+
+            decimal totalFacturaConvertida = 0m;
+            decimal totalFacturaEnUSD = 0m; // CALCULO EXACTO DE MOROSIDAD EN DÓLARES
+
             var listaBd = new List<PagoDetalle>();
             foreach (var d in _listaDetalles)
             {
-                totalFacturaConvertida += ConvertirMoneda(d.Monto, d.Moneda, monedaFactura);
-                decimal montoEnBs = d.Monto * _tasas[d.Moneda];
+                totalFacturaConvertida += ConvertirMoneda(d.Monto, d.MonedaBD, monedaFacturaBD);
+                totalFacturaEnUSD += ConvertirMoneda(d.Monto, d.MonedaBD, "BCV");
 
-                listaBd.Add(new PagoDetalle(0, d.MetodoId, d.Monto, d.Moneda, _tasas[d.Moneda], montoEnBs, d.Referencia) { MetodoNombre = d.MetodoNombre });
+                decimal montoEnBs = d.Monto * _tasas[d.MonedaBD];
+                listaBd.Add(new PagoDetalle(0, d.MetodoId, d.Monto, d.MonedaBD, _tasas[d.MonedaBD], montoEnBs, d.Referencia) { MetodoNombre = d.MetodoNombre });
             }
 
-            // Prevención de Doble-Clic
             btnRegistrar.IsEnabled = false;
 
             try
             {
-                // CORRECCIÓN: Le pasamos los 8 parámetros originales, sin la variable vieja
-                _pagoService.RegistrarPago(numeroRecibo, cedula, inscripcionId, conceptoId, totalFacturaConvertida, monedaFactura, DateTime.Now.AddDays(30), listaBd);
+                // Se envía la nota al repositorio (Asegúrate de que PagoService acepte este parámetro final)
+                _pagoService.RegistrarPago(numeroRecibo, cedula, inscripcionId, conceptoId, totalFacturaConvertida, totalFacturaEnUSD, monedaFacturaBD, DateTime.Now.AddDays(30), listaBd, nota);
 
                 ValidarEstadoCaja();
                 ActualizarHistorial();
 
-                // IMPRESIÓN Y GUARDADO DIRECTO
-                var pagoTemp = new Pago(numeroRecibo, cedula, inscripcionId, conceptoId, totalFacturaConvertida, monedaFactura, SesionService.Instancia.UsuarioActual?.Username ?? "Cajero", DateTime.Now) { FechaPago = DateTime.Now };
+                // Recuperamos el nombre del método para imprimirlo visualmente
+                foreach (var d in listaBd) d.MetodoNombre = _listaDetalles.First(x => x.MetodoId == d.MetodoPagoId).MetodoNombre;
+
+                // Si la factura salió en BCV, la mandamos como "$" a la impresora
+                foreach (var d in listaBd) if (d.MonedaCodigo == "BCV") d.MonedaCodigo = "$";
+
+                var pagoTemp = new Pago(numeroRecibo, cedula, inscripcionId, conceptoId, totalFacturaConvertida, monedaFacturaUI, SesionService.Instancia.UsuarioActual?.Username ?? "Cajero", DateTime.Now)
+                { FechaPago = DateTime.Now, Observaciones = nota };
+
                 ImpresorRecibo.Imprimir(pagoTemp, nombre, ((ComboBoxItem)cmbConcepto.SelectedItem).Content.ToString()!, listaBd);
 
                 AlertaWindow.MostrarExito("Factura procesada con éxito.");
 
-                cmbEstudiante.SelectedIndex = -1; // Limpiar buscador
+                cmbEstudiante.SelectedIndex = -1;
+                if (FindName("txtNotaPago") is TextBox t) t.Clear();
                 _listaDetalles.Clear();
                 CalcularTotalRecibo();
             }
@@ -343,16 +346,14 @@ namespace Sistema_de_Cobros_2._0
             }
             finally
             {
-                // Habilitar de nuevo el botón solo si la caja sigue abierta
                 btnRegistrar.IsEnabled = _cajaService.ObtenerCajaAbierta() != null;
             }
         }
 
         private void BtnNuevoEstudiante_Click(object sender, RoutedEventArgs e)
         {
-            var ventana = new EstudiantesWindow { Owner = this };
-            ventana.ShowDialog();
-            CargarEstudiantes(); // Recargar el combobox por si se creó uno nuevo
+            new EstudiantesWindow { Owner = this }.ShowDialog();
+            CargarEstudiantes();
         }
 
         // --- ACCIONES EN EL HISTORIAL (DATA GRID) ---
@@ -362,6 +363,9 @@ namespace Sistema_de_Cobros_2._0
             if (sender is FrameworkElement element && element.DataContext is Pago pagoSeleccionado)
             {
                 var detalles = _pagoService.ObtenerDetalles(pagoSeleccionado.Id);
+                // Convertimos el BCV en $ para que en el recibo se vea bien
+                foreach (var d in detalles) if (d.MonedaCodigo == "BCV") d.MonedaCodigo = "$";
+
                 ImpresorRecibo.Imprimir(pagoSeleccionado, pagoSeleccionado.NombreEstudiante, "Concepto ID: " + pagoSeleccionado.ConceptoId, detalles);
             }
         }
@@ -370,11 +374,7 @@ namespace Sistema_de_Cobros_2._0
         {
             if (sender is FrameworkElement element && element.DataContext is Pago pagoSeleccionado)
             {
-                if (pagoSeleccionado.Estado == "Devuelto")
-                {
-                    AlertaWindow.MostrarInfo("Este recibo ya ha sido devuelto anteriormente.");
-                    return;
-                }
+                if (pagoSeleccionado.Estado == "Devuelto") { AlertaWindow.MostrarInfo("Este recibo ya ha sido devuelto anteriormente."); return; }
 
                 var ventanaMotivo = new MotivoDevolucionWindow { Owner = this };
                 ventanaMotivo.ShowDialog();
@@ -385,43 +385,32 @@ namespace Sistema_de_Cobros_2._0
                     {
                         _devolucionService.RealizarDevolucion(pagoSeleccionado, ventanaMotivo.Motivo);
                         AlertaWindow.MostrarExito("Devolución procesada correctamente. La caja ha sido actualizada.");
-
                         ActualizarHistorial();
                         ValidarEstadoCaja();
                     }
-                    catch (Exception ex)
-                    {
-                        AlertaWindow.MostrarError(ex.Message);
-                    }
+                    catch (Exception ex) { AlertaWindow.MostrarError(ex.Message); }
                 }
             }
         }
 
-        // --- NAVEGACIÓN (OTROS MÓDULOS) ---
+        // --- NAVEGACIÓN Y SESIÓN (OTROS MÓDULOS) ---
 
-        private void BtnCursos_Click(object sender, RoutedEventArgs e)
-        {
-            new CursosWindow { Owner = this }.ShowDialog();
-        }
+        private void BtnMorosos_Click(object sender, RoutedEventArgs e) => new MorosidadWindow { Owner = this }.ShowDialog();
+        private void BtnCalendario_Click(object sender, RoutedEventArgs e) => new CalendarioWindow { Owner = this }.ShowDialog();
+        private void BtnCursos_Click(object sender, RoutedEventArgs e) => new CursosWindow { Owner = this }.ShowDialog();
+        private void BtnGestionUsuarios_Click(object sender, RoutedEventArgs e) => new GestionUsuariosWindow().ShowDialog();
+        private void BtnAuditoria_Click(object sender, RoutedEventArgs e) => new AuditoriaWindow().ShowDialog();
+        private void BtnMantenimiento_Click(object sender, RoutedEventArgs e) => new MantenimientoWindow { Owner = this }.ShowDialog();
+        private void BtnLicencia_Click(object sender, RoutedEventArgs e) => new LicenciaWindow { Owner = this }.ShowDialog();
 
-        private void BtnMorosos_Click(object sender, RoutedEventArgs e)
+        private void BtnCerrarSesion_Click(object sender, RoutedEventArgs e)
         {
-            new MorosidadWindow { Owner = this }.ShowDialog();
-        }
-
-        private void BtnCalendario_Click(object sender, RoutedEventArgs e)
-        {
-            new CalendarioWindow { Owner = this }.ShowDialog();
-        }
-
-        private void BtnGestionUsuarios_Click(object sender, RoutedEventArgs e)
-        {
-            new GestionUsuariosWindow().ShowDialog();
-        }
-
-        private void BtnAuditoria_Click(object sender, RoutedEventArgs e)
-        {
-            new AuditoriaWindow().ShowDialog();
+            if (AlertaWindow.SolicitarConfirmacion("¿Está seguro de que desea cerrar la sesión actual?", "Cerrar Sesión"))
+            {
+                SesionService.Instancia.CerrarSesion();
+                new LoginWindow().Show();
+                this.Close();
+            }
         }
     }
 }

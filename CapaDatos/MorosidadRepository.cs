@@ -60,16 +60,16 @@ namespace CapaDatos
                 decimal precioClase = reader.GetDecimal("PrecioClase"); // Ej. 12$
                 decimal pagadoUSD = reader.GetDecimal("TotalPagadoHistoricoUSD");
 
-                // 3. LA MATEMÁTICA LÓGICA QUE EXPLICASTE
-                decimal costoTotalUSD = clases * precioClase; // Ej. 2 clases x 12$ = 24$
-                decimal deudaUSD = Math.Round(costoTotalUSD - pagadoUSD, 2); // Redondeamos a 2 decimales para matar el bug de los céntimos
+                // 3. LA MATEMÁTICA LÓGICA
+                decimal costoTotalUSD = clases * precioClase;
+                decimal deudaUSD = Math.Round(costoTotalUSD - pagadoUSD, 2);
 
-                if (deudaUSD > 0) // Si la deuda es mayor a cero, está moroso
+                if (deudaUSD > 0)
                 {
-                    // Multiplicamos esos dólares fijos por la tasa que haya amanecido HOY
+                    // AHORA SÍ: Multiplica los dólares por la tasa de HOY de cada método
                     decimal deudaBCV = Math.Round(deudaUSD * tasaBCV, 2);
-                    decimal deudaEUR = tasaEUR > 0 ? Math.Round(deudaBCV / tasaEUR, 2) : 0;
-                    decimal deudaUSDT = tasaUSDT > 0 ? Math.Round(deudaBCV / tasaUSDT, 2) : 0;
+                    decimal deudaEUR = Math.Round(deudaUSD * tasaEUR, 2);
+                    decimal deudaUSDT = Math.Round(deudaUSD * tasaUSDT, 2);
 
                     lista.Add(new MorosidadInfo
                     {
@@ -82,7 +82,8 @@ namespace CapaDatos
                         DeudaUSD = deudaUSD,
                         DeudaBCV = deudaBCV,
                         DeudaEUR = deudaEUR,
-                        DeudaUSDT = deudaUSDT
+                        DeudaUSDT = deudaUSDT,
+                        PrecioClase = precioClase
                     });
                 }
             }

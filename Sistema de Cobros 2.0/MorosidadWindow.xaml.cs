@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
+using System.Linq;
+using System.Collections.Generic;
 using CapaNegocio;
 using Entidades;
 
@@ -13,7 +15,8 @@ namespace Sistema_de_Cobros_2._0
         public MorosidadWindow()
         {
             InitializeComponent();
-            dgMorosos.ItemsSource = _morosidadService.ObtenerMorosos();
+            _listaCompleta = _morosidadService.ObtenerMorosos();
+            dgMorosos.ItemsSource = _listaCompleta;
         }
 
         private void BtnWhatsApp_Click(object sender, RoutedEventArgs e)
@@ -30,6 +33,20 @@ namespace Sistema_de_Cobros_2._0
                 // Abre el navegador predeterminado de Windows
                 Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
             }
+        }
+        private List<MorosidadInfo> _listaCompleta; // NUEVA VARIABLE GLOBAL
+
+        private void TxtBuscar_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string nombreOCedula = txtBuscar.Text.ToLower();
+            string curso = txtFiltroCurso.Text.ToLower();
+
+            var filtrada = _listaCompleta.Where(m =>
+                (m.NombreCompleto.ToLower().Contains(nombreOCedula) || m.Cedula.ToLower().Contains(nombreOCedula)) &&
+                m.Curso.ToLower().Contains(curso)
+            ).ToList();
+
+            dgMorosos.ItemsSource = filtrada;
         }
     }
 }

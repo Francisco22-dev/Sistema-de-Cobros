@@ -13,12 +13,13 @@ namespace CapaNegocio
         public List<PagoDetalle> ObtenerDetalles(int pagoId) => _repository.ObtenerDetalles(pagoId);
         public List<Pago> ObtenerPagos(int limite = 100, string filtro = "") => _repository.ObtenerRecientes(limite, filtro);
         public decimal ObtenerTotalHoy(DateTime fechaAperturaCaja) => _repository.ObtenerTotalHoy(fechaAperturaCaja);
+        public string? ObtenerUltimoReciboDelDia(string prefijo) => _repository.ObtenerUltimoReciboDelDia(prefijo);
         public decimal ObtenerIngresosTotalesUSD()
         {
             return _repository.ObtenerIngresosTotalesUSD();
         }
 
-        public void RegistrarPago(string numeroRecibo, string estudianteCedula, int inscripcionId, int conceptoId, decimal total, string monedaCodigo, DateTime fechaVencimiento, List<PagoDetalle> detalles)
+        public void RegistrarPago(string numeroRecibo, string estudianteCedula, int inscripcionId, int conceptoId, decimal total, decimal totalEnUsd, string monedaCodigo, DateTime fechaVencimiento, List<PagoDetalle> detalles, string observaciones = null)
         {
             try
             {

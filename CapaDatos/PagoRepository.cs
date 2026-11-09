@@ -139,5 +139,13 @@ namespace CapaDatos
             var result = cmd.ExecuteScalar();
             return result == DBNull.Value ? 0 : Convert.ToDecimal(result);
         }
+        public string? ObtenerUltimoReciboDelDia(string prefijo)
+        {
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            using var cmd = new MySqlCommand("SELECT NumeroRecibo FROM Pagos WHERE NumeroRecibo LIKE @prefijo ORDER BY Id DESC LIMIT 1", conn);
+            cmd.Parameters.AddWithValue("@prefijo", prefijo + "%");
+            var result = cmd.ExecuteScalar();
+            return result?.ToString();
+        }
     }
 }

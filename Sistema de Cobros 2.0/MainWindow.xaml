@@ -62,7 +62,7 @@
         </Style>
     </Window.Resources>
 
-    <Grid Margin="20">
+    <Grid Margin="20" Cursor="">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -70,28 +70,43 @@
 
         <!-- BARRA SUPERIOR -->
         <Grid Grid.Row="0" Margin="0,0,0,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="Sistema de Cobros" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Primary}"/>
-                <Border Background="#E3F2FD" CornerRadius="15" Padding="15,5" Margin="20,0,0,0">
-                    <TextBlock x:Name="txtTasaDia" Text="Tasa BCV: Cargando..." Foreground="#1976D2" FontWeight="SemiBold"/>
-                </Border>
-            </StackPanel>
+            <!-- Fila 1: Título, Tasa y Botones Operativos (Grandes) -->
+            <Grid Grid.Row="0" Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal">
-                <Button x:Name="btnMorosos" Content="Morosidad" Style="{StaticResource BotonRedondeado}" Background="#FFEBEE" Foreground="#D32F2F" BorderThickness="0" Padding="15,8" Click="BtnMorosos_Click" Margin="0,0,10,0"/>
-                <Button x:Name="btnCalendario" Content="Calendario" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnCalendario_Click" Margin="0,0,10,0"/>
-                <Button x:Name="btnAbrirCaja" Content="Abrir Caja" Style="{StaticResource BotonRedondeado}" Background="{StaticResource Success}" Foreground="White" Padding="15,8" Click="BtnAbrirCaja_Click" Margin="0,0,10,0"/>
-                <Button x:Name="btnCerrarCaja" Content="Cerrar Caja" Style="{StaticResource BotonRedondeado}" Background="{StaticResource Danger}" Foreground="White" Padding="15,8" Click="BtnCerrarCaja_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
-                <Button x:Name="btnFlujoCaja" Content="Flujo de Caja (Egresos)" Style="{StaticResource BotonRedondeado}" Background="#FF9800" Foreground="White" BorderThickness="0" Padding="15,8" Click="BtnFlujoCaja_Click" Margin="0,0,10,0"/>
-                <Button x:Name="btnConfigurarTasa" Content="Tasa BCV" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnConfigurarTasa_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
-                <Button x:Name="btnGestionUsuarios" Content="Usuarios" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnGestionUsuarios_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
-                <Button x:Name="btnCursos" Content="Cursos" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnCursos_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
-                <Button x:Name="btnAuditoria" Content="Auditoría" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnAuditoria_Click" Visibility="Collapsed"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Sistema de Cobros" FontSize="22" FontWeight="Bold" Foreground="{StaticResource Primary}"/>
+                    <Border Background="#E3F2FD" CornerRadius="15" Padding="15,5" Margin="20,0,0,0">
+                        <TextBlock x:Name="txtTasaDia" Text="Tasa BCV: Cargando..." Foreground="#1976D2" FontWeight="SemiBold"/>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button x:Name="btnMorosos" Content="Morosidad" Style="{StaticResource BotonRedondeado}" Background="#FFEBEE" Foreground="#D32F2F" Padding="15,8" Click="BtnMorosos_Click" Margin="0,0,10,0"/>
+                    <Button x:Name="btnCalendario" Content="Calendario" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnCalendario_Click" Margin="0,0,10,0"/>
+                    <Button x:Name="btnAbrirCaja" Content="Abrir Caja" Style="{StaticResource BotonRedondeado}" Background="{StaticResource Success}" Foreground="White" Padding="15,8" Click="BtnAbrirCaja_Click" Margin="0,0,10,0"/>
+                    <Button x:Name="btnCerrarCaja" Content="Cerrar Caja" Style="{StaticResource BotonRedondeado}" Background="{StaticResource Danger}" Foreground="White" Padding="15,8" Click="BtnCerrarCaja_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
+                    <Button x:Name="btnFlujoCaja" Content="Flujo de Caja (Egresos)" Style="{StaticResource BotonRedondeado}" Background="#FF9800" Foreground="White" Padding="15,8" Click="BtnFlujoCaja_Click"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Fila 2: Botones de Administración y Sistema (Más pequeños) -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button x:Name="btnConfigurarTasa" Content="Tasa BCV" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="12,6" FontSize="12" Click="BtnConfigurarTasa_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
+                <Button x:Name="btnCursos" Content="Cursos" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="12,6" FontSize="12" Click="BtnCursos_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
+                <Button x:Name="btnGestionUsuarios" Content="Usuarios" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="12,6" FontSize="12" Click="BtnGestionUsuarios_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
+                <Button x:Name="btnAuditoria" Content="Auditoría" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="12,6" FontSize="12" Click="BtnAuditoria_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
+                <Button x:Name="btnMantenimiento" Content="Mantenimiento" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="12,6" FontSize="12" Click="BtnMantenimiento_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
+                <Button x:Name="btnLicencia" Content="Licencia" Style="{StaticResource BotonRedondeado}" Background="#212121" Foreground="White" BorderThickness="0" Padding="12,6" FontSize="12" Click="BtnLicencia_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
+                <Button x:Name="btnCerrarSesion" Content="Cerrar Sesión" Style="{StaticResource BotonRedondeado}" Background="Transparent" Foreground="{StaticResource Danger}" BorderBrush="{StaticResource Danger}" BorderThickness="1" Padding="12,6" FontSize="12" Click="BtnCerrarSesion_Click"/>
             </StackPanel>
         </Grid>
 
@@ -155,15 +170,6 @@
                                     <ComboBoxItem Content="Otro" Tag="6"/>
                                 </ComboBox>
                             </StackPanel>
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="Moneda Base" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,5"/>
-                                <ComboBox x:Name="cmbMonedaRecibo" Style="{StaticResource ModernComboBox}">
-                                    <ComboBoxItem Content="BS" IsSelected="True"/>
-                                    <ComboBoxItem Content="BCV"/>
-                                    <ComboBoxItem Content="EUR"/>
-                                    <ComboBoxItem Content="USDT"/>
-                                </ComboBox>
-                            </StackPanel>
                         </Grid>
 
                         <Border BorderBrush="#E5E7EB" BorderThickness="0,1,0,0" Margin="0,0,0,15"/>
@@ -181,40 +187,46 @@
                             <!-- COLUMNA 0: MÉTODO -->
                             <StackPanel Grid.Column="0" Margin="0,0,5,0">
                                 <TextBlock Text="Método" FontSize="11" Foreground="#666"/>
-                                <ComboBox x:Name="cmbMetodoPago" Style="{StaticResource ModernComboBox}" Margin="0,2,0,0">
+                                <ComboBox x:Name="cmbMetodoPago" Style="{StaticResource ModernComboBox}" Margin="0,2,0,0" SelectionChanged="CmbMetodoPago_SelectionChanged">
                                     <ComboBoxItem Content="Efectivo" Tag="1" IsSelected="True"/>
                                     <ComboBoxItem Content="Transferencia" Tag="2"/>
-                                    <ComboBoxItem Content="Zelle" Tag="3"/>
+                                    <ComboBoxItem Content="Tarjeta" Tag="4"/>
                                     <ComboBoxItem Content="Pago Móvil" Tag="5"/>
+                                    <ComboBoxItem Content="Zelle" Tag="3"/>
                                     <ComboBoxItem Content="Divisas (Físico)" Tag="8"/>
                                 </ComboBox>
                             </StackPanel>
 
-                            <!-- COLUMNA 1: MONEDA -->
                             <StackPanel Grid.Column="1" Margin="5,0,5,0">
                                 <TextBlock Text="Moneda" FontSize="11" Foreground="#666"/>
                                 <ComboBox x:Name="cmbMonedaDetalle" Style="{StaticResource ModernComboBox}" Margin="0,2,0,0">
                                     <ComboBoxItem Content="BS" IsSelected="True"/>
-                                    <ComboBoxItem Content="BCV"/>
-                                    <ComboBoxItem Content="EUR"/>
-                                    <ComboBoxItem Content="USDT"/>
+                                    <ComboBoxItem Content="$"/>
+                                    <!--<ComboBoxItem Content="EUR"/>-->
+                                    <!--<ComboBoxItem Content="USDT"/>-->
                                 </ComboBox>
                             </StackPanel>
 
-                            <!-- COLUMNA 2: MONTO -->
                             <StackPanel Grid.Column="2" Margin="5,0,0,0">
                                 <TextBlock Text="Monto" FontSize="11" Foreground="#666"/>
                                 <TextBox x:Name="txtMontoDetalle" Style="{StaticResource ModernTextBox}" Margin="0,2,0,0"/>
                             </StackPanel>
                         </Grid>
+
                         <StackPanel Margin="0,0,0,10">
-                            <TextBlock Text="Referencia (opcional)" FontSize="11" Foreground="#666"/>
+                            <TextBlock Text="Referencia (Solo para transferencias/PM)" FontSize="11" Foreground="#666"/>
+                            <TextBox x:Name="txtReferenciaDetalle" Style="{StaticResource ModernTextBox}" Margin="0,2,0,0"/>
+                        </StackPanel>
+
+                        <!-- NUEVO: CAMPO DE NOTA -->
+                        <StackPanel Margin="0,0,0,10">
+                            <TextBlock Text="Nota / Observación (Ej: Clase 1 y 2 de Noviembre)" FontSize="11" Foreground="#666"/>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="txtReferenciaDetalle" Grid.Column="0" Style="{StaticResource ModernTextBox}" Margin="0,2,10,0"/>
+                                <TextBox x:Name="txtNotaPago" Grid.Column="0" Style="{StaticResource ModernTextBox}" Margin="0,2,10,0"/>
                                 <Button x:Name="btnAgregarDetalle" Grid.Column="1" Style="{StaticResource BotonRedondeado}" Content="+ Añadir" Background="#E3F2FD" Foreground="#1976D2" FontWeight="Bold" Padding="15,0" Click="BtnAgregarDetalle_Click"/>
                             </Grid>
                         </StackPanel>
@@ -237,7 +249,7 @@
                         <!-- TOTAL Y REGISTRAR -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,15">
                             <TextBlock Text="Total a Cobrar:" FontSize="14" FontWeight="SemiBold" Foreground="#666" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                            <TextBlock x:Name="txtSumaTotal" Text="0.00" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextDark}"/>
+                            <TextBlock x:Name="txtSumaTotal" Text="0.00 BS" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextDark}"/>
                         </StackPanel>
 
                         <Button x:Name="btnRegistrar" Content="Procesar Factura" Style="{StaticResource BotonRedondeado}" Background="{StaticResource Primary}" Foreground="White" FontWeight="Bold" Padding="15,12" Click="BtnRegistrar_Click"/>
@@ -280,10 +292,10 @@
                             <DataGridTextColumn Header="Estudiante" Binding="{Binding NombreEstudiante}" Width="*"/>
                             <DataGridTextColumn Header="Curso y Horario" Binding="{Binding CursoHorario}" Width="180"/>
                             <DataGridTextColumn Header="Monto" Binding="{Binding Total, StringFormat=N2}" Width="70"/>
-                            <DataGridTextColumn Header="Mon." Binding="{Binding MonedaCodigo}" Width="50"/>
+                            <DataGridTextColumn Header="Mon." Binding="{Binding MonedaUI}" Width="50"/>
                             <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="75"/>
                             <DataGridTextColumn Header="Fecha" Binding="{Binding FechaPago, StringFormat=dd/MM/yyyy}" Width="90"/>
-
+                            <DataGridTextColumn Header="Nota" Binding="{Binding Observaciones}" Width="120"/>
                             <DataGridTemplateColumn Header="Acciones" Width="140">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>

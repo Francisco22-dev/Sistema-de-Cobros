@@ -21,6 +21,7 @@ namespace Entidades
         // Propiedades de UI (Traídas por los JOINs)
         public string NombreEstudiante { get; set; } = string.Empty;
         public string CursoHorario { get; set; } = string.Empty;
+        public string MonedaUI => MonedaCodigo == "BCV" ? "$" : MonedaCodigo;
 
         public Pago() { }
 

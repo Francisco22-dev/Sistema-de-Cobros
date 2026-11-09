@@ -1,14 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "QdWxXw6UKVI=",
+  "dgSpecHash": "fdPJ9UUSIOs=",
   "success": true,
   "projectFilePath": "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\Desktop\\Ángel y Fran\\Francisco\\Sistema de Cobro V2\\Sistema de Cobros 2.0\\CapaDatos\\CapaDatos.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\7.0.1\\microsoft.extensions.logging.abstractions.7.0.1.nupkg.sha512",
-    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\mysqlconnector\\2.3.7\\mysqlconnector.2.3.7.nupkg.sha512",
-    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\system.configuration.configurationmanager\\8.0.0\\system.configuration.configurationmanager.8.0.0.nupkg.sha512",
-    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\system.diagnostics.eventlog\\8.0.0\\system.diagnostics.eventlog.8.0.0.nupkg.sha512",
-    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\system.security.cryptography.protecteddata\\8.0.0\\system.security.cryptography.protecteddata.8.0.0.nupkg.sha512"
+    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.2\\microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512",
+    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.2\\microsoft.extensions.logging.abstractions.8.0.2.nupkg.sha512",
+    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\mysqlconnector\\2.6.2\\mysqlconnector.2.6.2.nupkg.sha512",
+    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\system.configuration.configurationmanager\\10.0.14\\system.configuration.configurationmanager.10.0.14.nupkg.sha512",
+    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\system.diagnostics.eventlog\\10.0.14\\system.diagnostics.eventlog.10.0.14.nupkg.sha512",
+    "C:\\Users\\lorenzo serrano.DESKTOP-LLBMAGR\\.nuget\\packages\\system.security.cryptography.protecteddata\\10.0.14\\system.security.cryptography.protecteddata.10.0.14.nupkg.sha512"
   ],
   "logs": []
 }

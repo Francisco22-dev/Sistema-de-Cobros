@@ -11,27 +11,23 @@ namespace Sistema_de_Cobros_2._0
         public ConfigurarTasaWindow()
         {
             InitializeComponent();
+            txtBCV.Focus();
         }
 
         private void BtnGuardar_Click(object sender, RoutedEventArgs e)
         {
-            var formatoEstricto = new System.Globalization.NumberFormatInfo
-            {
-                NumberDecimalSeparator = ",",
-                NumberGroupSeparator = "."
-            };
+            var formatoEstricto = new NumberFormatInfo { NumberDecimalSeparator = ",", NumberGroupSeparator = "." };
 
-            if (decimal.TryParse(txtBCV.Text.Trim(), System.Globalization.NumberStyles.Number, formatoEstricto, out decimal bcv) &&
-                decimal.TryParse(txtEUR.Text.Trim(), System.Globalization.NumberStyles.Number, formatoEstricto, out decimal eur) &&
-                decimal.TryParse(txtUSDT.Text.Trim(), System.Globalization.NumberStyles.Number, formatoEstricto, out decimal usdt))
+            // Validamos solo el dólar ($) y le enviamos 1 de comodín a los demás para no romper la BD
+            if (decimal.TryParse(txtBCV.Text.Trim(), NumberStyles.Number, formatoEstricto, out decimal bcv) && bcv > 0)
             {
-                _tasaService.FijarTasas(bcv, eur, usdt);
-                AlertaWindow.MostrarExito("Tasas guardadas exitosamente.");
+                _tasaService.FijarTasas(bcv, 1m, 1m);
+                AlertaWindow.MostrarExito("Tasa guardada exitosamente.");
                 this.Close();
             }
             else
             {
-                AlertaWindow.MostrarAdvertencia("Por favor verifique que todos los campos tengan números válidos (Ej. 1.250,50).");
+                AlertaWindow.MostrarAdvertencia("Por favor verifique que la tasa ingresada sea válida (Ej. 45,50).");
             }
         }
     }
