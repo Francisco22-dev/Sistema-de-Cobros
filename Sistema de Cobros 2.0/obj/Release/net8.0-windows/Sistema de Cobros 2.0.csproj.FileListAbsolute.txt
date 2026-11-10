@@ -68,3 +68,5 @@ C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Release\net8.0-windows\ref\Sistema de Cobros 2.0.dll
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Release\net8.0-windows\OperacionesCajaWindow.baml
 C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Release\net8.0-windows\OperacionesCajaWindow.g.cs
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Release\net8.0-windows\CargandoWindow.baml
+C:\Users\lorenzo serrano.DESKTOP-LLBMAGR\Desktop\Ángel y Fran\Francisco\Sistema de Cobro V2\Sistema de Cobros 2.0\Sistema de Cobros 2.0\obj\Release\net8.0-windows\CargandoWindow.g.cs

@@ -47,7 +47,6 @@ namespace Sistema_de_Cobros_2._0
             _inscripcionService = new InscripcionService();
             _movimientoService = new MovimientoCajaService();
 
-            CargarEstudiantes();
             dgDetalles.ItemsSource = _listaDetalles;
 
             // CONTROL ESTRICTO DE ROLES
@@ -55,7 +54,6 @@ namespace Sistema_de_Cobros_2._0
 
             if (rolActual == "Admin" || rolActual == "Programador")
             {
-                // Permisos de Administrador
                 if (FindName("btnConfigurarTasa") is Button btnTasa) btnTasa.Visibility = Visibility.Visible;
                 if (FindName("btnGestionUsuarios") is Button btnUsr) btnUsr.Visibility = Visibility.Visible;
                 if (FindName("btnAuditoria") is Button btnAud) btnAud.Visibility = Visibility.Visible;
@@ -64,13 +62,49 @@ namespace Sistema_de_Cobros_2._0
 
             if (rolActual == "Programador")
             {
-                // Permisos Únicos de Programador
                 if (FindName("btnLicencia") is Button btnLic) btnLic.Visibility = Visibility.Visible;
             }
 
-            ActualizarVistaTasa();
-            ValidarEstadoCaja();
-            ActualizarHistorial();
+            // CARGA ASÍNCRONA: No bloquea la interfaz de Windows
+            Loaded += MainWindow_Loaded;
+        }
+
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // 1. Tasa y Caja (Inmediato)
+                await Task.Run(() => _tasas = _tasaService.ObtenerTasasDelDia());
+                RefrescarUIVistaTasa();
+                ValidarEstadoCaja();
+
+                // 2. Cargar lista de estudiantes en segundo plano
+                var estudiantes = await Task.Run(() => _inscripcionService.ObtenerInscripcionesActivas());
+                cmbEstudiante.ItemsSource = estudiantes;
+
+                // 3. Cargar historial de pagos en segundo plano
+                var pagos = await Task.Run(() => _pagoService.ObtenerPagos(100, ""));
+                dgHistorial.ItemsSource = pagos;
+            }
+            catch (Exception ex)
+            {
+                AlertaWindow.MostrarError($"Error cargando datos principales: {ex.Message}");
+            }
+        }
+
+        // Método auxiliar limpio para mostrar la tasa en pantalla
+        private void RefrescarUIVistaTasa()
+        {
+            if (_tasas.ContainsKey("BCV") && _tasas["BCV"] > 0)
+            {
+                txtTasaDia.Text = $"Tasa $: {_tasas["BCV"]:N2} Bs";
+                txtTasaDia.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1976D2"));
+            }
+            else
+            {
+                txtTasaDia.Text = "TASAS NO CONFIGURADAS";
+                txtTasaDia.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F44336"));
+            }
         }
 
         // --- GESTIÓN DE TASAS DE CAMBIO ---

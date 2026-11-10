@@ -91,6 +91,7 @@
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button x:Name="btnMorosos" Content="Morosidad" Style="{StaticResource BotonRedondeado}" Background="#FFEBEE" Foreground="#D32F2F" Padding="15,8" Click="BtnMorosos_Click" Margin="0,0,10,0"/>
+                    <Button x:Name="btnEstudiantes" Content="Estudiantes" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnNuevoEstudiante_Click" Margin="0,0,10,0"/>
                     <Button x:Name="btnCalendario" Content="Calendario" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="15,8" Click="BtnCalendario_Click" Margin="0,0,10,0"/>
                     <Button x:Name="btnAbrirCaja" Content="Abrir Caja" Style="{StaticResource BotonRedondeado}" Background="{StaticResource Success}" Foreground="White" Padding="15,8" Click="BtnAbrirCaja_Click" Margin="0,0,10,0"/>
                     <Button x:Name="btnCerrarCaja" Content="Cerrar Caja" Style="{StaticResource BotonRedondeado}" Background="{StaticResource Danger}" Foreground="White" Padding="15,8" Click="BtnCerrarCaja_Click" Margin="0,0,10,0" Visibility="Collapsed"/>

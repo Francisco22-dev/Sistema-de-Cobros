@@ -5,9 +5,6 @@ using Entidades;
 
 namespace CapaNegocio
 {
-    /// <summary>
-    /// Servicio de negocio para la gestión de inscripciones y bloqueo por morosidad.
-    /// </summary>
     public class InscripcionService
     {
         private readonly InscripcionRepository _repository;
@@ -21,20 +18,29 @@ namespace CapaNegocio
             _auditoria = new AuditorService();
         }
 
-        public List<Inscripcion> ObtenerInscripciones(int limite = 100)
+        public List<Inscripcion> ObtenerInscripciones(int limite = 100) => _repository.ObtenerRecientes(limite);
+        public List<InscripcionInfo> ObtenerInscripcionesActivas() => _repository.ObtenerInscripcionesActivas();
+        public List<InscripcionInfo> ObtenerTodasLasInscripciones(string filtro = "", string estado = "") => _repository.ObtenerTodasLasInscripciones(filtro, estado);
+
+        public void CambiarEstadoInscripcion(int inscripcionId, string nuevoEstado, string? motivo)
         {
-            return _repository.ObtenerRecientes(limite);
-        }
-        public List<InscripcionInfo> ObtenerInscripcionesActivas()
-        {
-            return _repository.ObtenerInscripcionesActivas();
+            try
+            {
+                _repository.ActualizarEstado(inscripcionId, nuevoEstado, motivo);
+                _auditoria.Registrar("UPDATE_ESTADO", "Inscripciones", inscripcionId.ToString(), null,
+                    $"Estado: {nuevoEstado} | Motivo: {motivo ?? "Sin motivo"}", true);
+            }
+            catch (Exception ex)
+            {
+                _auditoria.Registrar("UPDATE_ESTADO", "Inscripciones", inscripcionId.ToString(), null, ex.Message, false);
+                throw;
+            }
         }
 
         public void RegistrarInscripcion(string estudianteCedula, int grupoId, string? observaciones = null)
         {
             try
             {
-                // REGLA DE NEGOCIO: Bloquear si tiene deudas
                 if (_pagoRepository.TieneDeuda(estudianteCedula, DateTime.Now.Date))
                 {
                     throw new InvalidOperationException("No se puede inscribir: El estudiante tiene pagos vencidos pendientes.");
@@ -46,7 +52,6 @@ namespace CapaNegocio
                 };
 
                 _repository.Agregar(inscripcion);
-
                 _auditoria.Registrar("INSERT", "Inscripciones", null, null,
                     $"Cédula:{estudianteCedula}, GrupoId:{grupoId}", true);
             }

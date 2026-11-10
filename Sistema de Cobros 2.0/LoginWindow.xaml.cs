@@ -52,8 +52,8 @@ namespace Sistema_de_Cobros_2._0
 
                     // Entrar al sistema
                     SesionService.Instancia.IniciarSesion(usuario!);
-                    var mainWindow = new MainWindow();
-                    mainWindow.Show();
+                    var pantallaCarga = new CargandoWindow();
+                    pantallaCarga.Show();
                     this.Close();
                 }
                 else

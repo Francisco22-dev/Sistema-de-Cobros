@@ -13,6 +13,9 @@
     <Compile Update="CalendarioWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="CargandoWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="CierreCajaWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
