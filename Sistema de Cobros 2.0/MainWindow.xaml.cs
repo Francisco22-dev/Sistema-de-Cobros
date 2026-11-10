@@ -59,7 +59,6 @@ namespace Sistema_de_Cobros_2._0
                 if (FindName("btnConfigurarTasa") is Button btnTasa) btnTasa.Visibility = Visibility.Visible;
                 if (FindName("btnGestionUsuarios") is Button btnUsr) btnUsr.Visibility = Visibility.Visible;
                 if (FindName("btnAuditoria") is Button btnAud) btnAud.Visibility = Visibility.Visible;
-                if (FindName("btnCursos") is Button btnCursos) btnCursos.Visibility = Visibility.Visible;
                 if (FindName("btnMantenimiento") is Button btnMto) btnMto.Visibility = Visibility.Visible;
             }
 

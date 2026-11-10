@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Sistema de Cobros 2.0")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+733f579a4532c874bee13ed3c88ff4017cf09785")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d437bb66a3e8f1538bbb965b8240235d298a4f32")]
 [assembly: System.Reflection.AssemblyProductAttribute("Sistema de Cobros 2.0")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Sistema de Cobros 2.0")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
