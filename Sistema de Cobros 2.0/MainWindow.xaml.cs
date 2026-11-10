@@ -134,9 +134,12 @@ namespace Sistema_de_Cobros_2._0
 
         private void ActualizarTotalHoy()
         {
-            // MUESTRA EL SALDO NETO GLOBAL (Ingresos - Egresos) EN BS
+            var caja = _cajaService.ObtenerCajaAbierta();
+            if (caja != null)
+                txtRecaudadoHoy.Text = $"Bs. {_pagoService.ObtenerTotalHoy(caja.FechaApertura):N2}"; // Solo lo de hoy
+
             var resumen = _movimientoService.CalcularResumenGlobal();
-            txtTotalHoy.Text = $"Bs. {resumen.SaldoNetoBS:N2}";
+            txtTotalHoy.Text = $"Bs. {resumen.SaldoNetoBS:N2}"; // El Banco real
         }
 
         private void ActualizarHistorial()

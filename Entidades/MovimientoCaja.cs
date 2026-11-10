@@ -17,10 +17,11 @@ namespace Entidades
         public string? Referencia { get; set; }
         public DateTime FechaMovimiento { get; set; }
         public string UsuarioRegistra { get; set; }
+        public string? Metodo { get; set; }
 
         public MovimientoCaja(int cajaId, string tipo, decimal monto, string monedaCodigo,
             string concepto, string usuarioRegistra)
-        {
+        { 
             CajaId = cajaId;
             Tipo = tipo;
             Monto = monto;

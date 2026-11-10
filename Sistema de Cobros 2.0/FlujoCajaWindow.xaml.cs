@@ -35,6 +35,7 @@ namespace Sistema_de_Cobros_2._0
 
                 ActualizarTarjetasVisuales();
                 dgEgresos.ItemsSource = _movimientoService.ObtenerTodosLosEgresos();
+                txtDesglose.Text = $"Efec. Bs: {resumen.FisicoBs:N2} | Bco. Bs: {resumen.BancoBs:N2}\nEfec. $: {resumen.FisicoUsd:N2} | Zelle: {resumen.BancoUsd:N2}";
             }
             catch (Exception ex)
             {
@@ -91,12 +92,14 @@ namespace Sistema_de_Cobros_2._0
             string moneda = ((ComboBoxItem)cmbMoneda.SelectedItem).Content.ToString()!;
             string categoria = cmbCategoria.Text.Trim();
             string concepto = txtConcepto.Text.Trim();
+            string metodo = ((ComboBoxItem)cmbMetodoEgreso.SelectedItem).Content.ToString()!;
+           
 
             if (AlertaWindow.SolicitarConfirmacion($"¿Está seguro de extraer {monto:N2} {moneda} de la caja para '{categoria}'?"))
             {
                 try
                 {
-                    _movimientoService.RegistrarEgreso(monto, moneda, categoria, concepto);
+                    _movimientoService.RegistrarEgreso(monto, moneda, categoria, concepto, metodo); 
                     AlertaWindow.MostrarExito("Gasto registrado y descontado de la caja exitosamente.");
 
                     txtMonto.Clear();
@@ -108,6 +111,11 @@ namespace Sistema_de_Cobros_2._0
                     AlertaWindow.MostrarError(ex.Message);
                 }
             }
+        }
+        private void BtnOperaciones_Click(object sender, RoutedEventArgs e)
+        {
+            new OperacionesCajaWindow { Owner = this }.ShowDialog();
+            CargarDatos(); // Recargar el dashboard al terminar
         }
     }
 }

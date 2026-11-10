@@ -1,0 +1,106 @@
+﻿<Window x:Class="Sistema_de_Cobros_2._0.OperacionesCajaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Operaciones Especiales de Caja" Height="500" Width="450"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize" Background="#F0F2F5">
+
+    <Grid Margin="15">
+        <TabControl Background="White" BorderBrush="#E0E0E0">
+            <!-- PESTAÑA 1: VUELTOS Y REEMBOLSOS -->
+            <TabItem Header="Vueltos / Reembolsos" Padding="15,8">
+                <StackPanel>
+                    <TextBlock Text="Registrar Vuelto o Reembolso" FontSize="18" FontWeight="Bold" Foreground="#F44336" Margin="0,0,0,10"/>
+                    <TextBlock Text="Extraerá dinero de la caja y se registrará como egreso en el balance global." Foreground="#666" TextWrapping="Wrap" Margin="0,0,0,20"/>
+
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="100"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <TextBlock Text="Monto a devolver" FontSize="12" FontWeight="SemiBold" Foreground="#666"/>
+                            <TextBox x:Name="txtMontoVuelto" Padding="8" FontSize="14" BorderBrush="#ccc" BorderThickness="1" Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="Moneda" FontSize="12" FontWeight="SemiBold" Foreground="#666"/>
+                            <ComboBox x:Name="cmbMonedaVuelto" Padding="8" FontSize="14" BorderBrush="#ccc" Margin="0,2,0,0">
+                                <ComboBoxItem Content="BS" IsSelected="True"/>
+                                <ComboBoxItem Content="$"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="Motivo (Ej. Vuelto por pago de la alumna María)" FontSize="12" FontWeight="SemiBold" Foreground="#666"/>
+                    <TextBox x:Name="txtMotivoVuelto" TextWrapping="Wrap" AcceptsReturn="True" Height="60" Padding="8" FontSize="14" BorderBrush="#ccc" BorderThickness="1" Margin="0,2,0,20"/>
+
+                    <Button Content="Procesar Vuelto" Background="#F44336" Foreground="White" FontWeight="Bold" BorderThickness="0" Padding="15,12" Cursor="Hand" Click="BtnProcesarVuelto_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </TabItem>
+
+            <!-- PESTAÑA 2: CAMBIOS DE MONEDA -->
+            <TabItem Header="Cambio de Divisas" Padding="15,8">
+                <StackPanel>
+                    <TextBlock Text="Cambio de Moneda" FontSize="18" FontWeight="Bold" Foreground="#2196F3" Margin="0,0,0,10"/>
+                    <TextBlock Text="Ejemplo: Entra un billete de 100$ y la academia le transfiere 4000 BS al cliente." Foreground="#666" TextWrapping="Wrap" Margin="0,0,0,20"/>
+
+                    <!-- LO QUE ENTRA -->
+                    <Border BorderBrush="#4CAF50" BorderThickness="2" CornerRadius="6" Padding="10" Margin="0,0,0,15">
+                        <StackPanel>
+                            <TextBlock Text="RECIBIMOS (Entra a Caja)" FontWeight="Bold" Foreground="#4CAF50" Margin="0,0,0,5"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="100"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="txtMontoEntra" Padding="8" FontSize="14" BorderBrush="#ccc" BorderThickness="1" Margin="0,0,10,0"/>
+                                <ComboBox x:Name="cmbMonedaEntra" Grid.Column="1" Padding="8" FontSize="14" BorderBrush="#ccc">
+                                    <ComboBoxItem Content="$" IsSelected="True"/>
+                                    <ComboBoxItem Content="BS"/>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- LO QUE SALE -->
+                    <Border BorderBrush="#F44336" BorderThickness="2" CornerRadius="6" Padding="10" Margin="0,0,0,15">
+                        <StackPanel>
+                            <TextBlock Text="ENTREGAMOS (Sale de Caja)" FontWeight="Bold" Foreground="#F44336" Margin="0,0,0,5"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="100"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="txtMontoSale" Padding="8" FontSize="14" BorderBrush="#ccc" BorderThickness="1" Margin="0,0,10,0"/>
+                                <ComboBox x:Name="cmbMonedaSale" Grid.Column="1" Padding="8" FontSize="14" BorderBrush="#ccc">
+                                    <ComboBoxItem Content="BS" IsSelected="True"/>
+                                    <ComboBoxItem Content="$"/>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="Detalle (Opcional)" FontSize="12" FontWeight="SemiBold" Foreground="#666"/>
+                    <TextBox x:Name="txtMotivoCambio" Padding="8" FontSize="14" BorderBrush="#ccc" BorderThickness="1" Margin="0,2,0,15"/>
+
+                    <Button Content="Procesar Cambio" Background="#2196F3" Foreground="White" FontWeight="Bold" BorderThickness="0" Padding="15,12" Cursor="Hand" Click="BtnProcesarCambio_Click">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

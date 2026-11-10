@@ -40,5 +40,8 @@
     <Compile Update="MotivoDevolucionWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="OperacionesCajaWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
 </Project>

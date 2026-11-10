@@ -147,5 +147,17 @@ namespace CapaDatos
             var result = cmd.ExecuteScalar();
             return result?.ToString();
         }
+        public List<ArqueoItem> ObtenerDesglosePagosGlobal()
+        {
+            var lista = new List<ArqueoItem>();
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            using var cmd = new MySqlCommand("SELECT mp.Nombre AS Metodo, pd.MonedaCodigo AS Moneda, SUM(pd.Monto) AS Total FROM PagoDetalles pd JOIN Pagos p ON pd.PagoId = p.Id JOIN MetodosPago mp ON pd.MetodoPagoId = mp.Id WHERE p.Estado = 'Vigente' GROUP BY mp.Nombre, pd.MonedaCodigo", conn);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                lista.Add(new ArqueoItem { Metodo = reader.GetString("Metodo"), Moneda = reader.GetString("Moneda"), Total = reader.GetDecimal("Total") });
+            }
+            return lista;
+        }
     }
 }
