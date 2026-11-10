@@ -124,11 +124,11 @@
                 </Border.Effect>
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <!-- CAJA ESTADO -->
-                        <Border x:Name="bdrEstadoCaja" Background="{StaticResource Success}" CornerRadius="6" Padding="15" Margin="0,0,0,20">
+                       <!-- CAJA ESTADO: SOLO RECAUDACIÓN DEL DÍA -->
+                        <Border x:Name="bdrEstadoCaja" Background="#4CAF50" CornerRadius="6" Padding="15" Margin="0,0,0,20">
                             <StackPanel>
                                 <TextBlock Text="Total Recaudado Hoy" Foreground="White" FontSize="12" Opacity="0.9"/>
-                                <TextBlock x:Name="txtTotalHoy" Text="Bs. 0.00" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                                <TextBlock x:Name="txtRecaudadoHoy" Text="Bs. 0.00" Foreground="White" FontSize="26" FontWeight="Bold"/>
                             </StackPanel>
                         </Border>
 
@@ -296,13 +296,7 @@
                             <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="75"/>
                             <DataGridTextColumn Header="Fecha" Binding="{Binding FechaPago, StringFormat=dd/MM/yyyy}" Width="90"/>
                             <DataGridTextColumn Header="Nota" Binding="{Binding Observaciones}" Width="120"/>
-                            <DataGridTemplateColumn Header="Acciones" Width="140">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <!-- Botones... -->
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                            
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>

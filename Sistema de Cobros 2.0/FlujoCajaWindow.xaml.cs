@@ -35,7 +35,9 @@ namespace Sistema_de_Cobros_2._0
 
                 ActualizarTarjetasVisuales();
                 dgEgresos.ItemsSource = _movimientoService.ObtenerTodosLosEgresos();
-                txtDesglose.Text = $"Efec. Bs: {resumen.FisicoBs:N2} | Bco. Bs: {resumen.BancoBs:N2}\nEfec. $: {resumen.FisicoUsd:N2} | Zelle: {resumen.BancoUsd:N2}";
+
+                // LLENAMOS EL DESGLOSE CON SUS MONEDAS NATIVAS (Ideal para cuadrar la gaveta física)
+                txtDesglose.Text = $"Efectivo: {_resumenActual.FisicoBs:N2} Bs | Banco: {_resumenActual.BancoBs:N2} Bs\nDivisas: {_resumenActual.FisicoUsd:N2} $ | Zelle: {_resumenActual.BancoUsd:N2} $";
             }
             catch (Exception ex)
             {

@@ -27,7 +27,10 @@ namespace CapaNegocio
                 foreach (var d in detalles) sumaBs += d.MontoEnVes;
 
                 var pago = new Pago(numeroRecibo, estudianteCedula, inscripcionId, conceptoId, total, monedaCodigo, SesionService.Instancia.UsuarioActual?.Username ?? "desconocido", fechaVencimiento)
-                { TotalEnVes = sumaBs };
+                {
+                    TotalEnVes = sumaBs,
+                    Observaciones = observaciones // <-- ESTA LÍNEA FALTABA, AHORA SÍ SE GUARDARÁ
+                };
 
                 _repository.Agregar(pago, detalles);
                 _auditoria.Registrar("INSERT", "Pagos", numeroRecibo, null, $"Recibo:{numeroRecibo}, Cédula:{estudianteCedula}, Total:{total}, Moneda:{monedaCodigo}", true);

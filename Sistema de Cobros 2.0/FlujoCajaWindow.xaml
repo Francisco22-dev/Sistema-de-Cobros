@@ -29,8 +29,6 @@
                     <ComboBox x:Name="cmbMonedaDashboard" Width="100" Padding="5" SelectionChanged="CmbMonedaDashboard_SelectionChanged">
                         <ComboBoxItem Content="BS" IsSelected="True"/>
                         <ComboBoxItem Content="BCV"/>
-                        <ComboBoxItem Content="EUR"/>
-                        <ComboBoxItem Content="USDT"/>
                     </ComboBox>
                 </StackPanel>
             </Grid>
@@ -47,7 +45,7 @@
                         <DropShadowEffect BlurRadius="10" Opacity="0.1" ShadowDepth="1"/>
                     </Border.Effect>
                     <StackPanel>
-                        <TextBlock Text="Ingresos Históricos Totales" Foreground="#666" FontWeight="SemiBold"/>
+                        <TextBlock Text="Ingresos Históricos Totales" Foreground="#666" FontWeight="SemiBold" FontSize="15"/>
                         <TextBlock x:Name="txtIngresos" Text="0.00 BS" FontSize="22" FontWeight="Bold" Foreground="#4CAF50" Margin="0,5,0,0"/>
                     </StackPanel>
                 </Border>
@@ -57,7 +55,7 @@
                         <DropShadowEffect BlurRadius="10" Opacity="0.1" ShadowDepth="1"/>
                     </Border.Effect>
                     <StackPanel>
-                        <TextBlock Text="Egresos Históricos Totales" Foreground="#666" FontWeight="SemiBold"/>
+                        <TextBlock Text="Egresos Históricos Totales" Foreground="#666" FontWeight="SemiBold" FontSize="15"/>
                         <TextBlock x:Name="txtEgresos" Text="0.00 BS" FontSize="22" FontWeight="Bold" Foreground="#F44336" Margin="0,5,0,0"/>
                     </StackPanel>
                 </Border>
@@ -67,9 +65,12 @@
                         <DropShadowEffect BlurRadius="10" Opacity="0.2" ShadowDepth="2"/>
                     </Border.Effect>
                     <StackPanel>
-                        <TextBlock Text="SALDO NETO EN CAJA" Foreground="White" Opacity="0.9" FontWeight="SemiBold"/>
-                        <TextBlock x:Name="txtSaldoNeto" Text="0.00 BS" FontSize="24" FontWeight="Bold" Foreground="White" Margin="0,5,0,0"/>
-                        <TextBlock x:Name="txtDesglose" Text="Físico Bs: 0.00 | Físico $: 0.00" Foreground="White" FontSize="11" Opacity="0.8" Margin="0,5,0,0"/>
+                        <TextBlock Text="SALDO NETO EN CAJA" Foreground="White" Opacity="0.9" FontWeight="SemiBold" FontSize="15"/>
+                        <TextBlock x:Name="txtSaldoNeto" Text="0.00 BS" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,5,0,0"/>
+
+                        <!-- EL DESGLOSE DE BANCO Y FÍSICO -->
+                        <TextBlock x:Name="txtDesglose" Text="Efectivo: 0.00 Bs | Banco: 0.00 Bs&#x0a;Divisas: 0.00 $ | Zelle: 0.00 $" 
+                                   Foreground="White" FontSize="15" Opacity="0.85" Margin="0,8,0,0" LineHeight="16"/>
                     </StackPanel>
                 </Border>
             </Grid>
@@ -169,6 +170,7 @@
                         <DataGrid.Columns>
                             <!-- COLUMNA FECHA AÑADIDA -->
                             <DataGridTextColumn Header="Fecha y Hora" Binding="{Binding FechaMovimiento, StringFormat=dd/MM/yyyy hh:mm tt}" Width="130"/>
+                            <DataGridTextColumn Header="Método" Binding="{Binding Metodo}" Width="100"/>
                             <DataGridTextColumn Header="Categoría" Binding="{Binding Categoria}" Width="110"/>
                             <DataGridTextColumn Header="Detalle" Binding="{Binding Concepto}" Width="*"/>
                             <DataGridTextColumn Header="Monto" Binding="{Binding Monto, StringFormat=N2}" Width="70"/>

@@ -12,7 +12,6 @@ namespace CapaNegocio
         public decimal TotalEgresosBS { get; set; }
         public decimal SaldoNetoBS { get; set; }
 
-        // Para el desglose en tiempo real
         public decimal FisicoBs { get; set; }
         public decimal BancoBs { get; set; }
         public decimal FisicoUsd { get; set; }
@@ -26,17 +25,22 @@ namespace CapaNegocio
         private readonly CajaService _cajaService = new CajaService();
         private readonly PagoService _pagoService = new PagoService();
         private readonly TasaCambioService _tasaService = new TasaCambioService();
-        private readonly PagoRepository _pagoRepo = new PagoRepository(); // Para el desglose
+        private readonly PagoRepository _pagoRepo = new PagoRepository();
 
         public List<string> ObtenerCategorias()
         {
-            var categorias = new List<string> { "Pago a Profesor", "Limpieza", "Papelería", "Mantenimiento", "Servicios", "Insumos", "Otro" };
+            var categorias = new List<string> { "Suministros: papelería, oficina, limpieza, cafetería interna.", "Atenciones y refrigerios.", "Equipo y material para los cursos.", "Personal: sueldos, comisiones, publicidad, etc.", "Servicios: alquiler, condominio, mantenimiento, reparación, servicios profecionales externos.", "Impuestos y trámites.", "Gastos bancarios.", "Otro." };
             var historicas = _repository.ObtenerCategoriasHistoricas();
             foreach (var h in historicas) if (!categorias.Contains(h)) categorias.Add(h);
             return categorias;
         }
 
-        // Filtramos para NO MOSTRAR los "Cambio Moneda" en la tabla de Egresos
+        // SOLUCIÓN AL ERROR 1: Método faltante
+        public List<MovimientoCaja> ObtenerTodosLosEgresos()
+        {
+            return _repository.ObtenerMovimientosPorTipo("Egreso");
+        }
+
         public List<MovimientoCaja> ObtenerEgresosReales()
         {
             return _repository.ObtenerMovimientosPorTipo("Egreso").Where(e => e.Categoria != "Cambio Moneda").ToList();
@@ -61,13 +65,14 @@ namespace CapaNegocio
             {
                 if (eg.MonedaCodigo == "BS") egresosTotalesUSD += (eg.Monto / tasaBCV);
                 else if (eg.MonedaCodigo == "BCV" || eg.MonedaCodigo == "USD") egresosTotalesUSD += eg.Monto;
+                else if (eg.MonedaCodigo == "EUR" && tasas["EUR"] > 0) egresosTotalesUSD += ((eg.Monto * tasas["EUR"]) / tasaBCV);
+                else if (eg.MonedaCodigo == "USDT" && tasas["USDT"] > 0) egresosTotalesUSD += ((eg.Monto * tasas["USDT"]) / tasaBCV);
             }
 
-            // 3. DESGLOSE FÍSICO/BANCO EN TIEMPO REAL (Incluye Facturas + Egresos + Cambios)
+            // 3. DESGLOSE FÍSICO/BANCO EN TIEMPO REAL
             var todosPagos = _pagoRepo.ObtenerDesglosePagosGlobal();
             var todosMovs = _repository.ObtenerDesgloseMovimientosGlobal();
-            
-            // Unimos ambas listas para sumar
+
             var consolidado = todosPagos.Concat(todosMovs).ToList();
 
             decimal fBs = consolidado.Where(a => a.Moneda == "BS" && a.Metodo.Contains("Efectivo")).Sum(a => a.Total);
@@ -75,12 +80,21 @@ namespace CapaNegocio
             decimal fUsd = consolidado.Where(a => (a.Moneda == "BCV" || a.Moneda == "USD" || a.Moneda == "$") && (a.Metodo.Contains("Divisas") || a.Metodo.Contains("Efectivo"))).Sum(a => a.Total);
             decimal bUsd = consolidado.Where(a => (a.Moneda == "BCV" || a.Moneda == "USD" || a.Moneda == "$") && a.Metodo.Contains("Zelle")).Sum(a => a.Total);
 
+            // CORRECCIÓN VISUAL: Si la cuenta da negativo (sobregiro por cambios sin fondos previos), la limitamos a 0 visualmente.
+            fBs = Math.Max(0, fBs);
+            bBs = Math.Max(0, bBs);
+            fUsd = Math.Max(0, fUsd);
+            bUsd = Math.Max(0, bUsd);
+
             return new ResumenFlujo
             {
                 TotalIngresosBS = ingresosTotalesUSD * tasaBCV,
                 TotalEgresosBS = egresosTotalesUSD * tasaBCV,
                 SaldoNetoBS = (ingresosTotalesUSD - egresosTotalesUSD) * tasaBCV,
-                FisicoBs = fBs, BancoBs = bBs, FisicoUsd = fUsd, BancoUsd = bUsd
+                FisicoBs = fBs,
+                BancoBs = bBs,
+                FisicoUsd = fUsd,
+                BancoUsd = bUsd
             };
         }
 
@@ -117,9 +131,9 @@ namespace CapaNegocio
 
             string usuario = SesionService.Instancia.UsuarioActual?.Username ?? "Desconocido";
 
-            // Se registra el Método en cada pata del cambio
             _repository.Registrar(new MovimientoCaja(caja.Id, "Ingreso", montoEntra, monedaEntra, $"CAMBIO RECIBIDO: {concepto}", usuario) { Categoria = "Cambio Moneda", Metodo = metodoEntra });
             _repository.Registrar(new MovimientoCaja(caja.Id, "Egreso", montoSale, monedaSale, $"CAMBIO ENTREGADO: {concepto}", usuario) { Categoria = "Cambio Moneda", Metodo = metodoSale });
+            _auditoria.Registrar("CAMBIO", "MovimientosCaja", null, null, $"Entró: {montoEntra} {monedaEntra} ({metodoEntra}) | Salió: {montoSale} {monedaSale} ({metodoSale})", true);
         }
     }
 }

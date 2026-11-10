@@ -30,6 +30,10 @@ namespace CapaDatos
             var lista = new List<MovimientoCaja>();
             using var conn = DatabaseConnection.AbrirConexionConReintento();
             using var cmd = new MySqlCommand("SELECT * FROM MovimientosCaja WHERE Tipo = @tipo ORDER BY FechaMovimiento DESC", conn);
+
+            // ¡ESTA ERA LA LÍNEA QUE FALTABA Y CAUSÓ TODO EL DESASTRE!
+            cmd.Parameters.AddWithValue("@tipo", tipo);
+
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -69,5 +73,6 @@ namespace CapaDatos
             while (reader.Read()) lista.Add(reader.GetString(0));
             return lista;
         }
+
     }
 }

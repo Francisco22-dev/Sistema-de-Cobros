@@ -110,7 +110,7 @@ namespace Sistema_de_Cobros_2._0
             var caja = _cajaService.ObtenerCajaAbierta();
             if (caja == null)
             {
-                txtTotalHoy.Text = "CAJA CERRADA";
+                txtRecaudadoHoy.Text = "CAJA CERRADA";
                 bdrEstadoCaja.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F44336"));
 
                 btnRegistrar.IsEnabled = false;
@@ -136,10 +136,9 @@ namespace Sistema_de_Cobros_2._0
         {
             var caja = _cajaService.ObtenerCajaAbierta();
             if (caja != null)
-                txtRecaudadoHoy.Text = $"Bs. {_pagoService.ObtenerTotalHoy(caja.FechaApertura):N2}"; // Solo lo de hoy
-
-            var resumen = _movimientoService.CalcularResumenGlobal();
-            txtTotalHoy.Text = $"Bs. {resumen.SaldoNetoBS:N2}"; // El Banco real
+                txtRecaudadoHoy.Text = $"Bs. {_pagoService.ObtenerTotalHoy(caja.FechaApertura):N2}";
+            else
+                txtRecaudadoHoy.Text = "Bs. 0.00";
         }
 
         private void ActualizarHistorial()
