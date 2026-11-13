@@ -38,12 +38,23 @@ namespace Sistema_de_Cobros_2._0
 
         private void TxtBuscar_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string nombreOCedula = txtBuscar.Text.ToLower();
-            string curso = txtFiltroCurso.Text.ToLower();
+            if (_listaCompleta == null) return;
 
+            string filtro = txtBuscar.Text.Trim().ToLower();
+
+            if (string.IsNullOrWhiteSpace(filtro))
+            {
+                dgMorosos.ItemsSource = _listaCompleta;
+                return;
+            }
+
+            // Busca simultáneamente en Cédula, Nombre, Curso completo, Código de Curso y Código de Grupo
             var filtrada = _listaCompleta.Where(m =>
-                (m.NombreCompleto.ToLower().Contains(nombreOCedula) || m.Cedula.ToLower().Contains(nombreOCedula)) &&
-                m.Curso.ToLower().Contains(curso)
+                m.NombreCompleto.ToLower().Contains(filtro) ||
+                m.Cedula.ToLower().Contains(filtro) ||
+                m.Curso.ToLower().Contains(filtro) ||
+                m.CursoCodigo.ToLower().Contains(filtro) ||
+                m.GrupoCodigo.ToLower().Contains(filtro)
             ).ToList();
 
             dgMorosos.ItemsSource = filtrada;

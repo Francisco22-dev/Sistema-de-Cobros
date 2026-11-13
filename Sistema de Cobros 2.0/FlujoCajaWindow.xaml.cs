@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using CapaNegocio;
+using Entidades;
 
 namespace Sistema_de_Cobros_2._0
 {
@@ -12,9 +14,8 @@ namespace Sistema_de_Cobros_2._0
         private readonly MovimientoCajaService _movimientoService = new MovimientoCajaService();
         private readonly TasaCambioService _tasaService = new TasaCambioService();
 
-        // Guardamos los datos puros en memoria para no recalcular la BD a cada rato
         private ResumenFlujo _resumenActual = new ResumenFlujo();
-        private Dictionary<string, decimal> _tasasActuales = new Dictionary<string, decimal>();
+        private List<MovimientoCaja> _todosLosEgresos = new List<MovimientoCaja>();
 
         public FlujoCajaWindow()
         {
@@ -30,13 +31,13 @@ namespace Sistema_de_Cobros_2._0
                 cmbCategoria.ItemsSource = categorias;
                 if (categorias.Count > 0) cmbCategoria.SelectedIndex = 0;
 
-                _tasasActuales = _tasaService.ObtenerTasasDelDia();
                 _resumenActual = _movimientoService.CalcularResumenGlobal();
-
                 ActualizarTarjetasVisuales();
-                dgEgresos.ItemsSource = _movimientoService.ObtenerTodosLosEgresos();
 
-                // LLENAMOS EL DESGLOSE CON SUS MONEDAS NATIVAS (Ideal para cuadrar la gaveta física)
+                _todosLosEgresos = _movimientoService.ObtenerTodosLosEgresos();
+                FiltrarEgresos();
+
+                // Desglose de gaveta física y cuentas bancarias
                 txtDesglose.Text = $"Efectivo: {_resumenActual.FisicoBs:N2} Bs | Banco: {_resumenActual.BancoBs:N2} Bs\nDivisas: {_resumenActual.FisicoUsd:N2} $ | Zelle: {_resumenActual.BancoUsd:N2} $";
             }
             catch (Exception ex)
@@ -52,22 +53,64 @@ namespace Sistema_de_Cobros_2._0
 
         private void ActualizarTarjetasVisuales()
         {
-            string monedaSeleccionada = ((ComboBoxItem)cmbMonedaDashboard.SelectedItem).Content.ToString()!;
-            decimal divisor = 1m;
+            if (cmbMonedaDashboard.SelectedItem is not ComboBoxItem item) return;
+            string monedaSeleccionada = item.Content.ToString()!;
 
-            // Extraemos el divisor en base a las tasas de hoy para calcular todo al vuelo
-            if (monedaSeleccionada == "BCV") divisor = _tasasActuales["BCV"] > 0 ? _tasasActuales["BCV"] : 1m;
-            else if (monedaSeleccionada == "EUR") divisor = _tasasActuales["EUR"] > 0 ? _tasasActuales["EUR"] : 1m;
-            else if (monedaSeleccionada == "USDT") divisor = _tasasActuales["USDT"] > 0 ? _tasasActuales["USDT"] : 1m;
-
-            decimal ingresos = _resumenActual.TotalIngresosBS / divisor;
-            decimal egresos = _resumenActual.TotalEgresosBS / divisor;
-            decimal neto = _resumenActual.SaldoNetoBS / divisor;
-
-            txtIngresos.Text = $"{ingresos:N2} {monedaSeleccionada}";
-            txtEgresos.Text = $"{egresos:N2} {monedaSeleccionada}";
-            txtSaldoNeto.Text = $"{neto:N2} {monedaSeleccionada}";
+            // Si el usuario elige ver en Dólares ($)
+            if (monedaSeleccionada.Contains("$") || monedaSeleccionada.Contains("BCV"))
+            {
+                txtIngresos.Text = $"{_resumenActual.TotalIngresosUSD:N2} $";
+                txtEgresos.Text = $"{_resumenActual.TotalEgresosUSD:N2} $";
+                txtSaldoNeto.Text = $"{_resumenActual.SaldoNetoUSD:N2} $";
+            }
+            else // Si elige ver en Bolívares (BS)
+            {
+                txtIngresos.Text = $"{_resumenActual.TotalIngresosBS:N2} BS";
+                txtEgresos.Text = $"{_resumenActual.TotalEgresosBS:N2} BS";
+                txtSaldoNeto.Text = $"{_resumenActual.SaldoNetoBS:N2} BS";
+            }
         }
+
+        // ========================================================
+        // BUSCADOR DE EGRESOS OPTIMIZADO
+        // ========================================================
+
+        private void FiltrarEgresos()
+        {
+            string filtro = txtBuscarEgreso?.Text.Trim().ToLower() ?? "";
+
+            if (string.IsNullOrWhiteSpace(filtro))
+            {
+                dgEgresos.ItemsSource = _todosLosEgresos;
+            }
+            else
+            {
+                dgEgresos.ItemsSource = _todosLosEgresos.Where(e =>
+                    (e.Concepto != null && e.Concepto.ToLower().Contains(filtro)) ||
+                    (e.Categoria != null && e.Categoria.ToLower().Contains(filtro)) ||
+                    (e.Metodo != null && e.Metodo.ToLower().Contains(filtro)) ||
+                    (e.MonedaCodigo != null && e.MonedaCodigo.ToLower().Contains(filtro)) ||
+                    e.Monto.ToString("N2").Contains(filtro)
+                ).ToList();
+            }
+        }
+
+        private void BtnBuscarEgreso_Click(object sender, RoutedEventArgs e) => FiltrarEgresos();
+
+        private void TxtBuscarEgreso_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter) FiltrarEgresos();
+        }
+
+        private void BtnLimpiarBuscarEgreso_Click(object sender, RoutedEventArgs e)
+        {
+            txtBuscarEgreso.Text = string.Empty;
+            FiltrarEgresos();
+        }
+
+        // ========================================================
+        // REGISTRO DE GASTO
+        // ========================================================
 
         private void BtnRegistrarEgreso_Click(object sender, RoutedEventArgs e)
         {
@@ -95,18 +138,17 @@ namespace Sistema_de_Cobros_2._0
             string categoria = cmbCategoria.Text.Trim();
             string concepto = txtConcepto.Text.Trim();
             string metodo = ((ComboBoxItem)cmbMetodoEgreso.SelectedItem).Content.ToString()!;
-           
 
             if (AlertaWindow.SolicitarConfirmacion($"¿Está seguro de extraer {monto:N2} {moneda} de la caja para '{categoria}'?"))
             {
                 try
                 {
-                    _movimientoService.RegistrarEgreso(monto, moneda, categoria, concepto, metodo); 
+                    _movimientoService.RegistrarEgreso(monto, moneda, categoria, concepto, metodo);
                     AlertaWindow.MostrarExito("Gasto registrado y descontado de la caja exitosamente.");
 
                     txtMonto.Clear();
                     txtConcepto.Clear();
-                    CargarDatos(); // Recargar gráficas con los nuevos montos
+                    CargarDatos();
                 }
                 catch (Exception ex)
                 {
@@ -114,10 +156,11 @@ namespace Sistema_de_Cobros_2._0
                 }
             }
         }
+
         private void BtnOperaciones_Click(object sender, RoutedEventArgs e)
         {
             new OperacionesCajaWindow { Owner = this }.ShowDialog();
-            CargarDatos(); // Recargar el dashboard al terminar
+            CargarDatos();
         }
     }
 }

@@ -10,21 +10,22 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
+                <!-- ENCABEZADO Y BUSCADOR UNIFICADO -->
+                <StackPanel Grid.Row="0" Margin="0,0,0,15">
+                    <TextBlock Text="Cuentas por Cobrar" FontSize="22" FontWeight="Bold" Foreground="#D32F2F"/>
+                    <TextBlock Text="Estudiantes con clases vencidas. (Amarillo: 1-3 clases | Rojo: 4+ clases)" Foreground="#666" Margin="0,0,0,10"/>
 
-            <!-- ENCABEZADO Y FILTROS -->
-            <StackPanel Grid.Row="0" Margin="0,0,0,15">
-                <TextBlock Text="Cuentas por Cobrar" FontSize="22" FontWeight="Bold" Foreground="#D32F2F"/>
-                <TextBlock Text="Estudiantes que tienen deuda pendiente. (Amarillo: 1-3 clases | Rojo: 4+ clases)" Foreground="#666" Margin="0,0,0,10"/>
-
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Buscar por Cédula / Nombre:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                    <TextBox x:Name="txtBuscar" Width="150" Padding="5" Margin="0,0,15,0" TextChanged="TxtBuscar_TextChanged"/>
-                    <TextBlock Text="Filtrar por Curso:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                    <TextBox x:Name="txtFiltroCurso" Width="150" Padding="5" TextChanged="TxtBuscar_TextChanged"/>
+                    <!-- UN SOLO BUSCADOR POTENTE -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Buscar:" VerticalAlignment="Center" Margin="0,0,8,0" FontWeight="SemiBold" Foreground="#333"/>
+                        <TextBox x:Name="txtBuscar" Width="360" Padding="8,6" FontSize="13" 
+                 BorderBrush="#ccc" BorderThickness="1" TextChanged="TxtBuscar_TextChanged"/>
+                        <TextBlock Text="(Busca por Cédula, Nombre, Curso o Código ej: AAD2610, ASE, 31395050)" 
+                   VerticalAlignment="Center" Margin="10,0,0,0" FontSize="11" Foreground="#777"/>
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
 
-            <!-- TABLA DE MOROSOS -->
+                <!-- TABLA DE MOROSOS -->
             <!-- Importante: Sin RowBackground para que el ColorFila funcione -->
             <DataGrid Grid.Row="1" x:Name="dgMorosos" AutoGenerateColumns="False" IsReadOnly="True" BorderThickness="1">
 
@@ -38,8 +39,8 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Cédula" Binding="{Binding Cedula}" Width="90"/>
                     <DataGridTextColumn Header="Estudiante" Binding="{Binding NombreCompleto}" Width="*"/>
-                    <DataGridTextColumn Header="Curso" Binding="{Binding Curso}" Width="150"/>
-                    <DataGridTextColumn Header="Clases Vistas" Binding="{Binding ClasesImpartidas}" Width="90"/>
+                        <DataGridTextColumn Header="Curso y Grupo" Binding="{Binding Curso}" Width="250"/>
+                        <DataGridTextColumn Header="Clases Vistas" Binding="{Binding ClasesImpartidas}" Width="90"/>
 
                     <!-- COLUMNA DE ABONOS PREVIOS -->
                     <DataGridTextColumn Header="Abonado ($)" Binding="{Binding TotalPagado, StringFormat=N2}" Width="90">

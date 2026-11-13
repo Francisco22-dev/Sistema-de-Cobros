@@ -18,9 +18,37 @@ namespace CapaNegocio
             _auditoria = new AuditorService();
         }
 
-        public List<Inscripcion> ObtenerInscripciones(int limite = 100) => _repository.ObtenerRecientes(limite);
         public List<InscripcionInfo> ObtenerInscripcionesActivas() => _repository.ObtenerInscripcionesActivas();
         public List<InscripcionInfo> ObtenerTodasLasInscripciones(string filtro = "", string estado = "") => _repository.ObtenerTodasLasInscripciones(filtro, estado);
+
+        public bool TieneDeudaPendiente(string estudianteCedula)
+        {
+            return _pagoRepository.TieneDeuda(estudianteCedula, DateTime.Now.Date);
+        }
+
+        public void TrasladarEstudianteDeGrupo(int inscripcionId, int nuevoGrupoId, string grupoAnteriorCodigo, string grupoNuevoCodigo, string observacionActual, string? motivo)
+        {
+            try
+            {
+                // Regla 3: Anexar nota histórica automática en Observaciones
+                string notaTraslado = $"Trasladado de {grupoAnteriorCodigo} a {grupoNuevoCodigo} el {DateTime.Now:dd/MM/yyyy}." +
+                                      (!string.IsNullOrWhiteSpace(motivo) ? $" Motivo: {motivo.Trim()}." : "");
+
+                string observacionFinal = string.IsNullOrWhiteSpace(observacionActual)
+                    ? notaTraslado
+                    : $"{observacionActual} | {notaTraslado}";
+
+                _repository.CambiarGrupo(inscripcionId, nuevoGrupoId, observacionFinal);
+
+                _auditoria.Registrar("TRASLADO_GRUPO", "Inscripciones", inscripcionId.ToString(),
+                    $"Grupo anterior: {grupoAnteriorCodigo}", $"Nuevo grupo: {grupoNuevoCodigo} | {notaTraslado}", true);
+            }
+            catch (Exception ex)
+            {
+                _auditoria.Registrar("TRASLADO_GRUPO", "Inscripciones", inscripcionId.ToString(), null, ex.Message, false);
+                throw;
+            }
+        }
 
         public void CambiarEstadoInscripcion(int inscripcionId, string nuevoEstado, string? motivo)
         {
@@ -41,7 +69,7 @@ namespace CapaNegocio
         {
             try
             {
-                if (_pagoRepository.TieneDeuda(estudianteCedula, DateTime.Now.Date))
+                if (TieneDeudaPendiente(estudianteCedula))
                 {
                     throw new InvalidOperationException("No se puede inscribir: El estudiante tiene pagos vencidos pendientes.");
                 }

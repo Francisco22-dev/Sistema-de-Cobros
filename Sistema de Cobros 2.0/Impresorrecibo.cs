@@ -1,130 +1,229 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Printing;
+using System.IO;
 using System.Linq;
-using System.Printing;
+using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using Microsoft.Win32;
 using Entidades;
 
 namespace Sistema_de_Cobros_2._0
 {
     public static class ImpresorRecibo
     {
-        public static void Imprimir(Pago pago, string nombreEstudiante, string nombreConcepto, List<PagoDetalle> detalles)
+        /// <summary>
+        /// Procesa la factura: guarda el PDF en el Escritorio y envía a la POS-80.
+        /// </summary>
+        public static void Imprimir(Pago pago, string nombreEstudiante, string nombreConcepto, List<PagoDetalle> detalles, string printerName = "POS-80")
         {
             try
             {
-                FlowDocument doc = new FlowDocument
-                {
-                    PageWidth = 302, // Ancho exacto de impresora térmica 80mm
-                    PagePadding = new Thickness(10),
-                    FontFamily = new FontFamily("Consolas"),
-                    FontSize = 12,
-                    TextAlignment = TextAlignment.Center,
-                    ColumnWidth = 302
-                };
+                // 1. Guardar copia en PDF en el Escritorio (Carpeta "Recibos Digitales")
+                GuardarReciboPdfEnEscritorio(pago, nombreEstudiante, nombreConcepto, detalles);
 
-                doc.Blocks.Add(new Paragraph(new Run("CEVENCA")) { FontWeight = FontWeights.Bold, FontSize = 16 });
-                doc.Blocks.Add(new Paragraph(new Run("Rif: J-507629082 | Registro MPPE: 0016-1904\n0414-4281527 / 0426-2355934\nDireccion: Av. Las Ferias, C.C. Isora," + "\npiso Mezzanina, local 07\n")) { FontSize = 10, Margin = new Thickness(0, 0, 0, 15) });
+                // 2. Construir texto plano para la impresora térmica
+                string textoFactura = ConstruirFacturaTexto(pago, nombreEstudiante, nombreConcepto, detalles);
 
-                doc.Blocks.Add(new Paragraph(new Run("RECIBO DE PAGO")) { FontWeight = FontWeights.Bold, FontSize = 14 });
-                doc.Blocks.Add(new Paragraph(new Run($"Nro: {pago.NumeroRecibo}")) { Margin = new Thickness(0, 0, 0, 15) });
-
-                var cuerpo = new Paragraph { TextAlignment = TextAlignment.Left, Margin = new Thickness(0, 0, 0, 15) };
-                cuerpo.Inlines.Add(new Run($"Fecha: {pago.FechaPago:dd/MM/yyyy HH:mm}\n"));
-                cuerpo.Inlines.Add(new Run($"Cédula: {pago.EstudianteCedula}\n"));
-                cuerpo.Inlines.Add(new Run($"Estudiante: {nombreEstudiante}\n"));
-                cuerpo.Inlines.Add(new Run($"Concepto: {nombreConcepto}\n"));
-                cuerpo.Inlines.Add(new Run(new string('-', 32) + "\n"));
-
-                cuerpo.Inlines.Add(new Run("DETALLE DE ABONOS:\n") { FontWeight = FontWeights.Bold });
-                foreach (var d in detalles)
-                {
-                    cuerpo.Inlines.Add(new Run($"- {d.MetodoNombre}: {d.Monto:N2} {d.MonedaCodigo}\n"));
-                }
-                cuerpo.Inlines.Add(new Run(new string('-', 32) + "\n"));
-                doc.Blocks.Add(cuerpo);
-
-                var total = new Paragraph { Margin = new Thickness(0, 0, 0, 20) };
-                total.Inlines.Add(new Run("TOTAL FACTURADO\n") { FontSize = 12 });
-                total.Inlines.Add(new Run($"{pago.Total:N2} {pago.MonedaCodigo}") { FontSize = 18, FontWeight = FontWeights.Bold });
-                doc.Blocks.Add(total);
-
-                doc.Blocks.Add(new Paragraph(new Run("¡Gracias por su pago!\nConserve este recibo para cualquier reclamo.")) { FontSize = 10, FontStyle = FontStyles.Italic });
-
-                // 1. GUARDADO DE IMAGEN (DIGITAL)
-                SaveFileDialog saveDialog = new SaveFileDialog
-                {
-                    Title = "Guardar Copia Digital del Recibo",
-                    FileName = pago.NumeroRecibo, // Nombre por defecto
-                    DefaultExt = ".png",
-                    Filter = "Imagen PNG (*.png)|*.png"
-                };
-
-                if (saveDialog.ShowDialog() == true)
-                {
-                    IDocumentPaginatorSource idpSourceImg = doc;
-                    var paginatorImg = idpSourceImg.DocumentPaginator;
-                    // Forzamos un alto fijo suficiente para la imagen digital
-                    paginatorImg.PageSize = new Size(302, 700);
-
-                    DocumentPage page = paginatorImg.GetPage(0);
-
-                    // Creamos un lienzo visual con fondo blanco (para que no quede transparente/negro)
-                    DrawingVisual visual = new DrawingVisual();
-                    using (DrawingContext dc = visual.RenderOpen())
-                    {
-                        dc.DrawRectangle(Brushes.White, null, new Rect(page.Size));
-                        dc.DrawRectangle(new VisualBrush(page.Visual), null, new Rect(page.Size));
-                    }
-
-                    RenderTargetBitmap rtb = new RenderTargetBitmap((int)page.Size.Width * 2, (int)page.Size.Height * 2, 192, 192, PixelFormats.Pbgra32);
-                    rtb.Render(visual);
-
-                    PngBitmapEncoder encoder = new PngBitmapEncoder();
-                    encoder.Frames.Add(BitmapFrame.Create(rtb));
-
-                    using (var fs = System.IO.File.Create(saveDialog.FileName))
-                    {
-                        encoder.Save(fs);
-                    }
-                }
-
-                // 2. IMPRESIÓN FÍSICA SILENCIOSA A LA TÉRMICA (POS-80)
-                PrintDialog printDialog = new PrintDialog();
-                try
-                {
-                    var printServer = new LocalPrintServer();
-                    // Buscar una impresora instalada cuyo nombre contenga "POS-80"
-                    var posPrinter = printServer.GetPrintQueues().FirstOrDefault(q => q.Name.IndexOf("POS-80", StringComparison.OrdinalIgnoreCase) >= 0);
-
-                    if (posPrinter != null)
-                    {
-                        printDialog.PrintQueue = posPrinter;
-                    }
-
-                    // Altura infinita para que el rollo térmico corte donde termina el texto
-                    IDocumentPaginatorSource idpSourcePrint = doc;
-                    var paginatorPrint = idpSourcePrint.DocumentPaginator;
-                    paginatorPrint.PageSize = new Size(302, 3000);
-
-                    printDialog.PrintDocument(paginatorPrint, $"Recibo {pago.NumeroRecibo}");
-                }
-                catch
-                {
-                    // Si no tiene permisos de servidor de impresión, usamos la impresora por defecto de Windows
-                    IDocumentPaginatorSource idpFallback = doc;
-                    idpFallback.DocumentPaginator.PageSize = new Size(302, 3000);
-                    printDialog.PrintDocument(idpFallback.DocumentPaginator, $"Recibo {pago.NumeroRecibo}");
-                }
+                // 3. Imprimir en físico en la POS-80 (una sola vez)
+                ImprimirTextoDirecto(textoFactura, printerName);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al generar el recibo.\nDetalle: " + ex.Message, "Error de Impresora", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show($"Aviso en proceso de recibo:\n{ex.Message}", "Aviso de Facturación", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        /// <summary>
+        /// Genera el archivo PDF silenciosamente en Escritorio\Recibos Digitales.
+        /// </summary>
+        private static void GuardarReciboPdfEnEscritorio(Pago pago, string nombreEstudiante, string nombreConcepto, List<PagoDetalle> detalles)
+        {
+            try
+            {
+                string escritorio = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                string carpeta = Path.Combine(escritorio, "Recibos Digitales");
+
+                if (!Directory.Exists(carpeta))
+                {
+                    Directory.CreateDirectory(carpeta);
+                }
+
+                // Nombre limpio del archivo PDF
+                string nombreLimpio = string.Join("_", pago.NumeroRecibo.Split(Path.GetInvalidFileNameChars()));
+                string rutaPdf = Path.Combine(carpeta, $"{nombreLimpio}.pdf");
+
+                if (File.Exists(rutaPdf))
+                {
+                    try { File.Delete(rutaPdf); } catch { }
+                }
+
+                using var printDoc = new PrintDocument();
+
+                // Buscar la impresora virtual PDF de Windows
+                string? pdfPrinter = PrinterSettings.InstalledPrinters.Cast<string>()
+                    .FirstOrDefault(p => p.IndexOf("PDF", StringComparison.OrdinalIgnoreCase) >= 0);
+
+                printDoc.PrinterSettings.PrinterName = pdfPrinter ?? "Microsoft Print to PDF";
+                printDoc.PrinterSettings.PrintToFile = true;
+                printDoc.PrinterSettings.PrintFileName = rutaPdf;
+
+                printDoc.PrintPage += (sender, e) =>
+                {
+                    var g = e.Graphics!;
+                    using var fontTitulo = new System.Drawing.Font("Segoe UI", 16, System.Drawing.FontStyle.Bold);
+                    using var fontSub = new System.Drawing.Font("Segoe UI", 9, System.Drawing.FontStyle.Regular);
+                    using var fontSeccion = new System.Drawing.Font("Segoe UI", 10.5f, System.Drawing.FontStyle.Bold);
+                    using var fontNegrita = new System.Drawing.Font("Segoe UI", 9.5f, System.Drawing.FontStyle.Bold);
+                    using var fontTexto = new System.Drawing.Font("Segoe UI", 9.5f, System.Drawing.FontStyle.Regular);
+
+                    float x = 50;
+                    float y = 50;
+                    float lineHeight = 20;
+
+                    // Encabezado
+                    g.DrawString("CEVENCA", fontTitulo, System.Drawing.Brushes.DarkBlue, x, y);
+                    y += 26;
+                    g.DrawString("Rif: J-507629082 | Registro MPPE: 0016-1904", fontSub, System.Drawing.Brushes.Gray, x, y);
+                    y += 16;
+                    g.DrawString("0414-4281527 / 0426-2355934 • Av. Las Ferias, C.C. Isora, Mezz.", fontSub, System.Drawing.Brushes.Gray, x, y);
+                    y += 18;
+                    g.DrawString("RECIBO DE PAGO DIGITAL", fontSeccion, System.Drawing.Brushes.Black, x, y);
+                    y += 22;
+
+                    g.DrawLine(System.Drawing.Pens.DarkBlue, x, y, 520, y);
+                    y += 12;
+
+                    // Datos del Recibo y Alumno
+                    g.DrawString($"Nro. Recibo : {pago.NumeroRecibo}", fontNegrita, System.Drawing.Brushes.Black, x, y); y += lineHeight;
+                    g.DrawString($"Fecha/Hora  : {pago.FechaPago:dd/MM/yyyy hh:mm tt}", fontTexto, System.Drawing.Brushes.Black, x, y); y += lineHeight;
+                    g.DrawString($"Cédula      : {pago.EstudianteCedula}", fontTexto, System.Drawing.Brushes.Black, x, y); y += lineHeight;
+                    g.DrawString($"Estudiante  : {nombreEstudiante}", fontNegrita, System.Drawing.Brushes.Black, x, y); y += lineHeight;
+                    g.DrawString($"Concepto    : {nombreConcepto}", fontTexto, System.Drawing.Brushes.Black, x, y); y += lineHeight;
+
+                    if (!string.IsNullOrWhiteSpace(pago.Observaciones))
+                    {
+                        g.DrawString($"Nota        : {pago.Observaciones}", fontTexto, System.Drawing.Brushes.DarkSlateGray, x, y);
+                        y += lineHeight;
+                    }
+
+                    y += 6;
+                    g.DrawLine(System.Drawing.Pens.LightGray, x, y, 520, y);
+                    y += 12;
+
+                    // Detalle de Abonos
+                    g.DrawString("DETALLE DE PAGOS / ABONOS:", fontSeccion, System.Drawing.Brushes.Black, x, y);
+                    y += lineHeight + 4;
+
+                    foreach (var d in detalles)
+                    {
+                        string metodo = string.IsNullOrWhiteSpace(d.MetodoNombre) ? "Pago" : d.MetodoNombre;
+                        string refStr = !string.IsNullOrWhiteSpace(d.Referencia) ? $" (Ref: {d.Referencia})" : "";
+
+                        g.DrawString($"• {metodo}{refStr}", fontTexto, System.Drawing.Brushes.Black, x + 10, y);
+                        g.DrawString($"{d.Monto:N2} {d.MonedaCodigo}", fontNegrita, System.Drawing.Brushes.Black, 400, y);
+                        y += lineHeight;
+                    }
+
+                    y += 6;
+                    g.DrawLine(System.Drawing.Pens.LightGray, x, y, 520, y);
+                    y += 12;
+
+                    // Total
+                    g.DrawString("TOTAL PAGADO:", fontTitulo, System.Drawing.Brushes.Black, x + 10, y);
+                    g.DrawString($"{pago.Total:N2} {pago.MonedaCodigo}", fontTitulo, System.Drawing.Brushes.DarkGreen, 360, y);
+                    y += 35;
+
+                    g.DrawLine(System.Drawing.Pens.DarkBlue, x, y, 520, y);
+                    y += 15;
+
+                    // Pie
+                    g.DrawString("¡Gracias por su confianza!", fontNegrita, System.Drawing.Brushes.DarkSlateGray, x + 150, y);
+                    y += 18;
+                    g.DrawString("Comprobante de pago generado electrónicamente.", fontSub, System.Drawing.Brushes.Gray, x + 115, y);
+
+                    e.HasMorePages = false;
+                };
+
+                printDoc.Print();
+            }
+            catch
+            {
+                // Si la impresora virtual de PDF presenta algún bloqueo temporal, 
+                // no interrumpe el flujo principal del cobro ni la impresión física
+            }
+        }
+
+        /// <summary>
+        /// Formatea el texto optimizado para el corte de papel de 80mm.
+        /// </summary>
+        private static string ConstruirFacturaTexto(Pago pago, string nombreEstudiante, string nombreConcepto, List<PagoDetalle> detalles)
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine("                 CEVENCA");
+            sb.AppendLine("           Rif: J-507629082");
+            sb.AppendLine("       Registro MPPE: 0016-1904");
+            sb.AppendLine("       0414-4281527 / 0426-2355934");
+            sb.AppendLine("    Av. Las Ferias, C.C. Isora, Mezz.");
+            sb.AppendLine("----------------------------------------");
+            sb.AppendLine("             RECIBO DE PAGO");
+            sb.AppendLine($" Recibo Nro : {pago.NumeroRecibo}");
+            sb.AppendLine($" Fecha/Hora : {pago.FechaPago:dd/MM/yyyy hh:mm tt}");
+            sb.AppendLine($" Cédula     : {pago.EstudianteCedula}");
+            sb.AppendLine($" Estudiante : {nombreEstudiante}");
+            sb.AppendLine($" Concepto   : {nombreConcepto}");
+            if (!string.IsNullOrWhiteSpace(pago.Observaciones))
+            {
+                sb.AppendLine($" Nota       : {pago.Observaciones}");
+            }
+            sb.AppendLine("----------------------------------------");
+            sb.AppendLine(" DETALLE DE ABONOS:");
+
+            foreach (var d in detalles)
+            {
+                string metodo = string.IsNullOrWhiteSpace(d.MetodoNombre) ? "Pago" : d.MetodoNombre;
+                string refStr = !string.IsNullOrWhiteSpace(d.Referencia) ? $" (Ref: {d.Referencia})" : "";
+                sb.AppendLine($" - {metodo}{refStr}: {d.Monto:N2} {d.MonedaCodigo}");
+            }
+
+            sb.AppendLine("----------------------------------------");
+            sb.AppendLine($" TOTAL: {pago.Total:N2} {pago.MonedaCodigo}");
+            sb.AppendLine("----------------------------------------");
+            sb.AppendLine("       ¡Gracias por su confianza!");
+            sb.AppendLine("  Conserve este comprobante para control.");
+            sb.AppendLine("\n\n");
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Envía el texto a la impresora térmica POS-80.
+        /// </summary>
+        private static void ImprimirTextoDirecto(string texto, string printerName)
+        {
+            try
+            {
+                using var printDoc = new PrintDocument();
+                printDoc.PrinterSettings.PrinterName = printerName;
+
+                if (!printDoc.PrinterSettings.IsValid)
+                {
+                    printDoc.PrinterSettings.PrinterName = new PrinterSettings().PrinterName;
+                }
+
+                printDoc.PrintPage += (sender, e) =>
+                {
+                    using var fuente = new System.Drawing.Font("Lucida Console", 8.5f, System.Drawing.FontStyle.Regular);
+                    e.Graphics!.DrawString(texto, fuente, System.Drawing.Brushes.Black, new PointF(5, 5));
+                    e.HasMorePages = false;
+                };
+
+                printDoc.Print();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"No se pudo imprimir en '{printerName}'. Verifique que esté conectada.\nDetalle: {ex.Message}");
             }
         }
     }

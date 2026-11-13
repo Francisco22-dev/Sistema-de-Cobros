@@ -63,7 +63,9 @@ namespace CapaDatos
                 "FROM PagoDetalles pd " +
                 "JOIN Pagos p ON pd.PagoId = p.Id " +
                 "JOIN MetodosPago mp ON pd.MetodoPagoId = mp.Id " +
-                "WHERE p.FechaPago >= @fechaApertura AND p.Estado = 'Vigente' " +
+                "WHERE p.FechaPago >= @fechaApertura AND p.FechaPago <= NOW() " +
+                "  AND p.Estado = 'Vigente' " +
+                "  AND (p.Observaciones IS NULL OR p.Observaciones NOT LIKE '%Excel%') " +
                 "GROUP BY mp.Nombre, pd.MonedaCodigo " +
                 "ORDER BY pd.MonedaCodigo, mp.Nombre", conn);
 
@@ -78,6 +80,32 @@ namespace CapaDatos
                     Moneda = reader.GetString("Moneda"),
                     Total = reader.GetDecimal("Total")
                 });
+            }
+            return lista;
+        }
+        public List<(string Curso, int Cantidad)> ObtenerInscripcionesPorCursoDelTurno(DateTime fechaApertura)
+        {
+            var lista = new List<(string Curso, int Cantidad)>();
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            using var cmd = new MySqlCommand(
+     "SELECT c.Nombre AS Curso, COUNT(p.Id) AS Cantidad " +
+     "FROM Pagos p " +
+     "JOIN Inscripciones i ON p.InscripcionId = i.Id " +
+     "JOIN Grupos g ON i.GrupoId = g.Id " +
+     "JOIN Cursos c ON g.CursoCodigo = c.Codigo " +
+     "WHERE p.FechaPago >= @fechaApertura AND p.FechaPago <= NOW() " +
+     "  AND p.Estado = 'Vigente' " +
+     "  AND p.ConceptoId = 1 " +
+     "  AND (p.Observaciones IS NULL OR p.Observaciones NOT LIKE '%Excel%') " +
+     "GROUP BY c.Nombre " +
+     "ORDER BY Cantidad DESC", conn);
+
+            cmd.Parameters.AddWithValue("@fechaApertura", fechaApertura);
+
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+            {
+                lista.Add((reader.GetString("Curso"), reader.GetInt32("Cantidad")));
             }
             return lista;
         }

@@ -18,6 +18,10 @@ namespace CapaNegocio
         {
             return _repository.ObtenerIngresosTotalesUSD();
         }
+        public string? ObtenerUltimoReciboCorrelativoGlobal()
+        {
+            return _repository.ObtenerUltimoReciboCorrelativoGlobal();
+        }
 
         public void RegistrarPago(string numeroRecibo, string estudianteCedula, int inscripcionId, int conceptoId, decimal total, decimal totalEnUsd, string monedaCodigo, DateTime fechaVencimiento, List<PagoDetalle> detalles, string observaciones = null)
         {

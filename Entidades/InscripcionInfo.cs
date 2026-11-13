@@ -3,6 +3,9 @@
     public class InscripcionInfo
     {
         public int InscripcionId { get; set; }
+        public int GrupoId { get; set; }
+        public string CursoCodigo { get; set; } = string.Empty;
+        public string GrupoCodigo { get; set; } = string.Empty;
         public string Cedula { get; set; } = string.Empty;
         public string NombreCompleto { get; set; } = string.Empty;
         public string Telefono { get; set; } = string.Empty;

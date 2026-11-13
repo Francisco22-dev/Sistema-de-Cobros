@@ -54,5 +54,22 @@ namespace CapaNegocio
 
             _auditoria.Registrar("CIERRE", "Caja", caja.Id.ToString(), null, $"Caja Cerrada por {usuario}", true);
         }
+        public void AbrirCajaConFondo(decimal saldoInicial, string moneda)
+        {
+            if (ObtenerCajaAbierta() != null)
+                throw new InvalidOperationException("Ya existe una caja abierta. Debe cerrarla primero.");
+
+            string usuario = SesionService.Instancia.UsuarioActual?.Username ?? "Desconocido";
+            var caja = new Caja(usuario, saldoInicial, moneda);
+
+            _repository.AbrirCaja(caja);
+            _auditoria.Registrar("APERTURA", "Caja", null, null, $"Fondo Inicial: {saldoInicial} {moneda}", true);
+        }
+        public List<(string Curso, int Cantidad)> ObtenerInscripcionesDelTurno()
+        {
+            var caja = ObtenerCajaAbierta();
+            if (caja == null) return new List<(string Curso, int Cantidad)>();
+            return _repository.ObtenerInscripcionesPorCursoDelTurno(caja.FechaApertura);
+        }
     }
 }

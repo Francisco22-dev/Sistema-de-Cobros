@@ -13,12 +13,27 @@ namespace CapaNegocio
         public List<Grupo> ObtenerPorCurso(string cursoCodigo) => _repository.ObtenerPorCurso(cursoCodigo);
         public List<GrupoInfo> ObtenerGruposActivos() => _repository.ObtenerGruposActivos();
 
-        public void GuardarHorario(string cursoCodigo, string nombreHorario, DateTime fechaInicio)
+        /// <summary>
+        /// Sugiere un código con el formato de la academia (Ej: AAD2601, ASE2618)
+        /// </summary>
+        public string SugerirCodigoGrupo(string cursoCodigo)
         {
             int cuenta = _repository.ContarGruposDeCurso(cursoCodigo) + 1;
-            string codigoGenerado = $"{cursoCodigo}-GRP-{cuenta:D3}"; // Ej: ING-01-GRP-001
+            string anioDosDigitos = DateTime.Now.ToString("yy");
+            return $"{cursoCodigo.Trim().ToUpper()}{anioDosDigitos}{cuenta:D2}";
+        }
 
-            var grupo = new Grupo(cursoCodigo, codigoGenerado, fechaInicio)
+        public void GuardarHorario(string cursoCodigo, string codigoGrupo, string nombreHorario, DateTime fechaInicio)
+        {
+            codigoGrupo = codigoGrupo.Trim().ToUpper();
+
+            if (string.IsNullOrWhiteSpace(codigoGrupo))
+                throw new InvalidOperationException("Debe ingresar un código para el grupo.");
+
+            if (_repository.ExisteCodigo(codigoGrupo))
+                throw new InvalidOperationException($"El código de grupo '{codigoGrupo}' ya existe. Ingrese uno diferente.");
+
+            var grupo = new Grupo(cursoCodigo, codigoGrupo, fechaInicio)
             {
                 Nombre = nombreHorario,
                 Activo = true,
@@ -28,11 +43,11 @@ namespace CapaNegocio
             try
             {
                 _repository.Agregar(grupo);
-                _auditoria.Registrar("INSERT", "Grupos", codigoGenerado, null, $"Horario: {nombreHorario}, Inicio: {fechaInicio:d}", true);
+                _auditoria.Registrar("INSERT", "Grupos", codigoGrupo, null, $"Horario: {nombreHorario}, Inicio: {fechaInicio:d}", true);
             }
             catch (Exception ex)
             {
-                _auditoria.Registrar("INSERT", "Grupos", codigoGenerado, null, ex.Message, false);
+                _auditoria.Registrar("INSERT", "Grupos", codigoGrupo, null, ex.Message, false);
                 throw;
             }
         }

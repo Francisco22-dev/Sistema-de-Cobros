@@ -12,7 +12,7 @@ namespace CapaDatos
             var lista = new List<InscripcionInfo>();
             using var conn = DatabaseConnection.AbrirConexionConReintento();
             using var cmd = new MySqlCommand(
-                "SELECT i.Id, e.Cedula, e.NombreCompleto, e.Telefono, c.Nombre AS Curso, COALESCE(g.Nombre, 'Sin Horario') AS Horario, i.Estado, i.Observaciones " +
+                "SELECT i.Id, i.GrupoId, g.CursoCodigo, g.Codigo AS GrupoCodigo, e.Cedula, e.NombreCompleto, e.Telefono, c.Nombre AS Curso, COALESCE(g.Nombre, 'Sin Horario') AS Horario, i.Estado, i.Observaciones " +
                 "FROM Inscripciones i " +
                 "JOIN Estudiantes e ON i.EstudianteCedula = e.Cedula " +
                 "JOIN Grupos g ON i.GrupoId = g.Id " +
@@ -26,6 +26,9 @@ namespace CapaDatos
                 lista.Add(new InscripcionInfo
                 {
                     InscripcionId = reader.GetInt32("Id"),
+                    GrupoId = reader.GetInt32("GrupoId"),
+                    CursoCodigo = reader.GetString("CursoCodigo"),
+                    GrupoCodigo = reader.GetString("GrupoCodigo"),
                     Cedula = reader.GetString("Cedula"),
                     NombreCompleto = reader.GetString("NombreCompleto"),
                     Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? "" : reader.GetString("Telefono"),
@@ -44,7 +47,7 @@ namespace CapaDatos
             using var conn = DatabaseConnection.AbrirConexionConReintento();
 
             string query =
-                "SELECT i.Id, e.Cedula, e.NombreCompleto, e.Telefono, c.Nombre AS Curso, COALESCE(g.Nombre, 'Sin Horario') AS Horario, i.Estado, i.Observaciones " +
+                "SELECT i.Id, i.GrupoId, g.CursoCodigo, g.Codigo AS GrupoCodigo, e.Cedula, e.NombreCompleto, e.Telefono, c.Nombre AS Curso, COALESCE(g.Nombre, 'Sin Horario') AS Horario, i.Estado, i.Observaciones " +
                 "FROM Inscripciones i " +
                 "JOIN Estudiantes e ON i.EstudianteCedula = e.Cedula " +
                 "JOIN Grupos g ON i.GrupoId = g.Id " +
@@ -52,12 +55,12 @@ namespace CapaDatos
                 "WHERE 1=1 ";
 
             if (!string.IsNullOrWhiteSpace(filtro))
-                query += "AND (e.Cedula LIKE @filtro OR e.NombreCompleto LIKE @filtro OR c.Nombre LIKE @filtro) ";
+                query += "AND (e.Cedula LIKE @filtro OR e.NombreCompleto LIKE @filtro OR c.Nombre LIKE @filtro OR g.Codigo LIKE @filtro) ";
 
             if (!string.IsNullOrWhiteSpace(filtroEstado) && filtroEstado != "Todos")
                 query += "AND i.Estado = @estado ";
 
-            query += "ORDER BY i.Id DESC LIMIT 200";
+            query += "ORDER BY i.Id DESC LIMIT 250";
 
             using var cmd = new MySqlCommand(query, conn);
             if (!string.IsNullOrWhiteSpace(filtro))
@@ -71,6 +74,9 @@ namespace CapaDatos
                 lista.Add(new InscripcionInfo
                 {
                     InscripcionId = reader.GetInt32("Id"),
+                    GrupoId = reader.GetInt32("GrupoId"),
+                    CursoCodigo = reader.GetString("CursoCodigo"),
+                    GrupoCodigo = reader.GetString("GrupoCodigo"),
                     Cedula = reader.IsDBNull(reader.GetOrdinal("Cedula")) ? "" : reader.GetString("Cedula"),
                     NombreCompleto = reader.IsDBNull(reader.GetOrdinal("NombreCompleto")) ? "" : reader.GetString("NombreCompleto"),
                     Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? "" : reader.GetString("Telefono"),
@@ -81,6 +87,17 @@ namespace CapaDatos
                 });
             }
             return lista;
+        }
+
+        public void CambiarGrupo(int inscripcionId, int nuevoGrupoId, string nuevaObservacion)
+        {
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            using var cmd = new MySqlCommand(
+                "UPDATE Inscripciones SET GrupoId = @nuevoGrupoId, Observaciones = @observaciones WHERE Id = @id", conn);
+            cmd.Parameters.AddWithValue("@nuevoGrupoId", nuevoGrupoId);
+            cmd.Parameters.AddWithValue("@observaciones", nuevaObservacion);
+            cmd.Parameters.AddWithValue("@id", inscripcionId);
+            cmd.ExecuteNonQuery();
         }
 
         public void Agregar(Inscripcion inscripcion)
@@ -107,26 +124,6 @@ namespace CapaDatos
             cmd.Parameters.AddWithValue("@motivo", string.IsNullOrWhiteSpace(motivo) ? (object)DBNull.Value : motivo.Trim());
             cmd.Parameters.AddWithValue("@id", inscripcionId);
             cmd.ExecuteNonQuery();
-        }
-
-        public List<Inscripcion> ObtenerRecientes(int limite = 100)
-        {
-            var lista = new List<Inscripcion>();
-            using var conn = DatabaseConnection.AbrirConexionConReintento();
-            using var cmd = new MySqlCommand("SELECT * FROM Inscripciones ORDER BY Id DESC LIMIT @limite", conn);
-            cmd.Parameters.AddWithValue("@limite", limite);
-            using var reader = cmd.ExecuteReader();
-            while (reader.Read())
-            {
-                lista.Add(new Inscripcion(reader.GetString("EstudianteCedula"), reader.GetInt32("GrupoId"))
-                {
-                    Id = reader.GetInt32("Id"),
-                    FechaInscripcion = reader.GetDateTime("FechaInscripcion"),
-                    Estado = reader.GetString("Estado"),
-                    Observaciones = reader.IsDBNull(reader.GetOrdinal("Observaciones")) ? null : reader.GetString("Observaciones")
-                });
-            }
-            return lista;
         }
     }
 }

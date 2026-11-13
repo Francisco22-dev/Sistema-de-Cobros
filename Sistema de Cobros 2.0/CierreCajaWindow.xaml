@@ -1,34 +1,36 @@
 ﻿<Window x:Class="Sistema_de_Cobros_2._0.CierreCajaWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Cierre y Arqueo de Caja" Height="550" Width="550"
+        Title="Cierre y Arqueo de Caja" Height="600" Width="600"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize" Background="#F5F5F5">
     <Grid>
         <Border Background="White" CornerRadius="8" Padding="20" Margin="10">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="180"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
+                <!-- ENCABEZADO Y FONDO INICIAL -->
                 <StackPanel Grid.Row="0" Margin="0,0,0,10">
-                    <TextBlock Text="Arqueo de Caja" FontSize="20" FontWeight="Bold" Foreground="#333"/>
-                    <TextBlock Text="Verifique los montos según la distribución física y bancaria." Foreground="#666" FontSize="12"/>
+                    <TextBlock Text="Arqueo y Cierre de Caja" FontSize="20" FontWeight="Bold" Foreground="#333"/>
+                    <TextBlock x:Name="txtFondoInicial" Text="Fondo Inicial: 0.00 $" FontWeight="SemiBold" Foreground="#1976D2" FontSize="13" Margin="0,3,0,0"/>
                 </StackPanel>
 
-                <!-- Desglose por Método -->
+                <!-- DESGLOSE POR MÉTODO DE PAGO (SOLO INGRESOS DEL DÍA) -->
                 <DataGrid Grid.Row="1" x:Name="dgArqueo" AutoGenerateColumns="False" IsReadOnly="True" 
                           HeadersVisibility="Column" Background="Transparent" BorderThickness="1" BorderBrush="#E0E0E0" 
                           RowBackground="White" AlternatingRowBackground="#F9FAFB" Margin="0,0,0,10">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Método de Pago" Binding="{Binding Metodo}" Width="*"/>
                         <DataGridTextColumn Header="Mon." Binding="{Binding Moneda}" Width="50"/>
-                        <DataGridTextColumn Header="Monto Recaudado" Binding="{Binding Total, StringFormat=N2}" Width="120">
+                        <DataGridTextColumn Header="Ingresos del Día" Binding="{Binding Total, StringFormat=N2}" Width="130">
                             <DataGridTextColumn.ElementStyle>
                                 <Style TargetType="TextBlock">
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
                                     <Setter Property="HorizontalAlignment" Value="Right"/>
                                 </Style>
                             </DataGridTextColumn.ElementStyle>
@@ -36,39 +38,46 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
-                <!-- Totales Estilo Libreta -->
-                <Border Grid.Row="2" Background="#FFF3E0" BorderBrush="#FF9800" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,15">
+                <!-- TOTALES AGRUPADOS FÍSICO Y BANCO -->
+                <Border Grid.Row="2" Background="#FFF3E0" BorderBrush="#FF9800" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,10">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="TOTALES BOLÍVARES (BS)" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,5"/>
-                            <TextBlock x:Name="txtFisicoBs" Text="Físico (Efectivo): 0.00 BS"/>
-                            <TextBlock x:Name="txtBancoBs" Text="Banco (PM/Transf): 0.00 BS"/>
-                            <TextBlock x:Name="txtTotalBs" Text="TOTAL BS: 0.00 BS" FontWeight="Bold" Margin="0,5,0,0"/>
+                            <TextBlock Text="BOLÍVARES (BS)" FontWeight="Bold" Foreground="#E65100" Margin="0,0,0,3"/>
+                            <TextBlock x:Name="txtFisicoBs" Text="Físico: 0.00 BS" FontSize="11"/>
+                            <TextBlock x:Name="txtBancoBs" Text="Banco: 0.00 BS" FontSize="11"/>
+                            <TextBlock x:Name="txtTotalBs" Text="TOTAL BS: 0.00 BS" FontWeight="Bold" Margin="0,3,0,0"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1">
-                            <TextBlock Text="TOTALES DIVISAS ($)" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,0,5"/>
-                            <TextBlock x:Name="txtFisicoUsd" Text="Físico (Billetes): 0.00 $"/>
-                            <TextBlock x:Name="txtBancoUsd" Text="Banco (Zelle): 0.00 $"/>
-                            <TextBlock x:Name="txtTotalUsd" Text="TOTAL $: 0.00 $" FontWeight="Bold" Margin="0,5,0,0"/>
+                            <TextBlock Text="DÓLARES ($)" FontWeight="Bold" Foreground="#2E7D32" Margin="0,0,0,3"/>
+                            <TextBlock x:Name="txtFisicoUsd" Text="Físico: 0.00 $" FontSize="11"/>
+                            <TextBlock x:Name="txtBancoUsd" Text="Banco: 0.00 $" FontSize="11"/>
+                            <TextBlock x:Name="txtTotalUsd" Text="TOTAL $: 0.00 $" FontWeight="Bold" Margin="0,3,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Border>
 
-                <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="Cancelar" Padding="15,10" Background="Transparent" Foreground="#666" BorderThickness="0" Cursor="Hand" Click="BtnCancelar_Click"/>
-                    <Button Content="CERRAR CAJA Y RESPALDAR" Padding="15,10" Background="#F44336" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Margin="10,0,0,0" Click="BtnConfirmarCierre_Click">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
+                <!-- SECCIÓN DE INSCRIPCIONES DEL DÍA -->
+                <Border Grid.Row="3" Background="#E8F5E9" BorderBrush="#4CAF50" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock x:Name="txtTotalInscripciones" Text="Total de Inscripciones Hoy: 0" FontWeight="Bold" Foreground="#2E7D32" FontSize="13" Margin="0,0,0,5"/>
+                        <ListBox x:Name="lstInscripcionesCursos" Background="Transparent" BorderThickness="0" MaxHeight="90" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" FontSize="12" Foreground="#333"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+
+                <!-- BOTONES DE ACCIÓN -->
+                <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Imprimir / Exportar Arqueo Digital" Padding="12,8" Background="#2196F3" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Margin="0,0,10,0" Click="BtnExportarDigital_Click"/>
+                    <Button Content="CERRAR CAJA DEFINITIVA" Padding="15,8" Background="#F44336" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="BtnConfirmarCierre_Click"/>
                 </StackPanel>
             </Grid>
         </Border>

@@ -67,5 +67,12 @@ namespace CapaDatos
             cmd.Parameters.AddWithValue("@codigo", cursoCodigo);
             return System.Convert.ToInt32(cmd.ExecuteScalar());
         }
+        public bool ExisteCodigo(string codigo)
+        {
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            using var cmd = new MySqlCommand("SELECT COUNT(*) FROM Grupos WHERE Codigo = @codigo", conn);
+            cmd.Parameters.AddWithValue("@codigo", codigo.Trim());
+            return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+        }
     }
 }

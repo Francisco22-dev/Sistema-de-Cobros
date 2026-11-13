@@ -98,7 +98,11 @@ namespace CapaDatos
         public decimal ObtenerTotalHoy(DateTime fechaApertura)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            using var cmd = new MySqlCommand("SELECT COALESCE(SUM(TotalEnVes), 0) FROM Pagos WHERE FechaPago >= @fechaApertura AND Estado = 'Vigente'", conn);
+            using var cmd = new MySqlCommand(
+    "SELECT COALESCE(SUM(TotalEnVes), 0) FROM Pagos " +
+    "WHERE FechaPago >= @fechaApertura AND FechaPago <= NOW() " +
+    "  AND Estado = 'Vigente' " +
+    "  AND (Observaciones IS NULL OR Observaciones NOT LIKE '%Excel%')", conn);
             cmd.Parameters.AddWithValue("@fechaApertura", fechaApertura);
             var result = cmd.ExecuteScalar();
             return result == DBNull.Value ? 0 : Convert.ToDecimal(result);
@@ -158,6 +162,18 @@ namespace CapaDatos
                 lista.Add(new ArqueoItem { Metodo = reader.GetString("Metodo"), Moneda = reader.GetString("Moneda"), Total = reader.GetDecimal("Total") });
             }
             return lista;
+        }
+        public string? ObtenerUltimoReciboCorrelativoGlobal()
+        {
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            // Busca el último recibo oficial con estructura REC-AAAAMMDD-XXXXX
+            using var cmd = new MySqlCommand(
+                "SELECT NumeroRecibo FROM Pagos " +
+                "WHERE NumeroRecibo REGEXP '^REC-[0-9]{8}-[0-9]+$' " +
+                "ORDER BY Id DESC LIMIT 1", conn);
+
+            var result = cmd.ExecuteScalar();
+            return result?.ToString();
         }
     }
 }

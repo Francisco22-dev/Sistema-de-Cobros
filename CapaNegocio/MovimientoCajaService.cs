@@ -12,10 +12,15 @@ namespace CapaNegocio
         public decimal TotalEgresosBS { get; set; }
         public decimal SaldoNetoBS { get; set; }
 
+        public decimal TotalIngresosUSD { get; set; }
+        public decimal TotalEgresosUSD { get; set; }
+        public decimal SaldoNetoUSD { get; set; }
+
         public decimal FisicoBs { get; set; }
         public decimal BancoBs { get; set; }
         public decimal FisicoUsd { get; set; }
         public decimal BancoUsd { get; set; }
+        public decimal TasaBCV { get; set; } = 1m;
     }
 
     public class MovimientoCajaService
@@ -49,52 +54,65 @@ namespace CapaNegocio
         public ResumenFlujo CalcularResumenGlobal()
         {
             var tasas = _tasaService.ObtenerTasasDelDia();
-            decimal tasaBCV = tasas["BCV"] > 0 ? tasas["BCV"] : 1m;
+            decimal tasaBCV = (tasas.ContainsKey("BCV") && tasas["BCV"] > 0) ? tasas["BCV"] : 1m;
 
-            // 1. INGRESOS (Sin Cambios)
-            decimal ingresosTotalesUSD = _pagoService.ObtenerIngresosTotalesUSD();
-            foreach (var ing in _repository.ObtenerMovimientosPorTipo("Ingreso").Where(i => i.Categoria != "Cambio Moneda"))
-            {
-                if (ing.MonedaCodigo == "BS") ingresosTotalesUSD += (ing.Monto / tasaBCV);
-                else if (ing.MonedaCodigo == "BCV" || ing.MonedaCodigo == "USD") ingresosTotalesUSD += ing.Monto;
-            }
-
-            // 2. EGRESOS (Sin Cambios)
-            decimal egresosTotalesUSD = 0;
-            foreach (var eg in _repository.ObtenerMovimientosPorTipo("Egreso").Where(e => e.Categoria != "Cambio Moneda"))
-            {
-                if (eg.MonedaCodigo == "BS") egresosTotalesUSD += (eg.Monto / tasaBCV);
-                else if (eg.MonedaCodigo == "BCV" || eg.MonedaCodigo == "USD") egresosTotalesUSD += eg.Monto;
-                else if (eg.MonedaCodigo == "EUR" && tasas["EUR"] > 0) egresosTotalesUSD += ((eg.Monto * tasas["EUR"]) / tasaBCV);
-                else if (eg.MonedaCodigo == "USDT" && tasas["USDT"] > 0) egresosTotalesUSD += ((eg.Monto * tasas["USDT"]) / tasaBCV);
-            }
-
-            // 3. DESGLOSE FÍSICO/BANCO EN TIEMPO REAL
+            // 1. Obtener desglose de cobros y movimientos agrupados
             var todosPagos = _pagoRepo.ObtenerDesglosePagosGlobal();
             var todosMovs = _repository.ObtenerDesgloseMovimientosGlobal();
-
             var consolidado = todosPagos.Concat(todosMovs).ToList();
 
+            // Dinero físico y bancario real
             decimal fBs = consolidado.Where(a => a.Moneda == "BS" && a.Metodo.Contains("Efectivo")).Sum(a => a.Total);
             decimal bBs = consolidado.Where(a => a.Moneda == "BS" && !a.Metodo.Contains("Efectivo")).Sum(a => a.Total);
-            decimal fUsd = consolidado.Where(a => (a.Moneda == "BCV" || a.Moneda == "USD" || a.Moneda == "$") && (a.Metodo.Contains("Divisas") || a.Metodo.Contains("Efectivo"))).Sum(a => a.Total);
-            decimal bUsd = consolidado.Where(a => (a.Moneda == "BCV" || a.Moneda == "USD" || a.Moneda == "$") && a.Metodo.Contains("Zelle")).Sum(a => a.Total);
+            decimal fUsd = consolidado.Where(a => (a.Moneda == "BCV" || a.Moneda == "USD" || a.Moneda == "$") &&
+                (a.Metodo.Contains("Divisas") || a.Metodo.Contains("Efectivo"))).Sum(a => a.Total);
+            decimal bUsd = consolidado.Where(a => (a.Moneda == "BCV" || a.Moneda == "USD" || a.Moneda == "$") &&
+                (a.Metodo.Contains("Zelle") || a.Metodo.Contains("Binance"))).Sum(a => a.Total);
 
-            // CORRECCIÓN VISUAL: Si la cuenta da negativo (sobregiro por cambios sin fondos previos), la limitamos a 0 visualmente.
             fBs = Math.Max(0, fBs);
             bBs = Math.Max(0, bBs);
             fUsd = Math.Max(0, fUsd);
             bUsd = Math.Max(0, bUsd);
 
+            // 2. Egresos reales (excluyendo cambios de moneda)
+            var egresos = _repository.ObtenerMovimientosPorTipo("Egreso").Where(e => e.Categoria != "Cambio Moneda").ToList();
+            decimal egresosBS = 0m;
+            decimal egresosUSD = 0m;
+
+            foreach (var eg in egresos)
+            {
+                if (eg.MonedaCodigo == "BS")
+                {
+                    egresosBS += eg.Monto;
+                    egresosUSD += (tasaBCV > 0 ? eg.Monto / tasaBCV : eg.Monto);
+                }
+                else
+                {
+                    egresosUSD += eg.Monto;
+                    egresosBS += (eg.Monto * tasaBCV);
+                }
+            }
+
+            // 3. Consolidación de Saldo Neto en ambas monedas
+            decimal saldoNetoBS = (fBs + bBs) + ((fUsd + bUsd) * tasaBCV);
+            decimal saldoNetoUSD = (fUsd + bUsd) + (tasaBCV > 0 ? (fBs + bBs) / tasaBCV : 0m);
+
+            decimal totalIngresosBS = saldoNetoBS + egresosBS;
+            decimal totalIngresosUSD = saldoNetoUSD + egresosUSD;
+
             return new ResumenFlujo
             {
-                TotalIngresosBS = ingresosTotalesUSD * tasaBCV,
-                TotalEgresosBS = egresosTotalesUSD * tasaBCV,
-                SaldoNetoBS = (ingresosTotalesUSD - egresosTotalesUSD) * tasaBCV,
+                TotalIngresosBS = totalIngresosBS,
+                TotalEgresosBS = egresosBS,
+                SaldoNetoBS = saldoNetoBS,
+                TotalIngresosUSD = totalIngresosUSD,
+                TotalEgresosUSD = egresosUSD,
+                SaldoNetoUSD = saldoNetoUSD,
                 FisicoBs = fBs,
                 BancoBs = bBs,
                 FisicoUsd = fUsd,
-                BancoUsd = bUsd
+                BancoUsd = bUsd,
+                TasaBCV = tasaBCV
             };
         }
 

@@ -98,10 +98,14 @@
                 </DataGrid>
 
                 <StackPanel Grid.Row="2" Margin="0,15,0,0" IsEnabled="False" x:Name="panelHorarios">
-                    <TextBlock Text="Agregar Horario al Curso" FontWeight="SemiBold" Foreground="#4CAF50" Margin="0,0,0,10"/>
+                    <TextBlock Text="Agregar Horario / Grupo al Curso" FontWeight="SemiBold" Foreground="#4CAF50" Margin="0,0,0,10"/>
+
+                    <!-- CAMPO EDITABLE DE CÓDIGO (CON SUGERENCIA AUTOMÁTICA) -->
+                    <TextBlock Text="Código del Grupo / Cohorte (Ej: AAD2610)" FontSize="11" Foreground="#666"/>
+                    <TextBox x:Name="txtCodigoGrupo" Padding="6" BorderBrush="#ccc" BorderThickness="1" Margin="0,2,0,8" FontWeight="SemiBold"/>
 
                     <TextBlock Text="Días de Clase (Ej. Sábados)" FontSize="11" Foreground="#666"/>
-                    <ComboBox x:Name="cmbDias" Padding="5" Margin="0,0,0,5">
+                    <ComboBox x:Name="cmbDias" Padding="5" Margin="0,2,0,8">
                         <ComboBoxItem Content="Lunes"/>
                         <ComboBoxItem Content="Martes"/>
                         <ComboBoxItem Content="Miércoles"/>
@@ -113,23 +117,17 @@
                         <ComboBoxItem Content="Martes y Jueves"/>
                     </ComboBox>
 
-                    <Grid Margin="0,0,0,5">
-
-                        <StackPanel Grid.Column="0" Margin="0,0,5,0">
-                            <TextBlock Text="Bloque de Horario" FontSize="11" Foreground="#666" Margin="0,5,0,0"/>
-                            <ComboBox x:Name="cmbHoras" Padding="5" Margin="0,0,0,15">
-                                <ComboBoxItem Content="8:00 AM - 11:00 AM" IsSelected="True"/>
-                                <ComboBoxItem Content="11:00 AM - 2:00 PM"/>
-                                <ComboBoxItem Content="2:00 PM - 5:00 PM"/>
-                                <ComboBoxItem Content="2:00 PM - 3:30 PM"/>
-                                <ComboBoxItem Content="3:30 PM - 5:00 PM"/>
-                            </ComboBox>
-                        </StackPanel>
-                        
-                    </Grid>
+                    <TextBlock Text="Bloque de Horario" FontSize="11" Foreground="#666"/>
+                    <ComboBox x:Name="cmbHoras" Padding="5" Margin="0,2,0,8">
+                        <ComboBoxItem Content="8:00 AM - 11:00 AM" IsSelected="True"/>
+                        <ComboBoxItem Content="11:00 AM - 2:00 PM"/>
+                        <ComboBoxItem Content="2:00 PM - 5:00 PM"/>
+                        <ComboBoxItem Content="2:00 PM - 3:30 PM"/>
+                        <ComboBoxItem Content="3:30 PM - 5:00 PM"/>
+                    </ComboBox>
 
                     <TextBlock Text="Fecha Oficial de Inicio" FontSize="11" Foreground="#666"/>
-                    <DatePicker x:Name="dpFechaInicio" Margin="0,0,0,15"/>
+                    <DatePicker x:Name="dpFechaInicio" Margin="0,2,0,15"/>
 
                     <Button Content="Agregar Horario (Grupo)" Background="#4CAF50" Foreground="White" Padding="10,8" BorderThickness="0" Cursor="Hand" Click="BtnAgregarHorario_Click"/>
                 </StackPanel>

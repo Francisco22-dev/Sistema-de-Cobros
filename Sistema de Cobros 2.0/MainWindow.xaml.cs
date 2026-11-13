@@ -111,6 +111,7 @@ namespace Sistema_de_Cobros_2._0
 
         private void ActualizarVistaTasa()
         {
+            bool esTasaDeHoy = _tasaService.EsTasaDeHoyConfigurada();
             _tasas = _tasaService.ObtenerTasasDelDia();
 
             if (_tasas["BCV"] <= 0)
@@ -118,20 +119,35 @@ namespace Sistema_de_Cobros_2._0
                 txtTasaDia.Text = "TASAS NO CONFIGURADAS";
                 txtTasaDia.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F44336"));
             }
+            else if (!esTasaDeHoy)
+            {
+                // Indica que está trabajando con la tasa anterior y requiere actualización
+                txtTasaDia.Text = $"Tasa $: {_tasas["BCV"]:N2} Bs (Tasa Anterior)";
+                txtTasaDia.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF9800")); // Naranja
+            }
             else
             {
                 txtTasaDia.Text = $"Tasa $: {_tasas["BCV"]:N2} Bs";
-                txtTasaDia.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1976D2"));
+                txtTasaDia.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1976D2")); // Azul oficial
             }
         }
 
         private void BtnConfigurarTasa_Click(object sender, RoutedEventArgs e)
         {
-            if (_tasas["BCV"] > 0)
+            bool yaConfiguradaHoy = _tasaService.EsTasaDeHoyConfigurada();
+
+            // Si ya se fijó la tasa de hoy, pide confirmación antes de alterarla
+            if (yaConfiguradaHoy)
             {
-                AlertaWindow.MostrarInfo("Las tasas de hoy ya fueron configuradas.\nPor seguridad, no se pueden alterar a mitad del día.");
-                return;
+                if (!AlertaWindow.SolicitarConfirmacion(
+                    $"La tasa de hoy ya fue configurada en {_tasas["BCV"]:N2} Bs.\n¿Desea modificar la tasa oficial de hoy?",
+                    "Actualizar Tasa"))
+                {
+                    return;
+                }
             }
+
+            // Permite abrir y configurar la tasa
             new ConfigurarTasaWindow { Owner = this }.ShowDialog();
             ActualizarVistaTasa();
         }
@@ -181,7 +197,27 @@ namespace Sistema_de_Cobros_2._0
             dgHistorial.ItemsSource = _pagoService.ObtenerPagos(100, busqueda);
         }
 
-        private void TxtBuscarPago_TextChanged(object sender, TextChangedEventArgs e) => ActualizarHistorial();
+        // 1. Click en el botón Buscar
+        private void BtnBuscarPago_Click(object sender, RoutedEventArgs e)
+        {
+            ActualizarHistorial();
+        }
+
+        // 2. Opcional: También busca si el usuario presiona Enter dentro de la caja de texto
+        private void TxtBuscarPago_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == System.Windows.Input.Key.Enter)
+            {
+                ActualizarHistorial();
+            }
+        }
+
+        // 3. Botón para limpiar y recargar los pagos recientes
+        private void BtnLimpiarBuscarPago_Click(object sender, RoutedEventArgs e)
+        {
+            txtBuscarPago.Text = string.Empty;
+            ActualizarHistorial();
+        }
 
         private void BtnAbrirCaja_Click(object sender, RoutedEventArgs e)
         {
@@ -323,16 +359,22 @@ namespace Sistema_de_Cobros_2._0
             string monedaFacturaBD = _listaDetalles.All(d => d.MonedaBD == "BCV") ? "BCV" : "BS";
             string monedaFacturaUI = monedaFacturaBD == "BCV" ? "$" : "BS";
 
-            // GENERADOR DE NÚMEROS SECUENCIALES (Ej: REC-20261108-00001)
-            string prefijo = $"REC-{DateTime.Now:yyyyMMdd}-";
-            string? ultimoRecibo = _pagoService.ObtenerUltimoReciboDelDia(prefijo);
+            string fechaHoy = DateTime.Now.ToString("yyyyMMdd");
+            string? ultimoRecibo = _pagoService.ObtenerUltimoReciboCorrelativoGlobal();
             int secuencial = 1;
+
             if (!string.IsNullOrEmpty(ultimoRecibo))
             {
-                string numStr = ultimoRecibo.Substring(prefijo.Length);
-                if (int.TryParse(numStr, out int num)) secuencial = num + 1;
+                string[] partes = ultimoRecibo.Split('-');
+                // partes[0] = "REC", partes[1] = Fecha, partes[2] = Correlativo (ej. 00003)
+                if (partes.Length >= 3 && int.TryParse(partes[partes.Length - 1], out int ultimoNumero))
+                {
+                    secuencial = ultimoNumero + 1;
+                }
             }
-            string numeroRecibo = $"{prefijo}{secuencial:D5}";
+
+            // Genera el nuevo recibo con la fecha de hoy y el correlativo continuo
+            string numeroRecibo = $"REC-{fechaHoy}-{secuencial:D5}";
 
             decimal totalFacturaConvertida = 0m;
             decimal totalFacturaEnUSD = 0m; // CALCULO EXACTO DE MOROSIDAD EN DÓLARES

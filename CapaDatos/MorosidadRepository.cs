@@ -12,7 +12,7 @@ namespace CapaDatos
             var lista = new List<MorosidadInfo>();
             using var conn = DatabaseConnection.AbrirConexionConReintento();
 
-            // 1. Buscamos las tasas de HOY (Viernes, Martes, el día que sea)
+            // 1. Tasas del día
             decimal tasaBCV = 1m, tasaEUR = 1m, tasaUSDT = 1m;
             using (var cmdTasas = new MySqlCommand("SELECT MonedaOrigen, Tasa FROM TasasCambio WHERE Fecha = @hoy", conn))
             {
@@ -28,27 +28,28 @@ namespace CapaDatos
                 }
             }
 
-            // 2. FÓRMULA DE DEUDA ESTRICTA
-            // Ahora SOLO descuenta dinero si el estudiante pagó Mensualidad (2) o Semanal (3).
-            // Si paga un certificado o inscripción, la deuda de las clases no se toca.
+            // 2. Consulta con Código de Grupo y concatenación limpia
             string query = @"
-                SELECT 
-                    e.Cedula, e.NombreCompleto, e.Telefono,
-                    c.Nombre AS Curso,
-                    c.PrecioMensualidad AS PrecioClase,
-                    
-                    (SELECT COUNT(*) FROM CalendarioClases cc WHERE cc.GrupoId = i.GrupoId AND cc.FechaClase <= @hoy AND cc.Estado NOT IN ('Nula', 'Festivo')) AS ClasesImpartidas,
-                    
-                    COALESCE((
-                        SELECT SUM(p.TotalEnVes / COALESCE((SELECT tc.Tasa FROM TasasCambio tc WHERE tc.Fecha = DATE(p.FechaPago) AND tc.MonedaOrigen = 'BCV' LIMIT 1), 1)) 
-                        FROM Pagos p WHERE p.InscripcionId = i.Id AND p.Estado = 'Vigente' AND p.ConceptoId IN (2, 3)
-                    ), 0) AS TotalPagadoHistoricoUSD
+        SELECT 
+            e.Cedula, e.NombreCompleto, e.Telefono,
+            c.Codigo AS CursoCodigo,
+            c.Nombre AS CursoNombre,
+            g.Codigo AS GrupoCodigo,
+            CONCAT(c.Nombre, ' (', g.Codigo, ')') AS CursoConGrupo,
+            c.PrecioMensualidad AS PrecioClase,
+            
+            (SELECT COUNT(*) FROM CalendarioClases cc WHERE cc.GrupoId = i.GrupoId AND cc.FechaClase <= @hoy AND cc.Estado NOT IN ('Nula', 'Festivo')) AS ClasesImpartidas,
+            
+            COALESCE((
+                SELECT SUM(p.TotalEnVes / COALESCE((SELECT tc.Tasa FROM TasasCambio tc WHERE tc.Fecha = DATE(p.FechaPago) AND tc.MonedaOrigen = 'BCV' LIMIT 1), 1)) 
+                FROM Pagos p WHERE p.InscripcionId = i.Id AND p.Estado = 'Vigente' AND p.ConceptoId IN (2, 3)
+            ), 0) AS TotalPagadoHistoricoUSD
 
-                FROM Inscripciones i
-                JOIN Estudiantes e ON i.EstudianteCedula = e.Cedula
-                JOIN Grupos g ON i.GrupoId = g.Id
-                JOIN Cursos c ON g.CursoCodigo = c.Codigo
-                WHERE i.Estado = 'Activa'";
+        FROM Inscripciones i
+        JOIN Estudiantes e ON i.EstudianteCedula = e.Cedula
+        JOIN Grupos g ON i.GrupoId = g.Id
+        JOIN Cursos c ON g.CursoCodigo = c.Codigo
+        WHERE i.Estado = 'Activa'";
 
             using var cmd = new MySqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@hoy", hoy);
@@ -57,26 +58,30 @@ namespace CapaDatos
             while (reader.Read())
             {
                 int clases = reader.GetInt32("ClasesImpartidas");
-                decimal precioClase = reader.GetDecimal("PrecioClase"); // Ej. 12$
+                decimal precioClase = reader.GetDecimal("PrecioClase");
                 decimal pagadoUSD = reader.GetDecimal("TotalPagadoHistoricoUSD");
 
-                // 3. LA MATEMÁTICA LÓGICA
                 decimal costoTotalUSD = clases * precioClase;
                 decimal deudaUSD = Math.Round(costoTotalUSD - pagadoUSD, 2);
 
                 if (deudaUSD > 0)
                 {
-                    // AHORA SÍ: Multiplica los dólares por la tasa de HOY de cada método
                     decimal deudaBCV = Math.Round(deudaUSD * tasaBCV, 2);
                     decimal deudaEUR = Math.Round(deudaUSD * tasaEUR, 2);
                     decimal deudaUSDT = Math.Round(deudaUSD * tasaUSDT, 2);
+
+                    string cursoConGrupo = reader.IsDBNull(reader.GetOrdinal("CursoConGrupo")) ? reader.GetString("CursoNombre") : reader.GetString("CursoConGrupo");
+                    string grupoCodigo = reader.IsDBNull(reader.GetOrdinal("GrupoCodigo")) ? "" : reader.GetString("GrupoCodigo");
+                    string cursoCodigo = reader.IsDBNull(reader.GetOrdinal("CursoCodigo")) ? "" : reader.GetString("CursoCodigo");
 
                     lista.Add(new MorosidadInfo
                     {
                         Cedula = reader.GetString("Cedula"),
                         NombreCompleto = reader.GetString("NombreCompleto"),
-                        Telefono = reader.GetString("Telefono"),
-                        Curso = reader.GetString("Curso"),
+                        Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? "" : reader.GetString("Telefono"),
+                        Curso = cursoConGrupo,
+                        CursoCodigo = cursoCodigo,
+                        GrupoCodigo = grupoCodigo,
                         ClasesImpartidas = clases,
                         TotalPagado = pagadoUSD,
                         DeudaUSD = deudaUSD,

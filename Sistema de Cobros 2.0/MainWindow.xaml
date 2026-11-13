@@ -269,7 +269,7 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- ENCABEZADO Y BUSCADOR -->
+                    <!-- ENCABEZADO Y BUSCADOR OPTIMIZADO CON BOTÓN -->
                     <Grid Grid.Row="0" Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -278,8 +278,20 @@
                         <TextBlock Text="Últimos Pagos Registrados" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextDark}" VerticalAlignment="Center"/>
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="Buscar:" VerticalAlignment="Center" Margin="0,0,10,0" Foreground="#666" FontWeight="SemiBold"/>
-                            <TextBox x:Name="txtBuscarPago" Width="200" Style="{StaticResource ModernTextBox}" TextChanged="TxtBuscarPago_TextChanged"/>
+                            <TextBlock Text="Buscar:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#666" FontWeight="SemiBold"/>
+
+                            <!-- Sin evento TextChanged para no congelar la red -->
+                            <TextBox x:Name="txtBuscarPago" Width="180" Style="{StaticResource ModernTextBox}" 
+                 Margin="0,0,6,0" KeyDown="TxtBuscarPago_KeyDown"/>
+
+                            <Button x:Name="btnBuscarPago" Content="Buscar" Style="{StaticResource BotonRedondeado}" 
+                Background="{StaticResource Primary}" Foreground="White" FontWeight="Bold" 
+                Padding="12,7" Click="BtnBuscarPago_Click"/>
+
+                            <Button x:Name="btnLimpiarBuscarPago" Content="✕" Style="{StaticResource BotonRedondeado}" 
+                Background="#E5E7EB" Foreground="#555" FontWeight="Bold" 
+                Padding="8,7" Margin="5,0,0,0" ToolTip="Limpiar búsqueda" 
+                Click="BtnLimpiarBuscarPago_Click"/>
                         </StackPanel>
                     </Grid>
 

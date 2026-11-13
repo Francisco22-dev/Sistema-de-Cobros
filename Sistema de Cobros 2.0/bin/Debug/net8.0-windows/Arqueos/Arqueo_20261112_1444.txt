@@ -1,0 +1,22 @@
+﻿==================================================
+                 CEVENCA
+           ARQUEO Y CIERRE DE CAJA
+==================================================
+Fecha Apertura : 12/11/2026 01:42 p. m.
+Fecha Cierre   : 12/11/2026 02:44 p. m.
+Cajero Turno   : admin
+Fondo Inicial  : 0,00 USD
+--------------------------------------------------
+INGRESOS GENERADOS EN EL TURNO:
+ - Efectivo              : 9.561,00 BCV
+--------------------------------------------------
+TOTALES RECAUDADOS:
+ TOTAL BS: 0,00 BS
+ TOTAL $: 9.561,00 $
+--------------------------------------------------
+RESUMEN DE INSCRIPCIONES: 0
+==================================================
+
+
+Firma Cajero: __________________   Firma Admin: __________________
+
