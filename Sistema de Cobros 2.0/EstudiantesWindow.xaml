@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Sistema_de_Cobros_2._0.EstudiantesWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Gestión de Estudiantes e Inscripciones" Height="650" Width="1020"
+        Title="Gestión de Estudiantes e Inscripciones" Height="680" Width="1060"
         WindowStartupLocation="CenterOwner" Background="#F0F2F5">
 
     <Window.Resources>
@@ -115,7 +115,7 @@
                                 </Grid.RowDefinitions>
 
                                 <TextBlock x:Name="txtAlumnoSeleccionado" Grid.Row="0" 
-                                           Text="Seleccione un estudiante de la tabla superior para gestionar su estado o cambiarlo de grupo." 
+                                           Text="Seleccione un estudiante de la tabla superior para gestionar su estado o cambiarlo de curso." 
                                            FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
 
                                 <Grid Grid.Row="1" x:Name="panelAcciones" IsEnabled="False">
@@ -133,21 +133,26 @@
 
                                     <!-- Botones de Acción -->
                                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Bottom">
-                                        <!-- BOTÓN DE TRASLADO DE GRUPO -->
+                                        <!-- BOTÓN CAMBIAR DE HORARIO (MISMO CURSO) -->
                                         <Button Content="Cambiar de Horario" Style="{StaticResource BotonRedondeado}"
-                                                Background="#2196F3" Foreground="White" FontWeight="Bold" Padding="12,8"
-                                                Margin="0,0,8,0" Click="BtnAbrirModalCambio_Click"/>
+                                                Background="#2196F3" Foreground="White" FontWeight="Bold" Padding="10,8"
+                                                Margin="0,0,6,0" Click="BtnAbrirModalCambio_Click"/>
+
+                                        <!-- NUEVO: BOTÓN CAMBIAR DE CARRERA/CURSO -->
+                                        <Button Content="Cambiar de Curso" Style="{StaticResource BotonRedondeado}"
+                                                Background="#7C3AED" Foreground="White" FontWeight="Bold" Padding="10,8"
+                                                Margin="0,0,6,0" Click="BtnAbrirModalCambioCurso_Click"/>
 
                                         <Button Content="Suspender (Temporal)" Style="{StaticResource BotonRedondeado}"
-                                                Background="#FF9800" Foreground="White" FontWeight="Bold" Padding="12,8"
-                                                Margin="0,0,8,0" Click="BtnSuspender_Click"/>
+                                                Background="#FF9800" Foreground="White" FontWeight="Bold" Padding="10,8"
+                                                Margin="0,0,6,0" Click="BtnSuspender_Click"/>
 
                                         <Button Content="Desertor (Cancelar)" Style="{StaticResource BotonRedondeado}"
-                                                Background="#F44336" Foreground="White" FontWeight="Bold" Padding="12,8"
-                                                Margin="0,0,8,0" Click="BtnCancelar_Click"/>
+                                                Background="#F44336" Foreground="White" FontWeight="Bold" Padding="10,8"
+                                                Margin="0,0,6,0" Click="BtnCancelar_Click"/>
 
                                         <Button Content="Reactivar Alumno" Style="{StaticResource BotonRedondeado}"
-                                                Background="#4CAF50" Foreground="White" FontWeight="Bold" Padding="12,8"
+                                                Background="#4CAF50" Foreground="White" FontWeight="Bold" Padding="10,8"
                                                 Click="BtnReactivar_Click"/>
                                     </StackPanel>
                                 </Grid>
@@ -156,7 +161,7 @@
                     </Grid>
                 </TabItem>
 
-                <!-- PESTAÑA 2: REGISTRAR NUEVO ALUMNO (SELECCIÓN EN CASCADA) -->
+                <!-- PESTAÑA 2: REGISTRAR NUEVO ALUMNO -->
                 <TabItem Header="Registrar Nuevo Alumno" Padding="15,8" FontWeight="SemiBold">
                     <Border Padding="30" MaxWidth="520" HorizontalAlignment="Center">
                         <StackPanel>
@@ -187,8 +192,8 @@
                             <TextBlock Text="1. Seleccione la Carrera o Curso" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,10,0,4"/>
                             <ComboBox x:Name="cmbNuevoCurso" Style="{StaticResource ModernComboBox}" DisplayMemberPath="Nombre" SelectedValuePath="Codigo" SelectionChanged="CmbNuevoCurso_SelectionChanged" Margin="0,0,0,10"/>
 
-                            <!-- SELECCIÓN EN CASCADA PASO 2: HORARIO DEL CURSO SELECCIONADO -->
-                            <TextBlock Text="2. Seleccione el Horario / Cohorte" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,0,0,4"/>
+                            <!-- SELECCIÓN EN CASCADA PASO 2: HORARIO -->
+                            <TextBlock Text="2. Seleccione el Horario / Cohorte" FontSize="12" FontWeight="SemiBold" Foreground="#1976D2" Margin="0,10,0,4"/>
                             <ComboBox x:Name="cmbNuevoGrupo" Style="{StaticResource ModernComboBox}" DisplayMemberPath="Display" SelectedValuePath="Id" IsEnabled="False" SelectionChanged="CmbNuevoGrupo_SelectionChanged" Margin="0,0,0,10"/>
 
                             <!-- FICHA INFORMATIVA DINÁMICA -->
@@ -205,7 +210,7 @@
             </TabControl>
         </Grid>
 
-        <!-- MODAL OVERLAY: TRASLADO DE GRUPO (DENTRO DEL MISMO CURSO) -->
+        <!-- MODAL 1: CAMBIO DE HORARIO (MISMO CURSO) -->
         <Grid x:Name="modalCambioGrupo" Visibility="Collapsed" Background="#80000000">
             <Border Background="White" CornerRadius="10" Padding="25" MaxWidth="520" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Border.Effect>
@@ -213,7 +218,7 @@
                 </Border.Effect>
                 <StackPanel>
                     <TextBlock Text="Traslado de Horario / Grupo" FontSize="18" FontWeight="Bold" Foreground="#1976D2" Margin="0,0,0,5"/>
-                    <TextBlock Text="Permite mover al estudiante a otro turno del mismo curso manteniendo intactos todos sus pagos." Foreground="#666" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,15"/>
+                    <TextBlock Text="Mueve al estudiante a otro horario de la misma carrera conservando sus pagos." Foreground="#666" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,15"/>
 
                     <Border Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,15">
                         <StackPanel>
@@ -223,10 +228,10 @@
                         </StackPanel>
                     </Border>
 
-                    <TextBlock Text="Seleccione el nuevo grupo o turno al que se traslada:" FontSize="11" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,4"/>
+                    <TextBlock Text="Seleccione el nuevo grupo o turno:" FontSize="11" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,4"/>
                     <ComboBox x:Name="cmbModalNuevosGrupos" Style="{StaticResource ModernComboBox}" DisplayMemberPath="Display" SelectedValuePath="Id" Margin="0,0,0,12"/>
 
-                    <TextBlock Text="Motivo del traslado (Opcional - Ej: Cambio de horario laboral):" FontSize="11" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,4"/>
+                    <TextBlock Text="Motivo del traslado (Opcional):" FontSize="11" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,4"/>
                     <TextBox x:Name="txtModalMotivo" Style="{StaticResource ModernTextBox}" Margin="0,0,0,20"/>
 
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -234,6 +239,90 @@
                         <Button Content="Procesar Traslado" Style="{StaticResource BotonRedondeado}" Background="#2196F3" Foreground="White" FontWeight="Bold" Padding="15,8" Margin="10,0,0,0" Click="BtnConfirmarCambioGrupo_Click"/>
                     </StackPanel>
                 </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- MODAL 2: CAMBIO DE CURSO / CARRERA (COMPLETO) -->
+        <Grid x:Name="modalCambioCurso" Visibility="Collapsed" Background="#80000000">
+            <Border Background="White" CornerRadius="12" Padding="25" MaxWidth="580" MaxHeight="640" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="25" Opacity="0.3" ShadowDepth="3"/>
+                </Border.Effect>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Cambio de Carrera / Curso" FontSize="18" FontWeight="Bold" Foreground="#7C3AED" Margin="0,0,0,5"/>
+                        <TextBlock Text="Permite trasladar al estudiante a otra especialidad ajustando pagos, matrícula y deudas." Foreground="#666" FontSize="11" Margin="0,0,0,12"/>
+
+                        <!-- ALERTA VISUAL DE DEUDA (SI DEBE) -->
+                        <Border x:Name="bdrAlertaDeuda" Background="#FEF2F2" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,12" Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock x:Name="txtAlertaDeudaTitulo" Text="⚠ ATENCIÓN: El estudiante presenta pagos pendientes" FontWeight="Bold" Foreground="#B91C1C" FontSize="12"/>
+                                <TextBlock x:Name="txtAlertaDeudaDetalle" Text="Debe: 0.00 $ en su curso actual." FontSize="11" Foreground="#7F1D1D" Margin="0,2,0,6"/>
+                                <CheckBox x:Name="chkPerdonarDeuda" Content="Perdonar/Condonar la deuda pendiente (Se registrará en auditoría)" Foreground="#B91C1C" FontWeight="SemiBold" FontSize="11"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- FICHA RESUMEN DEL ALUMNO -->
+                        <Border Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock x:Name="txtCursoModalAlumno" Text="Estudiante: ..." FontWeight="Bold" FontSize="13" Foreground="#333"/>
+                                <TextBlock x:Name="txtCursoModalOrigen" Text="Curso que abandona: ..." FontSize="12" Foreground="#4B5563" Margin="0,2,0,0"/>
+                                <TextBlock x:Name="txtCursoModalPagado" Text="Total pagado en clases: 0.00 $" FontSize="11" Foreground="#059669" FontWeight="SemiBold" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- SELECCIÓN DEL NUEVO CURSO Y GRUPO -->
+                        <TextBlock Text="1. Seleccione la Nueva Carrera:" FontSize="11" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,3"/>
+                        <ComboBox x:Name="cmbCursoModalNuevoCurso" Style="{StaticResource ModernComboBox}" DisplayMemberPath="Nombre" SelectedValuePath="Codigo" SelectionChanged="CmbCursoModalNuevoCurso_SelectionChanged" Margin="0,0,0,10"/>
+
+                        <TextBlock Text="2. Seleccione el Horario / Cohorte de la Nueva Carrera:" FontSize="11" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,3"/>
+                        <ComboBox x:Name="cmbCursoModalNuevoGrupo" Style="{StaticResource ModernComboBox}" DisplayMemberPath="Display" SelectedValuePath="Id" IsEnabled="False" SelectionChanged="CmbCursoModalNuevoGrupo_SelectionChanged" Margin="0,0,0,12"/>
+
+                        <!-- OPCIONES DE TRANSFERENCIA FINANCIERA (REGLAS 1 Y 2) -->
+                        <Border Background="#F8FAFC" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="Condiciones de Transferencia de Fondos:" FontWeight="Bold" FontSize="11" Foreground="#334155" Margin="0,0,0,6"/>
+
+                                <!-- Casilla 1: Transferir dinero de clases -->
+                                <CheckBox x:Name="chkTransferirTodoCredito" Content="Transferir pagos de clases como crédito al nuevo curso" IsChecked="True" FontWeight="SemiBold" FontSize="11" Checked="ChkCredito_Changed" Unchecked="ChkCredito_Changed" Margin="0,0,0,6"/>
+                                <TextBlock x:Name="txtInfoCreditoClases" Text="* Todo el dinero pagado servirá de crédito a favor de las clases del nuevo curso." FontSize="10" Foreground="#64748B" Margin="20,-4,0,8"/>
+
+                                <!-- Casilla 2: Convalidar inscripción -->
+                                <CheckBox x:Name="chkConvalidarInscripcion" Content="Convalidar pago de matrícula / inscripción previa" IsChecked="True" FontWeight="SemiBold" FontSize="11" Checked="ChkInscripcion_Changed" Unchecked="ChkInscripcion_Changed" Margin="0,0,0,4"/>
+                                <TextBlock x:Name="txtInfoDiferenciaInscripcion" Text="Diferencia de matrícula a pagar: 0.00 $" FontSize="11" FontWeight="Bold" Foreground="#D97706" Margin="20,0,0,4"/>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Text="Motivo del cambio de carrera (Obligatorio para auditoría):" FontSize="11" FontWeight="SemiBold" Foreground="#333" Margin="0,0,0,3"/>
+                        <TextBox x:Name="txtCursoModalMotivo" Style="{StaticResource ModernTextBox}" Margin="0,0,0,12"/>
+
+                        <!-- SECCIÓN DE AUTORIZACIÓN ADMIN (SI ES CAJERO) -->
+                        <Border x:Name="bdrAutorizacionAdmin" Background="#FEF3C7" BorderBrush="#F59E0B" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,15" Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock Text="🔒 Requiere Autorización de Administrador" FontWeight="Bold" FontSize="11" Foreground="#92400E" Margin="0,0,0,6"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Margin="0,0,5,0">
+                                        <TextBlock Text="Usuario Admin" FontSize="10" Foreground="#78350F"/>
+                                        <TextBox x:Name="txtAdminUser" Style="{StaticResource ModernTextBox}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="5,0,0,0">
+                                        <TextBlock Text="Contraseña Admin" FontSize="10" Foreground="#78350F"/>
+                                        <PasswordBox x:Name="txtAdminPass" Padding="8,6" FontSize="13" BorderBrush="#ccc" BorderThickness="1" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Content="Cancelar" Background="Transparent" Foreground="#666" BorderThickness="0" Padding="15,8" Cursor="Hand" Click="BtnCerrarModalCambioCurso_Click"/>
+                            <Button Content="Confirmar Cambio de Curso" Style="{StaticResource BotonRedondeado}" Background="#7C3AED" Foreground="White" FontWeight="Bold" Padding="15,8" Margin="10,0,0,0" Click="BtnConfirmarCambioCurso_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
             </Border>
         </Grid>
     </Grid>

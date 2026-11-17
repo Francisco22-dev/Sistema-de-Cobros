@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using CapaDatos;
+﻿using CapaDatos;
 using Entidades;
+using MySqlConnector;
+using System;
+using System.Collections.Generic;
 
 namespace CapaNegocio
 {
@@ -89,6 +90,87 @@ namespace CapaNegocio
                     $"Cédula:{estudianteCedula}, GrupoId:{grupoId} - Rechazado: {ex.Message}", false);
                 throw;
             }
+        }
+        // Agrega estos métodos en CapaNegocio/InscripcionService.cs:
+
+        public (decimal TotalPagadoClasesUSD, int ClasesVistas, decimal DeudaUSD, decimal SaldoAdelantadoUSD, bool PagoMatricula)
+            ObtenerBalanceEstudianteEnCurso(int inscripcionId, int grupoId, decimal precioClase)
+        {
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+
+            // 1. Clases impartidas en el grupo hasta hoy
+            int clasesVistas = 0;
+            using (var cmdClases = new MySqlCommand(
+                "SELECT COUNT(*) FROM CalendarioClases WHERE GrupoId = @grupoId AND FechaClase <= CURDATE() AND Estado NOT IN ('Nula', 'Festivo')", conn))
+            {
+                cmdClases.Parameters.AddWithValue("@grupoId", grupoId);
+                clasesVistas = Convert.ToInt32(cmdClases.ExecuteScalar());
+            }
+
+            // 2. Total pagado en clases
+            decimal totalPagadoClases = 0;
+            using (var cmdPagos = new MySqlCommand(
+                "SELECT COALESCE(SUM(TotalEnVes / COALESCE((SELECT tc.Tasa FROM TasasCambio tc WHERE tc.Fecha = DATE(p.FechaPago) AND tc.MonedaOrigen = 'BCV' LIMIT 1), 1)), 0) " +
+                "FROM Pagos p WHERE p.InscripcionId = @insId AND p.Estado = 'Vigente' AND p.ConceptoId IN (2, 3)", conn))
+            {
+                cmdPagos.Parameters.AddWithValue("@insId", inscripcionId);
+                totalPagadoClases = Convert.ToDecimal(cmdPagos.ExecuteScalar());
+            }
+
+            // 3. Verificó si pagó matrícula
+            bool pagoMatricula = false;
+            using (var cmdMat = new MySqlCommand("SELECT COUNT(*) FROM Pagos WHERE InscripcionId = @insId AND Estado = 'Vigente' AND ConceptoId = 1", conn))
+            {
+                cmdMat.Parameters.AddWithValue("@insId", inscripcionId);
+                pagoMatricula = Convert.ToInt32(cmdMat.ExecuteScalar()) > 0;
+            }
+
+            decimal costoClasesVistas = clasesVistas * precioClase;
+            decimal deuda = Math.Max(0, costoClasesVistas - totalPagadoClases);
+            decimal saldoAdelantado = Math.Max(0, totalPagadoClases - costoClasesVistas);
+
+            return (totalPagadoClases, clasesVistas, deuda, saldoAdelantado, pagoMatricula);
+        }
+
+        public void ProcesarCambioDeCurso(
+            InscripcionInfo inscripcionActual,
+            int nuevoGrupoId,
+            string nuevoGrupoCodigo,
+            string nuevoCursoNombre,
+            bool transferirTodoCredito,
+            bool convalidarInscripcion,
+            bool perdonarDeuda,
+            decimal deudaUSD,
+            string motivo,
+            string usuarioAdminAutoriza)
+        {
+            string fechaHoy = DateTime.Now.ToString("dd/MM/yyyy");
+
+            // Construcción de notas históricas
+            string detalleDeuda = deudaUSD > 0
+                ? (perdonarDeuda ? $"Deuda de {deudaUSD:N2} $ PERDONADA." : $"Deuda de {deudaUSD:N2} $ NO perdonada (pendiente).")
+                : "Sin deuda previa.";
+
+            string notaOrigen = $"Cambio de carrera a '{nuevoCursoNombre}' ([{nuevoGrupoCodigo}]) el {fechaHoy}. {detalleDeuda} Motivo: {motivo}. Autorizado por: {usuarioAdminAutoriza}";
+            string notaDestino = $"Inscripción por traslado desde '{inscripcionActual.CursoNombre}'. Crédito clases transferido: {(transferirTodoCredito ? "SÍ" : "NO")}. Matrícula convalidada: {(convalidarInscripcion ? "SÍ" : "NO")}.";
+
+            _repository.EjecutarCambioDeCurso(
+                inscripcionActual.InscripcionId,
+                nuevoGrupoId,
+                inscripcionActual.Cedula,
+                transferirTodoCredito,
+                convalidarInscripcion,
+                notaOrigen,
+                notaDestino);
+
+            // Auditoría estricta contra malversación
+            string detalleAuditoria = $"Cambio de Carrera para {inscripcionActual.NombreCompleto} ({inscripcionActual.Cedula}). " +
+                                      $"De: {inscripcionActual.CursoNombre} -> A: {nuevoCursoNombre} ([{nuevoGrupoCodigo}]). " +
+                                      $"Deuda previa: {deudaUSD:N2} $ ({(perdonarDeuda ? "PERDONADA/CONDONADA" : "COBRABLE")}). " +
+                                      $"Autorizado por Administrador: '{usuarioAdminAutoriza}'. Motivo: {motivo}";
+
+            _auditoria.Registrar("CAMBIO_CURSO", "Inscripciones", inscripcionActual.InscripcionId.ToString(),
+                $"Curso anterior: {inscripcionActual.CursoNombre}", detalleAuditoria, true);
         }
     }
 }

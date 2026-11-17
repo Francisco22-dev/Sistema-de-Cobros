@@ -125,5 +125,59 @@ namespace CapaDatos
             cmd.Parameters.AddWithValue("@id", inscripcionId);
             cmd.ExecuteNonQuery();
         }
+        
+
+        public void EjecutarCambioDeCurso(int inscripcionViejaId, int nuevoGrupoId, string cedula,
+            bool transferirTodosPagos, bool transferirInscripcion, string notaOrigen, string notaDestino)
+        {
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            using var trans = conn.BeginTransaction();
+
+            try
+            {
+                // 1. Cerrar la inscripción anterior
+                using var cmdCerrar = new MySqlCommand(
+                    "UPDATE Inscripciones SET Estado = 'Cancelada', Observaciones = @obs WHERE Id = @id", conn, trans);
+                cmdCerrar.Parameters.AddWithValue("@obs", notaOrigen);
+                cmdCerrar.Parameters.AddWithValue("@id", inscripcionViejaId);
+                cmdCerrar.ExecuteNonQuery();
+
+                // 2. Crear la nueva inscripción en el nuevo grupo
+                using var cmdNueva = new MySqlCommand(
+                    "INSERT INTO Inscripciones (EstudianteCedula, GrupoId, Estado, Observaciones) " +
+                    "VALUES (@cedula, @grupoId, 'Activa', @obs); SELECT LAST_INSERT_ID();", conn, trans);
+                cmdNueva.Parameters.AddWithValue("@cedula", cedula);
+                cmdNueva.Parameters.AddWithValue("@grupoId", nuevoGrupoId);
+                cmdNueva.Parameters.AddWithValue("@obs", notaDestino);
+                int nuevaInscripcionId = Convert.ToInt32(cmdNueva.ExecuteScalar());
+
+                // 3. Trasladar recibos como crédito (re-vinculación atómica de pagos)
+                if (transferirTodosPagos)
+                {
+                    using var cmdMoverPagos = new MySqlCommand(
+                        "UPDATE Pagos SET InscripcionId = @nuevaId WHERE InscripcionId = @viejaId AND ConceptoId IN (2, 3)", conn, trans);
+                    cmdMoverPagos.Parameters.AddWithValue("@nuevaId", nuevaInscripcionId);
+                    cmdMoverPagos.Parameters.AddWithValue("@viejaId", inscripcionViejaId);
+                    cmdMoverPagos.ExecuteNonQuery();
+                }
+
+                // 4. Trasladar matrícula si fue convalidada
+                if (transferirInscripcion)
+                {
+                    using var cmdMoverIns = new MySqlCommand(
+                        "UPDATE Pagos SET InscripcionId = @nuevaId WHERE InscripcionId = @viejaId AND ConceptoId = 1", conn, trans);
+                    cmdMoverIns.Parameters.AddWithValue("@nuevaId", nuevaInscripcionId);
+                    cmdMoverIns.Parameters.AddWithValue("@viejaId", inscripcionViejaId);
+                    cmdMoverIns.ExecuteNonQuery();
+                }
+
+                trans.Commit();
+            }
+            catch
+            {
+                trans.Rollback();
+                throw;
+            }
+        }
     }
 }
