@@ -10,6 +10,18 @@ using Entidades;
 
 namespace Sistema_de_Cobros_2._0
 {
+    // ========================================================
+    // MODELO AUXILIAR PARA COMBOS DE GRUPOS (SOLUCIÓN A LOS 5 ERRORES)
+    // ========================================================
+    public class GrupoComboItem
+    {
+        public int Id { get; set; }
+        public string Codigo { get; set; } = string.Empty;
+        public string Nombre { get; set; } = string.Empty;
+        public DateTime FechaInicio { get; set; }
+        public string Display => $"[{Codigo}] {Nombre} (Inicia: {FechaInicio:dd/MM/yyyy})";
+    }
+
     public partial class EstudiantesWindow : Window
     {
         private readonly EstudianteService _estudianteService = new EstudianteService();
@@ -36,15 +48,22 @@ namespace Sistema_de_Cobros_2._0
         }
 
         // ========================================================
-        // VALIDACIÓN DE DATOS EN TIEMPO REAL (TECLADO)
+        // INTERCEPTORES DE TECLADO (VALIDACIÓN ESTRICTA EN VIVO)
         // ========================================================
 
+        // 1. Bloquea cualquier tecla que no sea un número del 0 al 9
         private void ValidarSoloNumeros_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            // Solo permite ingresar dígitos del 0 al 9
             e.Handled = !Regex.IsMatch(e.Text, "^[0-9]+$");
         }
 
+        // 2. Bloquea caracteres que no sean letras o espacios
+        private void ValidarSoloLetras_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !Regex.IsMatch(e.Text, @"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$");
+        }
+
+        // Validaciones al presionar "Finalizar Inscripción"
         private bool ValidarFormularioRegistro(out string cedula, out string nombre, out string telefono, out string email, out int grupoId)
         {
             cedula = txtCedula.Text.Trim();
@@ -53,7 +72,7 @@ namespace Sistema_de_Cobros_2._0
             email = txtEmail.Text.Trim();
             grupoId = 0;
 
-            // 1. Validación de Cédula
+            // Validación Cédula
             if (string.IsNullOrWhiteSpace(cedula) || !Regex.IsMatch(cedula, "^[0-9]{6,10}$"))
             {
                 AlertaWindow.MostrarAdvertencia("La cédula debe contener solo números y tener entre 6 y 10 dígitos.");
@@ -61,7 +80,7 @@ namespace Sistema_de_Cobros_2._0
                 return false;
             }
 
-            // 2. Validación de Nombre
+            // Validación Nombre
             if (string.IsNullOrWhiteSpace(nombre) || nombre.Length < 3 || !Regex.IsMatch(nombre, @"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$"))
             {
                 AlertaWindow.MostrarAdvertencia("Ingrese un nombre completo válido (mínimo 3 letras, sin números ni símbolos).");
@@ -69,20 +88,20 @@ namespace Sistema_de_Cobros_2._0
                 return false;
             }
 
-            // 3. Validación de Teléfono
+            // Validación Teléfono
             if (string.IsNullOrWhiteSpace(telefono) || !Regex.IsMatch(telefono, "^[0-9]{10,11}$"))
             {
-                AlertaWindow.MostrarAdvertencia("El teléfono debe contener solo números y tener 11 dígitos (Ej: 04121234567).");
+                AlertaWindow.MostrarAdvertencia("El teléfono debe contener solo números y tener 10 u 11 dígitos (Ej: 04121234567).");
                 txtTelefono.Focus();
                 return false;
             }
 
-            // 4. Validación de Correo (Opcional)
+            // Validación Correo
             if (!string.IsNullOrWhiteSpace(email))
             {
                 if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
                 {
-                    AlertaWindow.MostrarAdvertencia("El correo electrónico ingresado no tiene un formato válido (Ej: alumno@gmail.com).");
+                    AlertaWindow.MostrarAdvertencia("El correo electrónico no tiene un formato válido (Ej: alumno@gmail.com).");
                     txtEmail.Focus();
                     return false;
                 }
@@ -92,7 +111,7 @@ namespace Sistema_de_Cobros_2._0
                 email = "noposee@gmail.com";
             }
 
-            // 5. Validación de Selección de Horario
+            // Selección de Horario
             if (cmbNuevoCurso.SelectedValue == null || cmbNuevoGrupo.SelectedValue == null)
             {
                 AlertaWindow.MostrarAdvertencia("Debe seleccionar una Carrera y un Horario/Cohorte.");
@@ -114,21 +133,19 @@ namespace Sistema_de_Cobros_2._0
 
             string cursoCodigo = (cmbNuevoCurso.SelectedValue as string) ?? "";
 
-            // REGLAS 6 Y 7: VALIDAR INSCRIPCIÓN EN ESE CURSO
+            // VALIDAR SI YA ESTÁ INSCRITO EN ESTE MISMO CURSO
             var historial = _inscripcionService.ValidarHistorialInscripcion(cedula, cursoCodigo);
 
             if (historial.Existe)
             {
                 if (historial.EstaActiva)
                 {
-                    // Bloqueo estricto: ya está cursando esa misma carrera actualmente
                     AlertaWindow.MostrarError(
-                        $"El estudiante {nombre} (C.I. {cedula}) ya tiene una inscripción ACTIVA en el curso '{historial.CursoNombre}' ([{historial.GrupoCodigo}]).\n\nNo se permite duplicar la inscripción en el mismo curso.");
+                        $"El estudiante {nombre} (C.I. {cedula}) ya tiene una inscripción ACTIVA en el curso '{historial.CursoNombre}' ([{historial.GrupoCodigo}]).\n\nNo se permite duplicar la inscripción en la misma carrera.");
                     return;
                 }
                 else
                 {
-                    // Alerta visual informativa si lo cursó antes y lo canceló/finalizó
                     bool continuar = AlertaWindow.SolicitarConfirmacion(
                         $"AVISO PREVIO:\nEl estudiante ya cursó anteriormente '{historial.CursoNombre}' (Estado previo: {historial.EstadoPrevio} en el grupo [{historial.GrupoCodigo}]).\n\n¿Desea registrar una nueva inscripción para que vuelva a cursar la carrera?",
                         "Inscripción Previa Detectada");
@@ -307,18 +324,14 @@ namespace Sistema_de_Cobros_2._0
             _cursoOrigenActual = _cursosActivos.FirstOrDefault(c => c.Codigo == _seleccionada.CursoCodigo);
             _precioClaseOrigen = _cursoOrigenActual?.PrecioMensualidad ?? 14m;
 
-            // Obtener balance actual del estudiante
             var balance = _inscripcionService.ObtenerBalanceEstudianteEnCurso(_seleccionada.InscripcionId, _seleccionada.GrupoId, _precioClaseOrigen);
             _deudaActualOrigen = balance.DeudaUSD;
-
-            // Cantidad de clases que pagó en el curso actual
             _clasesPagadasOrigen = _precioClaseOrigen > 0 ? (int)(balance.TotalPagadoClasesUSD / _precioClaseOrigen) : 0;
 
             txtCursoModalAlumno.Text = $"Estudiante: {_seleccionada.NombreCompleto} (C.I. {_seleccionada.Cedula})";
             txtCursoModalOrigen.Text = $"Curso que abandona: {_seleccionada.CursoNombre} (Grupo: [{_seleccionada.GrupoCodigo}])";
             txtCursoModalClases.Text = $"Clases pagadas en este curso: {_clasesPagadasOrigen} clases ({balance.TotalPagadoClasesUSD:N2} $)";
 
-            // Alerta visual de deuda
             if (_deudaActualOrigen > 0)
             {
                 bdrAlertaDeuda.Visibility = Visibility.Visible;
@@ -331,14 +344,12 @@ namespace Sistema_de_Cobros_2._0
                 chkPerdonarDeuda.IsChecked = false;
             }
 
-            // Exigir credenciales de admin si el usuario actual es Cajero
             bool esAdmin = SesionService.Instancia.EsAdministrador();
             bdrAutorizacionAdmin.Visibility = esAdmin ? Visibility.Collapsed : Visibility.Visible;
             txtAdminUser.Clear();
             txtAdminPass.Clear();
             txtCursoModalMotivo.Clear();
 
-            // Cursos disponibles distintos al actual
             var otrosCursos = _cursosActivos.Where(c => c.Codigo != _seleccionada.CursoCodigo).ToList();
             cmbCursoModalNuevoCurso.ItemsSource = otrosCursos;
             cmbCursoModalNuevoGrupo.ItemsSource = null;
@@ -387,7 +398,6 @@ namespace Sistema_de_Cobros_2._0
 
             if (_cursoDestinoSeleccionado != null && _cursoDestinoSeleccionado.PrecioMensualidad > _precioClaseOrigen)
             {
-                // Curso nuevo es más caro
                 pnlDiferenciaPrecio.Visibility = Visibility.Visible;
                 decimal difPorClase = _cursoDestinoSeleccionado.PrecioMensualidad - _precioClaseOrigen;
                 decimal totalDif = difPorClase * _clasesPagadasOrigen;
@@ -420,7 +430,6 @@ namespace Sistema_de_Cobros_2._0
                 return;
             }
 
-            // Permiso Admin si es Cajero
             string adminAutoriza = SesionService.Instancia.UsuarioActual?.Username ?? "Admin";
             if (!SesionService.Instancia.EsAdministrador())
             {
@@ -436,7 +445,6 @@ namespace Sistema_de_Cobros_2._0
                 adminAutoriza = usuarioAdmin.Username;
             }
 
-            // Confirmación explícita de deuda
             bool perdonar = chkPerdonarDeuda.IsChecked == true;
             if (_deudaActualOrigen > 0)
             {

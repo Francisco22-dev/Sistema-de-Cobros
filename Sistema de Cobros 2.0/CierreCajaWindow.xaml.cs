@@ -114,7 +114,7 @@ namespace Sistema_de_Cobros_2._0
                 // 1. Encabezado
                 g.DrawString("CEVENCA", fontTitulo, System.Drawing.Brushes.DarkBlue, x, y);
                 y += 26;
-                g.DrawString("Rif: J-507629082 | Registro MPPE: 0016-1904", fontSub, System.Drawing.Brushes.Gray, x, y);
+                g.DrawString("Rif: J-507629082", fontSub, System.Drawing.Brushes.Gray, x, y);
                 y += 16;
                 g.DrawString("COMPROBANTE OFICIAL DE CIERRE Y ARQUEO DE CAJA", fontSeccion, System.Drawing.Brushes.Black, x, y);
                 y += 24;
@@ -126,7 +126,8 @@ namespace Sistema_de_Cobros_2._0
                 g.DrawString($"Fecha de Apertura : {_cajaActual?.FechaApertura:dd/MM/yyyy hh:mm tt}", fontTexto, System.Drawing.Brushes.Black, x, y); y += lineHeight;
                 g.DrawString($"Fecha de Cierre   : {DateTime.Now:dd/MM/yyyy hh:mm tt}", fontTexto, System.Drawing.Brushes.Black, x, y); y += lineHeight;
                 g.DrawString($"Cajero Responsable: {_cajaActual?.UsuarioApertura}", fontTexto, System.Drawing.Brushes.Black, x, y); y += lineHeight;
-                g.DrawString($"Fondo Inicial     : {_cajaActual?.SaldoInicial:N2} {_cajaActual?.SaldoInicialMoneda}", fontNegrita, System.Drawing.Brushes.DarkSlateGray, x, y); y += lineHeight + 8;
+                g.DrawString($"Fondo Inicial de Dólares : {_cajaActual?.SaldoInicial:N2} {_cajaActual?.SaldoInicialMoneda}", fontNegrita, System.Drawing.Brushes.DarkSlateGray, x, y); y += lineHeight + 8;
+                g.DrawString($"Fondo Inicial de Bolívares: {_cajaActual?.SaldoInicialBs:N2} {_cajaActual?.SaldoInicialMonedaBs}", fontNegrita, System.Drawing.Brushes.DarkSlateGray, x, y); y += lineHeight + 8;
 
                 g.DrawLine(System.Drawing.Pens.LightGray, x, y, 520, y);
                 y += 12;

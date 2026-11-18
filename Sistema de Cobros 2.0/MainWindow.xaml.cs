@@ -467,29 +467,86 @@ namespace Sistema_de_Cobros_2._0
                 }
             }
         }
+        // 1. Interceptor de teclado para que en montos solo se puedan escribir números y coma/punto
+        private void ValidarNumeroDecimal_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        {
+            var tb = sender as TextBox;
+            string textoActual = tb?.Text ?? "";
+            // Solo dígitos y un solo punto o coma decimal
+            if (e.Text == "." || e.Text == ",")
+            {
+                e.Handled = textoActual.Contains(".") || textoActual.Contains(",");
+            }
+            else
+            {
+                e.Handled = !System.Text.RegularExpressions.Regex.IsMatch(e.Text, "^[0-9]+$");
+            }
+        }
 
+        // 2. Selección en la tabla de pagos
+        private Pago? _pagoSeleccionadoHistorial;
+
+        private void DgHistorial_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (dgHistorial.SelectedItem is Pago p)
+            {
+                _pagoSeleccionadoHistorial = p;
+                btnReimprimirFisicoBarra.IsEnabled = true;
+                btnReimprimirDigitalBarra.IsEnabled = true;
+                txtReciboSeleccionadoInfo.Text = $"Recibo: {p.NumeroRecibo} • Alumno: {p.NombreEstudiante} • Total: {p.Total:N2} {p.MonedaUI}";
+            }
+            else
+            {
+                _pagoSeleccionadoHistorial = null;
+                btnReimprimirFisicoBarra.IsEnabled = false;
+                btnReimprimirDigitalBarra.IsEnabled = false;
+                txtReciboSeleccionadoInfo.Text = "Seleccione un recibo de la tabla para reimprimirlo o ver su copia digital.";
+            }
+        }
+
+        // 3. Reimpresión física
+        private void EjecutarReimpresionFisica(Pago pago)
+        {
+            var detalles = _pagoService.ObtenerDetalles(pago.Id);
+            string concepto = pago.ConceptoId == 1 ? "Inscripción" : (pago.ConceptoId == 2 ? "Mensualidad" : "Semanal (Clase)");
+            ImpresorRecibo.Imprimir(pago, pago.NombreEstudiante, concepto, detalles, true);
+            AlertaWindow.MostrarExito($"Recibo {pago.NumeroRecibo} enviado a la impresora POS-80.");
+        }
+
+        // 4. Regeneración / Apertura digital
+        private void EjecutarReimpresionDigital(Pago pago)
+        {
+            var detalles = _pagoService.ObtenerDetalles(pago.Id);
+            string concepto = pago.ConceptoId == 1 ? "Inscripción" : (pago.ConceptoId == 2 ? "Mensualidad" : "Semanal (Clase)");
+            ImpresorRecibo.GuardarReciboDigital(pago, pago.NombreEstudiante, concepto, detalles);
+
+            string carpeta = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Recibos Digitales");
+            AlertaWindow.MostrarExito($"Recibo digital listo en el Escritorio:\n{carpeta}");
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = carpeta, UseShellExecute = true });
+        }
+
+        // Eventos de botones individuales por fila
         private void BtnReimprimirFisico_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is FrameworkElement el && el.DataContext is Pago pago)
-            {
-                var detalles = _pagoService.ObtenerDetalles(pago.Id);
-                ImpresorRecibo.Imprimir(pago, pago.NombreEstudiante, "Concepto ID: " + pago.ConceptoId, detalles, true);
-                AlertaWindow.MostrarExito($"Recibo {pago.NumeroRecibo} enviado a la impresora POS-80.");
-            }
+            if (sender is FrameworkElement el && el.DataContext is Pago pago) EjecutarReimpresionFisica(pago);
         }
 
         private void BtnReimprimirDigital_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is FrameworkElement el && el.DataContext is Pago pago)
-            {
-                var detalles = _pagoService.ObtenerDetalles(pago.Id);
-                ImpresorRecibo.GuardarReciboDigital(pago, pago.NombreEstudiante, "Concepto ID: " + pago.ConceptoId, detalles);
-
-                string carpeta = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Recibos Digitales");
-                AlertaWindow.MostrarExito($"Recibo digital regenerado en el Escritorio:\n{carpeta}");
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = carpeta, UseShellExecute = true });
-            }
+            if (sender is FrameworkElement el && el.DataContext is Pago pago) EjecutarReimpresionDigital(pago);
         }
+
+        // Eventos de botones de la barra inferior
+        private void BtnReimprimirFisicoBarra_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pagoSeleccionadoHistorial != null) EjecutarReimpresionFisica(_pagoSeleccionadoHistorial);
+        }
+
+        private void BtnReimprimirDigitalBarra_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pagoSeleccionadoHistorial != null) EjecutarReimpresionDigital(_pagoSeleccionadoHistorial);
+        }
+        
 
         // --- NAVEGACIÓN Y SESIÓN (OTROS MÓDULOS) ---
 

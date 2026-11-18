@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Sistema_de_Cobros_2._0.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Sistema de Cobros 2.0" Height="700" Width="1100"
+        Title="Sistema de Cobros 2.0" Height="720" Width="1150"
         WindowState="Maximized" Background="#F0F2F5">
 
     <Window.Resources>
@@ -62,7 +62,7 @@
         </Style>
     </Window.Resources>
 
-    <Grid Margin="20" Cursor="">
+    <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -75,7 +75,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Fila 1: Título, Tasa y Botones Operativos (Grandes) -->
+            <!-- Fila 1: Título, Tasa y Botones Operativos Principales -->
             <Grid Grid.Row="0" Margin="0,0,0,10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -99,7 +99,7 @@
                 </StackPanel>
             </Grid>
 
-            <!-- Fila 2: Botones de Administración y Sistema (Más pequeños) -->
+            <!-- Fila 2: Botones de Administración y Sistema -->
             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button x:Name="btnConfigurarTasa" Content="Tasa BCV" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="12,6" FontSize="12" Click="BtnConfigurarTasa_Click" Margin="0,0,10,0" Visibility="Collapsed"/>
                 <Button x:Name="btnCursos" Content="Cursos" Style="{StaticResource BotonRedondeado}" Background="White" Foreground="{StaticResource TextDark}" BorderBrush="#D1D5DB" BorderThickness="1" Padding="12,6" FontSize="12" Click="BtnCursos_Click" Margin="0,0,10,0" Visibility="Visible"/>
@@ -114,18 +114,18 @@
         <!-- CONTENIDO PRINCIPAL -->
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="400"/>
+                <ColumnDefinition Width="410"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- PANEL IZQUIERDO: FORMULARIO -->
+            <!-- PANEL IZQUIERDO: FORMULARIO DE COBRO -->
             <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="20" Margin="0,0,20,0">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.1"/>
                 </Border.Effect>
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                       <!-- CAJA ESTADO: SOLO RECAUDACIÓN DEL DÍA -->
+                        <!-- CAJA ESTADO -->
                         <Border x:Name="bdrEstadoCaja" Background="#4CAF50" CornerRadius="6" Padding="15" Margin="0,0,0,20">
                             <StackPanel>
                                 <TextBlock Text="Total Recaudado Hoy" Foreground="White" FontSize="12" Opacity="0.9"/>
@@ -135,7 +135,7 @@
 
                         <TextBlock Text="Nuevo Cobro" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextDark}" Margin="0,0,0,15"/>
 
-                        <!-- DATOS BÁSICOS (BUSCADOR DE ESTUDIANTES) -->
+                        <!-- BUSCADOR DE ESTUDIANTES MULTICURSO -->
                         <Grid Margin="0,0,0,15">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -143,7 +143,6 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0" Margin="0,0,10,0">
                                 <TextBlock Text="Buscar Estudiante (Cédula o Nombre)" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,5"/>
-                                <!-- Este ComboBox autocompleta mientras escribes -->
                                 <ComboBox x:Name="cmbEstudiante" Style="{StaticResource ModernComboBox}" 
                                           IsEditable="True" IsTextSearchEnabled="True" 
                                           TextSearch.TextPath="Display" DisplayMemberPath="Display"/>
@@ -155,12 +154,9 @@
                             </StackPanel>
                         </Grid>
 
+                        <!-- CONCEPTO DE PAGO -->
                         <Grid Margin="0,0,0,20">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="120"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <StackPanel>
                                 <TextBlock Text="Concepto de Pago" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,5"/>
                                 <ComboBox x:Name="cmbConcepto" Style="{StaticResource ModernComboBox}">
                                     <ComboBoxItem Content="Semana (Clase)" Tag="3" IsSelected="True"/>
@@ -203,14 +199,14 @@
                                 <ComboBox x:Name="cmbMonedaDetalle" Style="{StaticResource ModernComboBox}" Margin="0,2,0,0">
                                     <ComboBoxItem Content="BS" IsSelected="True"/>
                                     <ComboBoxItem Content="$"/>
-                                    <!--<ComboBoxItem Content="EUR"/>-->
-                                    <!--<ComboBoxItem Content="USDT"/>-->
                                 </ComboBox>
                             </StackPanel>
 
+                            <!-- MONTO CON VALIDACIÓN NUMÉRICA EN VIVO -->
                             <StackPanel Grid.Column="2" Margin="5,0,0,0">
                                 <TextBlock Text="Monto" FontSize="11" Foreground="#666"/>
-                                <TextBox x:Name="txtMontoDetalle" Style="{StaticResource ModernTextBox}" Margin="0,2,0,0"/>
+                                <TextBox x:Name="txtMontoDetalle" Style="{StaticResource ModernTextBox}" Margin="0,2,0,0" 
+                                         PreviewTextInput="ValidarNumeroDecimal_PreviewTextInput"/>
                             </StackPanel>
                         </Grid>
 
@@ -219,7 +215,7 @@
                             <TextBox x:Name="txtReferenciaDetalle" Style="{StaticResource ModernTextBox}" Margin="0,2,0,0"/>
                         </StackPanel>
 
-                        <!-- NUEVO: CAMPO DE NOTA -->
+                        <!-- NOTA / OBSERVACIÓN -->
                         <StackPanel Margin="0,0,0,10">
                             <TextBlock Text="Nota / Observación (Ej: Clase 1 y 2 de Noviembre)" FontSize="11" Foreground="#666"/>
                             <Grid>
@@ -236,7 +232,7 @@
                         <DataGrid x:Name="dgDetalles" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="None" Background="Transparent" BorderThickness="0" RowBackground="#F9FAFB" Margin="0,0,0,15" MinHeight="50">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Binding="{Binding MetodoNombre}" Width="*"/>
-                                <DataGridTextColumn Binding="{Binding MontoStr}" Width="80"/>
+                                <DataGridTextColumn Binding="{Binding MontoStr}" Width="90"/>
                                 <DataGridTemplateColumn Width="40">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -247,7 +243,7 @@
                             </DataGrid.Columns>
                         </DataGrid>
 
-                        <!-- TOTAL Y REGISTRAR -->
+                        <!-- TOTAL Y BOTÓN DE PROCESAR -->
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,15">
                             <TextBlock Text="Total a Cobrar:" FontSize="14" FontWeight="SemiBold" Foreground="#666" VerticalAlignment="Center" Margin="0,0,10,0"/>
                             <TextBlock x:Name="txtSumaTotal" Text="0.00 BS" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextDark}"/>
@@ -258,7 +254,7 @@
                 </ScrollViewer>
             </Border>
 
-            <!-- PANEL DERECHO: HISTORIAL -->
+            <!-- PANEL DERECHO: HISTORIAL DE PAGOS Y REIMPRESIÓN -->
             <Border Grid.Column="1" Background="White" CornerRadius="10" Padding="20">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.1"/>
@@ -267,9 +263,10 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- ENCABEZADO Y BUSCADOR OPTIMIZADO CON BOTÓN -->
+                    <!-- BUSCADOR CON BOTÓN Y TECLA ENTER -->
                     <Grid Grid.Row="0" Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -279,49 +276,87 @@
 
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="Buscar:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#666" FontWeight="SemiBold"/>
-
-                            <!-- Sin evento TextChanged para no congelar la red -->
                             <TextBox x:Name="txtBuscarPago" Width="180" Style="{StaticResource ModernTextBox}" 
-                 Margin="0,0,6,0" KeyDown="TxtBuscarPago_KeyDown"/>
+                                     Margin="0,0,6,0" KeyDown="TxtBuscarPago_KeyDown"/>
 
                             <Button x:Name="btnBuscarPago" Content="Buscar" Style="{StaticResource BotonRedondeado}" 
-                Background="{StaticResource Primary}" Foreground="White" FontWeight="Bold" 
-                Padding="12,7" Click="BtnBuscarPago_Click"/>
+                                    Background="{StaticResource Primary}" Foreground="White" FontWeight="Bold" 
+                                    Padding="12,7" Click="BtnBuscarPago_Click"/>
 
                             <Button x:Name="btnLimpiarBuscarPago" Content="✕" Style="{StaticResource BotonRedondeado}" 
-                Background="#E5E7EB" Foreground="#555" FontWeight="Bold" 
-                Padding="8,7" Margin="5,0,0,0" ToolTip="Limpiar búsqueda" 
-                Click="BtnLimpiarBuscarPago_Click"/>
+                                    Background="#E5E7EB" Foreground="#555" FontWeight="Bold" 
+                                    Padding="8,7" Margin="5,0,0,0" ToolTip="Limpiar búsqueda" 
+                                    Click="BtnLimpiarBuscarPago_Click"/>
                         </StackPanel>
                     </Grid>
 
-                    <DataGrid Grid.Row="1" x:Name="dgHistorial" AutoGenerateColumns="False" IsReadOnly="True" GridLinesVisibility="None" BorderThickness="0" Background="Transparent" RowBackground="White" AlternatingRowBackground="#F9FAFB" HeadersVisibility="Column">
-                        <DataGrid.Resources>
-                            <!-- Estilos... -->
-                        </DataGrid.Resources>
+                    <!-- TABLA DE HISTORIAL CON COLUMNA DE REIMPRESIÓN DENTRO DE COLUMNS -->
+                    <DataGrid Grid.Row="1" x:Name="dgHistorial" AutoGenerateColumns="False" IsReadOnly="True" 
+                              GridLinesVisibility="None" BorderThickness="1" BorderBrush="#E5E7EB" 
+                              Background="Transparent" RowBackground="White" AlternatingRowBackground="#F9FAFB" 
+                              HeadersVisibility="Column" SelectionChanged="DgHistorial_SelectionChanged">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Recibo" Binding="{Binding NumeroRecibo}" Width="100"/>
+                            <DataGridTextColumn Header="Recibo" Binding="{Binding NumeroRecibo}" Width="110">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                        <Setter Property="Foreground" Value="#1976D2"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
                             <DataGridTextColumn Header="Cédula" Binding="{Binding EstudianteCedula}" Width="90"/>
                             <DataGridTextColumn Header="Estudiante" Binding="{Binding NombreEstudiante}" Width="*"/>
-                            <DataGridTextColumn Header="Curso y Horario" Binding="{Binding CursoHorario}" Width="180"/>
-                            <DataGridTextColumn Header="Monto" Binding="{Binding Total, StringFormat=N2}" Width="70"/>
+                            <DataGridTextColumn Header="Curso y Horario" Binding="{Binding CursoHorario}" Width="160"/>
+                            <DataGridTextColumn Header="Monto" Binding="{Binding Total, StringFormat=N2}" Width="75">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="Bold"/>
+                                        <Setter Property="HorizontalAlignment" Value="Right"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
                             <DataGridTextColumn Header="Mon." Binding="{Binding MonedaUI}" Width="50"/>
                             <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="75"/>
                             <DataGridTextColumn Header="Fecha" Binding="{Binding FechaPago, StringFormat=dd/MM/yyyy}" Width="90"/>
-                            <DataGridTextColumn Header="Nota" Binding="{Binding Observaciones}" Width="120"/>
-                            
+
+                            <!-- BOTONES RÁPIDOS POR FILA -->
+                            <DataGridTemplateColumn Header="Reimpresión" Width="140">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <Button Content="POS-80" Background="#4CAF50" Foreground="White" FontWeight="Bold" 
+                                                    Padding="6,3" BorderThickness="0" Margin="0,0,4,0" Cursor="Hand" 
+                                                    Click="BtnReimprimirFisico_Click" ToolTip="Imprimir ticket en POS-80"/>
+                                            <Button Content="Digital" Background="#2196F3" Foreground="White" FontWeight="Bold" 
+                                                    Padding="6,3" BorderThickness="0" Cursor="Hand" 
+                                                    Click="BtnReimprimirDigital_Click" ToolTip="Abrir / Regenerar copia digital"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
-                        <DataGridTemplateColumn Header="Reimpresión" Width="170">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal">
-                                        <Button Content="POS-80" Background="#4CAF50" Foreground="White" FontWeight="Bold" Padding="6,3" BorderThickness="0" Margin="0,0,5,0" Cursor="Hand" Click="BtnReimprimirFisico_Click" ToolTip="Imprimir ticket físico en POS-80"/>
-                                        <Button Content="Digital" Background="#2196F3" Foreground="White" FontWeight="Bold" Padding="6,3" BorderThickness="0" Cursor="Hand" Click="BtnReimprimirDigital_Click" ToolTip="Generar o abrir PDF/HTML digital"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
                     </DataGrid>
+
+                    <!-- BARRA INFERIOR DE ACCIÓN RÁPIDA PARA EL RECIBO SELECCIONADO -->
+                    <Border Grid.Row="2" Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1,0,1,1" Padding="12" Margin="0,0,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="txtReciboSeleccionadoInfo" 
+                                       Text="Seleccione un recibo de la tabla para reimprimirlo o ver su copia digital." 
+                                       VerticalAlignment="Center" Foreground="#555" FontSize="12" FontWeight="SemiBold"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <Button x:Name="btnReimprimirFisicoBarra" Content="🖨 Imprimir en POS-80" Style="{StaticResource BotonRedondeado}" 
+                                        Background="#4CAF50" Foreground="White" FontWeight="Bold" Padding="12,6" Margin="0,0,8,0" 
+                                        IsEnabled="False" Click="BtnReimprimirFisicoBarra_Click"/>
+                                <Button x:Name="btnReimprimirDigitalBarra" Content="📄 Abrir Copia Digital" Style="{StaticResource BotonRedondeado}" 
+                                        Background="#2196F3" Foreground="White" FontWeight="Bold" Padding="12,6" 
+                                        IsEnabled="False" Click="BtnReimprimirDigitalBarra_Click"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
                 </Grid>
             </Border>
         </Grid>

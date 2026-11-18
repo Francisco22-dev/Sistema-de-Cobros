@@ -11,6 +11,7 @@ namespace Entidades
         public string? UsuarioCierre { get; set; }
         public decimal SaldoInicial { get; set; }
         public string SaldoInicialMoneda { get; set; }
+        public string SaldoInicialMonedaBs { get; set; }
         public decimal SaldoInicialBs { get; set; }
         public decimal SaldoInicialUsd { get; set; }
         public decimal? SaldoFinal { get; set; }
@@ -21,8 +22,9 @@ namespace Entidades
             UsuarioApertura = usuarioApertura;
             SaldoInicialBs = saldoBs;
             SaldoInicialUsd = saldoUsd;
-            SaldoInicial = saldoUsd; // compatibilidad
+            SaldoInicial = saldoUsd; 
             SaldoInicialMoneda = "USD";
+            SaldoInicialMonedaBs = "BS";
             FechaApertura = DateTime.Now;
             Estado = "Abierta";
         }

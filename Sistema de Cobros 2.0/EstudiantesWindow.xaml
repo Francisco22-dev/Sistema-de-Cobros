@@ -169,7 +169,7 @@
 
                             <!-- NOMBRE COMPLETO -->
                             <TextBlock Text="Nombre Completo" FontSize="12" FontWeight="SemiBold" Foreground="#444"/>
-                            <TextBox x:Name="txtNombre" Style="{StaticResource ModernTextBox}" Margin="0,2,0,10"/>
+                            <TextBox x:Name="txtNombre" Style="{StaticResource ModernTextBox}" Margin="0,2,0,10" PreviewTextInput="ValidarSoloLetras_PreviewTextInput"/>
 
                             <Grid Margin="0,0,0,10">
                                 <Grid.ColumnDefinitions>
