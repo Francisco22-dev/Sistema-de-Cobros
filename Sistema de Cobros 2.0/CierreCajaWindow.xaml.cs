@@ -37,8 +37,7 @@ namespace Sistema_de_Cobros_2._0
                 _cajaActual = _cajaService.ObtenerCajaAbierta();
                 if (_cajaActual != null)
                 {
-                    string monSimbolo = _cajaActual.SaldoInicialMoneda == "USD" ? "$" : "Bs";
-                    txtFondoInicial.Text = $"Fondo Inicial con el que abrió la caja: {_cajaActual.SaldoInicial:N2} {monSimbolo}";
+                    txtFondoInicial.Text = $"Fondo Inicial de Caja Anterior: {_cajaActual.SaldoInicialBs:N2} Bs | {_cajaActual.SaldoInicialUsd:N2} $";
                 }
 
                 // 1. Ingresos del turno real

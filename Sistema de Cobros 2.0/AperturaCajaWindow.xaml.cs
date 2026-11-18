@@ -14,25 +14,23 @@ namespace Sistema_de_Cobros_2._0
         public AperturaCajaWindow()
         {
             InitializeComponent();
-            txtSaldoInicial.Focus();
-            txtSaldoInicial.SelectAll();
         }
 
         private void BtnAbrir_Click(object sender, RoutedEventArgs e)
         {
             var cultura = new CultureInfo("es-VE");
-            if (!decimal.TryParse(txtSaldoInicial.Text.Trim(), NumberStyles.Any, cultura, out decimal fondo) || fondo < 0)
+            decimal.TryParse(txtSaldoBs.Text.Trim(), NumberStyles.Any, cultura, out decimal saldoBs);
+            decimal.TryParse(txtSaldoUsd.Text.Trim(), NumberStyles.Any, cultura, out decimal saldoUsd);
+
+            if (saldoBs < 0 || saldoUsd < 0)
             {
-                AlertaWindow.MostrarAdvertencia("Por favor ingrese un monto inicial válido (Ej: 20,00 o 0).");
+                AlertaWindow.MostrarAdvertencia("Los montos no pueden ser negativos.");
                 return;
             }
 
-            string monedaUI = (cmbMonedaInicial.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "$";
-            string monedaBD = monedaUI == "$" ? "USD" : "VES";
-
             try
             {
-                _cajaService.AbrirCajaConFondo(fondo, monedaBD);
+                _cajaService.AbrirCajaBimoneda(saldoBs, saldoUsd);
                 CajaAbiertaExitosamente = true;
                 this.Close();
             }

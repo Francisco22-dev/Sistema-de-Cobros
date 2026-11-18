@@ -17,7 +17,9 @@
                 <!-- ENCABEZADO Y FONDO INICIAL -->
                 <StackPanel Grid.Row="0" Margin="0,0,0,10">
                     <TextBlock Text="Arqueo y Cierre de Caja" FontSize="20" FontWeight="Bold" Foreground="#333"/>
-                    <TextBlock x:Name="txtFondoInicial" Text="Fondo Inicial: 0.00 $" FontWeight="SemiBold" Foreground="#1976D2" FontSize="13" Margin="0,3,0,0"/>
+                    <Border Background="#E3F2FD" BorderBrush="#90CAF9" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,5,0,0">
+                        <TextBlock x:Name="txtFondoInicial" Text="Fondo Inicial de Caja Anterior: 0,00 Bs | 0,00 $" FontWeight="Bold" Foreground="#1565C0" FontSize="12"/>
+                    </Border>
                 </StackPanel>
 
                 <!-- DESGLOSE POR MÉTODO DE PAGO (SOLO INGRESOS DEL DÍA) -->

@@ -8,7 +8,6 @@ using Entidades;
 
 namespace Sistema_de_Cobros_2._0
 {
-    // Modelo de presentación para el ComboBox de grupos
     public class HorarioItemUI
     {
         public int Id { get; set; }
@@ -16,8 +15,6 @@ namespace Sistema_de_Cobros_2._0
         public string Nombre { get; set; } = string.Empty;
         public string Estado { get; set; } = string.Empty;
         public DateTime FechaInicio { get; set; }
-
-        // Muestra claramente el estado (incluyendo Finalizados) y detalles
         public string Display => $"[{Estado}] {Nombre} ({Codigo}) - Inicia: {FechaInicio:dd/MM/yyyy}";
     }
 
@@ -27,7 +24,6 @@ namespace Sistema_de_Cobros_2._0
         private readonly GrupoService _grupoService = new GrupoService();
         private readonly CursoService _cursoService = new CursoService();
 
-        // Almacena la lista de horarios del curso actual antes de filtrar
         private List<HorarioItemUI> _horariosCursoActual = new List<HorarioItemUI>();
 
         public CalendarioWindow()
@@ -40,58 +36,39 @@ namespace Sistema_de_Cobros_2._0
         {
             try
             {
-                // Carga los cursos activos del instituto
-                var cursos = _cursoService.ObtenerCursos().Where(c => c.Activo).ToList();
-                cmbCursos.ItemsSource = cursos;
+                cmbCursos.ItemsSource = _cursoService.ObtenerCursos().Where(c => c.Activo).ToList();
             }
             catch (Exception ex)
             {
-                AlertaWindow.MostrarError($"Error al cargar cursos: {ex.Message}");
+                AlertaWindow.MostrarError($"Error cargando cursos: {ex.Message}");
             }
         }
 
         private void CmbCursos_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // REGLA 2: Limpiar inmediatamente la grilla y el buscador al cambiar de curso
             dgCalendario.ItemsSource = null;
             txtBuscarHorario.Text = string.Empty;
             cmbGrupos.ItemsSource = null;
             btnGenerar.IsEnabled = false;
+            txtIndicadorSemana.Text = "📍 Progreso: Seleccione un horario para ver el avance automático...";
+            txtDetalleProgreso.Text = "Las clases anteriores a hoy se consideran vistas automáticamente sin necesidad de marcarlas.";
 
             if (cmbCursos.SelectedValue is string cursoCodigo)
             {
-                // REGLA 4: Se obtienen todos los grupos (incluso los finalizados)
                 var gruposDb = _grupoService.ObtenerPorCurso(cursoCodigo);
 
                 _horariosCursoActual = gruposDb.Select(g => new HorarioItemUI
                 {
                     Id = g.Id,
                     Codigo = g.Codigo,
-                    Nombre = string.IsNullOrWhiteSpace(g.Nombre) ? "Sin Horario Asignado" : g.Nombre,
+                    Nombre = string.IsNullOrWhiteSpace(g.Nombre) ? "Sin Horario" : g.Nombre,
                     Estado = g.Estado,
                     FechaInicio = g.FechaInicio
                 }).ToList();
 
-                // REGLA 5: Verificar si el curso tiene horarios creados
-                if (_horariosCursoActual.Count == 0)
-                {
-                    txtAvisoSinHorarios.Visibility = Visibility.Visible;
-                    txtBuscarHorario.IsEnabled = false;
-                    cmbGrupos.IsEnabled = false;
-                }
-                else
-                {
-                    txtAvisoSinHorarios.Visibility = Visibility.Collapsed;
-                    txtBuscarHorario.IsEnabled = true;
-                    cmbGrupos.IsEnabled = true;
-                    cmbGrupos.ItemsSource = _horariosCursoActual;
-                }
-            }
-            else
-            {
-                txtAvisoSinHorarios.Visibility = Visibility.Collapsed;
-                txtBuscarHorario.IsEnabled = false;
-                cmbGrupos.IsEnabled = false;
+                cmbGrupos.IsEnabled = _horariosCursoActual.Count > 0;
+                txtBuscarHorario.IsEnabled = _horariosCursoActual.Count > 0;
+                cmbGrupos.ItemsSource = _horariosCursoActual;
             }
         }
 
@@ -105,7 +82,6 @@ namespace Sistema_de_Cobros_2._0
             }
             else
             {
-                // Filtro en tiempo real por nombre, código o estado
                 var listaFiltrada = _horariosCursoActual.Where(h =>
                     h.Nombre.ToLower().Contains(filtro) ||
                     h.Codigo.ToLower().Contains(filtro) ||
@@ -113,12 +89,6 @@ namespace Sistema_de_Cobros_2._0
                 ).ToList();
 
                 cmbGrupos.ItemsSource = listaFiltrada;
-            }
-
-            // Si hay opciones, se abre automáticamente el desplegable para facilitar la elección
-            if (cmbGrupos.Items.Count > 0 && !string.IsNullOrWhiteSpace(filtro))
-            {
-                cmbGrupos.IsDropDownOpen = true;
             }
         }
 
@@ -128,11 +98,13 @@ namespace Sistema_de_Cobros_2._0
             {
                 btnGenerar.IsEnabled = true;
                 CargarClases(grupoSeleccionado.Id);
+                ActualizarIndicadorProgreso(grupoSeleccionado.Id);
             }
             else
             {
                 btnGenerar.IsEnabled = false;
                 dgCalendario.ItemsSource = null;
+                txtIndicadorSemana.Text = "📍 Progreso: Seleccione un horario...";
             }
         }
 
@@ -144,61 +116,82 @@ namespace Sistema_de_Cobros_2._0
             }
             catch (Exception ex)
             {
-                AlertaWindow.MostrarError($"Error al cargar clases: {ex.Message}");
+                AlertaWindow.MostrarError($"Error cargando clases: {ex.Message}");
+            }
+        }
+
+        // ========================================================
+        // CÁLCULO DE PROGRESO 100% AUTOMÁTICO (SOLO PARA VER)
+        // ========================================================
+        private void ActualizarIndicadorProgreso(int grupoId)
+        {
+            try
+            {
+                var (impartidas, total, nulas, proxima) = _calendarioService.ObtenerResumenAutomatico(grupoId);
+
+                if (total > 0)
+                {
+                    int pendientes = Math.Max(0, total - impartidas);
+                    string proximaTexto = proxima.HasValue
+                        ? $"Próxima clase: {proxima.Value:dd/MM/yyyy}"
+                        : "Curso completado";
+
+                    string canceladasTexto = nulas > 0 ? $" • {nulas} cancelada(s)" : "";
+
+                    txtIndicadorSemana.Text = $"📍 AVANCE DEL CURSO: Clase {impartidas} de {total}";
+                    txtDetalleProgreso.Text = $"{impartidas} clase(s) impartidas a la fecha • {pendientes} pendiente(s){canceladasTexto} • {proximaTexto}";
+                }
+                else
+                {
+                    txtIndicadorSemana.Text = "📍 Progreso: Sin clases programadas.";
+                    txtDetalleProgreso.Text = "Presione el botón 'Generar Clases' para crear el cronograma oficial de 24 semanas.";
+                }
+            }
+            catch
+            {
+                txtIndicadorSemana.Text = "📍 Progreso: Calculando avance...";
             }
         }
 
         private void BtnGenerar_Click(object sender, RoutedEventArgs e)
         {
-            if (!(cmbGrupos.SelectedItem is HorarioItemUI grupoSeleccionado))
-            {
-                AlertaWindow.MostrarAdvertencia("Por favor seleccione un horario o grupo primero.");
-                return;
-            }
+            if (cmbGrupos.SelectedItem is not HorarioItemUI grupo) return;
 
             try
             {
-                // REGLA 3: Verificar si el grupo ya tiene clases registradas y solicitar confirmación
-                var clasesActuales = _calendarioService.ObtenerPorGrupo(grupoSeleccionado.Id);
-                if (clasesActuales.Count > 0)
-                {
-                    bool confirmado = AlertaWindow.SolicitarConfirmacion(
-                        $"Este grupo ya cuenta con {clasesActuales.Count} clase(s) registradas en el calendario.\n\n¿Desea generar/completar las clases faltantes de este curso?",
-                        "Confirmar Generación");
-
-                    if (!confirmado) return;
-                }
-
-                _calendarioService.GenerarClasesAutomaticas(grupoSeleccionado.Id);
-                AlertaWindow.MostrarExito("Clases del calendario generadas exitosamente.");
-                CargarClases(grupoSeleccionado.Id);
+                _calendarioService.GenerarClasesAutomaticas(grupo.Id);
+                AlertaWindow.MostrarExito("Cronograma de 24 clases generado exitosamente.");
+                CargarClases(grupo.Id);
+                ActualizarIndicadorProgreso(grupo.Id);
             }
             catch (Exception ex)
             {
-                AlertaWindow.MostrarError($"Error al generar clases: {ex.Message}");
+                AlertaWindow.MostrarError(ex.Message);
             }
         }
 
-        private void CambiarEstado(object sender, string estado)
+        // ========================================================
+        // EXCEPCIÓN: PROFESOR FALTÓ (NULA + SEMANA EXTRA)
+        // ========================================================
+        private void BtnNula_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn && btn.DataContext is ClaseProgramada clase)
+            if (sender is Button btn && btn.DataContext is ClaseProgramada clase && cmbGrupos.SelectedItem is HorarioItemUI grupo)
             {
-                try
+                if (AlertaWindow.SolicitarConfirmacion("¿Desea marcar esta fecha como NULA (falta de profesor)?\n\nEl sistema agregará automáticamente una semana recuperativa al final del calendario.", "Confirmar Nula"))
                 {
-                    _calendarioService.CambiarEstado(clase.Id, estado);
-                    if (cmbGrupos.SelectedItem is HorarioItemUI grupo)
+                    try
                     {
+                        _calendarioService.AnularYReprogramarClase(clase.Id, grupo.Id, "Falta de profesor / Suspensión");
+                        AlertaWindow.MostrarExito("Clase marcada como Nula y semana de reposición agregada al final del curso.");
                         CargarClases(grupo.Id);
+                        ActualizarIndicadorProgreso(grupo.Id);
+                    }
+                    catch (Exception ex)
+                    {
+                        AlertaWindow.MostrarError(ex.Message);
                     }
                 }
-                catch (Exception ex)
-                {
-                    AlertaWindow.MostrarError($"Error al actualizar la clase: {ex.Message}");
-                }
             }
         }
-
-        private void BtnRealizada_Click(object sender, RoutedEventArgs e) => CambiarEstado(sender, "Realizada");
-        private void BtnNula_Click(object sender, RoutedEventArgs e) => CambiarEstado(sender, "Nula");
     }
 }

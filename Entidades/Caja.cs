@@ -2,9 +2,6 @@ using System;
 
 namespace Entidades
 {
-    /// <summary>
-    /// Representa la apertura y cierre de caja diaria.
-    /// </summary>
     public class Caja
     {
         public int Id { get; set; }
@@ -14,14 +11,18 @@ namespace Entidades
         public string? UsuarioCierre { get; set; }
         public decimal SaldoInicial { get; set; }
         public string SaldoInicialMoneda { get; set; }
+        public decimal SaldoInicialBs { get; set; }
+        public decimal SaldoInicialUsd { get; set; }
         public decimal? SaldoFinal { get; set; }
         public string Estado { get; set; }
 
-        public Caja(string usuarioApertura, decimal saldoInicial, string saldoInicialMoneda)
+        public Caja(string usuarioApertura, decimal saldoBs, decimal saldoUsd)
         {
             UsuarioApertura = usuarioApertura;
-            SaldoInicial = saldoInicial;
-            SaldoInicialMoneda = saldoInicialMoneda;
+            SaldoInicialBs = saldoBs;
+            SaldoInicialUsd = saldoUsd;
+            SaldoInicial = saldoUsd; // compatibilidad
+            SaldoInicialMoneda = "USD";
             FechaApertura = DateTime.Now;
             Estado = "Abierta";
         }

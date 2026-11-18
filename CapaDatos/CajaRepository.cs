@@ -15,8 +15,8 @@ namespace CapaDatos
             {
                 return new Caja(
                     reader.GetString("UsuarioApertura"),
-                    reader.GetDecimal("SaldoInicial"),
-                    reader.GetString("SaldoInicialMoneda")
+                    reader.IsDBNull(reader.GetOrdinal("SaldoInicialBs")) ? 0m : reader.GetDecimal("SaldoInicialBs"),
+                    reader.IsDBNull(reader.GetOrdinal("SaldoInicialUsd")) ? 0m : reader.GetDecimal("SaldoInicialUsd")
                 )
                 {
                     Id = reader.GetInt32("Id"),
@@ -31,11 +31,11 @@ namespace CapaDatos
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
             using var cmd = new MySqlCommand(
-                "INSERT INTO Caja (UsuarioApertura, SaldoInicial, SaldoInicialMoneda, Estado, FechaApertura) " +
-                "VALUES (@usuario, @saldo, @moneda, 'Abierta', @fecha)", conn);
+                "INSERT INTO Caja (UsuarioApertura, SaldoInicial, SaldoInicialMoneda, SaldoInicialBs, SaldoInicialUsd, Estado, FechaApertura) " +
+                "VALUES (@usuario, @saldoUsd, 'USD', @saldoBs, @saldoUsd, 'Abierta', @fecha)", conn);
             cmd.Parameters.AddWithValue("@usuario", caja.UsuarioApertura);
-            cmd.Parameters.AddWithValue("@saldo", caja.SaldoInicial);
-            cmd.Parameters.AddWithValue("@moneda", caja.SaldoInicialMoneda);
+            cmd.Parameters.AddWithValue("@saldoUsd", caja.SaldoInicialUsd);
+            cmd.Parameters.AddWithValue("@saldoBs", caja.SaldoInicialBs);
             cmd.Parameters.AddWithValue("@fecha", caja.FechaApertura);
             cmd.ExecuteNonQuery();
         }

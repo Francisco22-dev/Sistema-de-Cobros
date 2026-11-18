@@ -179,5 +179,123 @@ namespace CapaDatos
                 throw;
             }
         }
+        // ========================================================
+        // VALIDACIÓN MULTICURSO Y NO DUPLICIDAD ACTIVA
+        // ========================================================
+        public (bool Existe, bool EstaActiva, string EstadoPrevio, string GrupoCodigo, string CursoNombre)
+            VerificarHistorialEstudianteEnCurso(string cedula, string cursoCodigo)
+        {
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            using var cmd = new MySqlCommand(
+                "SELECT i.Id, i.Estado, g.Codigo AS GrupoCodigo, c.Nombre AS CursoNombre " +
+                "FROM Inscripciones i " +
+                "JOIN Grupos g ON i.GrupoId = g.Id " +
+                "JOIN Cursos c ON g.CursoCodigo = c.Codigo " +
+                "WHERE i.EstudianteCedula = @cedula AND c.Codigo = @cursoCod " +
+                "ORDER BY i.Id DESC LIMIT 1", conn);
+
+            cmd.Parameters.AddWithValue("@cedula", cedula.Trim());
+            cmd.Parameters.AddWithValue("@cursoCod", cursoCodigo.Trim());
+
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                string estado = reader.GetString("Estado");
+                string grupo = reader.GetString("GrupoCodigo");
+                string curso = reader.GetString("CursoNombre");
+                return (true, estado == "Activa", estado, grupo, curso);
+            }
+
+            return (false, false, "", "", "");
+        }
+
+        // ========================================================
+        // TRASLADO DE CARRERA RECONOCIENDO CLASES (1 A 1)
+        // ========================================================
+        public void EjecutarCambioCursoPorClases(
+            int inscripcionViejaId,
+            int nuevoGrupoId,
+            string cedula,
+            decimal montoCreditoClasesUSD,
+            decimal montoMatriculaConvalidadaUSD,
+            string notaOrigen,
+            string notaDestino,
+            string cursoOrigenNombre)
+        {
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            using var trans = conn.BeginTransaction();
+
+            try
+            {
+                // 1. Cancelar la inscripción anterior
+                using var cmdCerrar = new MySqlCommand(
+                    "UPDATE Inscripciones SET Estado = 'Cancelada', Observaciones = @obs WHERE Id = @id", conn, trans);
+                cmdCerrar.Parameters.AddWithValue("@obs", notaOrigen);
+                cmdCerrar.Parameters.AddWithValue("@id", inscripcionViejaId);
+                cmdCerrar.ExecuteNonQuery();
+
+                // 2. Crear la nueva inscripción en el nuevo grupo
+                using var cmdNueva = new MySqlCommand(
+                    "INSERT INTO Inscripciones (EstudianteCedula, GrupoId, Estado, Observaciones) " +
+                    "VALUES (@cedula, @grupoId, 'Activa', @obs); SELECT LAST_INSERT_ID();", conn, trans);
+                cmdNueva.Parameters.AddWithValue("@cedula", cedula);
+                cmdNueva.Parameters.AddWithValue("@grupoId", nuevoGrupoId);
+                cmdNueva.Parameters.AddWithValue("@obs", notaDestino);
+                int nuevaInscripcionId = Convert.ToInt32(cmdNueva.ExecuteScalar());
+
+                // 3. Crear el abono de crédito por las clases reconocidas en el nuevo curso
+                if (montoCreditoClasesUSD > 0)
+                {
+                    string reciboCredito = $"REC-TRASLADO-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
+
+                    using var cmdPagoClases = new MySqlCommand(
+                        "INSERT INTO Pagos (NumeroRecibo, EstudianteCedula, InscripcionId, ConceptoId, FechaPago, FechaVencimiento, Total, TotalEnVes, MonedaCodigo, UsuarioRegistra, Estado, Observaciones) " +
+                        "VALUES (@recibo, @cedula, @insId, 3, NOW(), CURDATE(), @total, @total, 'BCV', 'admin', 'Vigente', @obs); SELECT LAST_INSERT_ID();", conn, trans);
+                    cmdPagoClases.Parameters.AddWithValue("@recibo", reciboCredito);
+                    cmdPagoClases.Parameters.AddWithValue("@cedula", cedula);
+                    cmdPagoClases.Parameters.AddWithValue("@insId", nuevaInscripcionId);
+                    cmdPagoClases.Parameters.AddWithValue("@total", montoCreditoClasesUSD);
+                    cmdPagoClases.Parameters.AddWithValue("@obs", $"Crédito de clases reconocidas por traslado desde {cursoOrigenNombre}");
+                    int pagoClasesId = Convert.ToInt32(cmdPagoClases.ExecuteScalar());
+
+                    using var cmdDetalleClases = new MySqlCommand(
+                        "INSERT INTO PagoDetalles (PagoId, MetodoPagoId, Monto, MonedaCodigo, TasaCambio, MontoEnVes, Referencia) " +
+                        "VALUES (@pagoId, 1, @monto, 'BCV', 1.000000, @monto, 'TRASLADO-CLASES')", conn, trans);
+                    cmdDetalleClases.Parameters.AddWithValue("@pagoId", pagoClasesId);
+                    cmdDetalleClases.Parameters.AddWithValue("@monto", montoCreditoClasesUSD);
+                    cmdDetalleClases.ExecuteNonQuery();
+                }
+
+                // 4. Convalidar Matrícula (Exoneración oficial de inscripción)
+                if (montoMatriculaConvalidadaUSD > 0)
+                {
+                    string reciboMatricula = $"REC-MAT-TRASLADO-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
+
+                    using var cmdPagoMat = new MySqlCommand(
+                        "INSERT INTO Pagos (NumeroRecibo, EstudianteCedula, InscripcionId, ConceptoId, FechaPago, FechaVencimiento, Total, TotalEnVes, MonedaCodigo, UsuarioRegistra, Estado, Observaciones) " +
+                        "VALUES (@recibo, @cedula, @insId, 1, NOW(), CURDATE(), @total, @total, 'BCV', 'admin', 'Vigente', @obs); SELECT LAST_INSERT_ID();", conn, trans);
+                    cmdPagoMat.Parameters.AddWithValue("@recibo", reciboMatricula);
+                    cmdPagoMat.Parameters.AddWithValue("@cedula", cedula);
+                    cmdPagoMat.Parameters.AddWithValue("@insId", nuevaInscripcionId);
+                    cmdPagoMat.Parameters.AddWithValue("@total", montoMatriculaConvalidadaUSD);
+                    cmdPagoMat.Parameters.AddWithValue("@obs", $"Matrícula convalidada y exonerada por traslado desde {cursoOrigenNombre}");
+                    int pagoMatId = Convert.ToInt32(cmdPagoMat.ExecuteScalar());
+
+                    using var cmdDetalleMat = new MySqlCommand(
+                        "INSERT INTO PagoDetalles (PagoId, MetodoPagoId, Monto, MonedaCodigo, TasaCambio, MontoEnVes, Referencia) " +
+                        "VALUES (@pagoId, 1, @monto, 'BCV', 1.000000, @monto, 'CONVALIDADA')", conn, trans);
+                    cmdDetalleMat.Parameters.AddWithValue("@pagoId", pagoMatId);
+                    cmdDetalleMat.Parameters.AddWithValue("@monto", montoMatriculaConvalidadaUSD);
+                    cmdDetalleMat.ExecuteNonQuery();
+                }
+
+                trans.Commit();
+            }
+            catch
+            {
+                trans.Rollback();
+                throw;
+            }
+        }
     }
 }

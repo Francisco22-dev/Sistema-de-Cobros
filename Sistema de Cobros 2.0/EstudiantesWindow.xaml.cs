@@ -1,22 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using CapaNegocio;
 using Entidades;
 
 namespace Sistema_de_Cobros_2._0
 {
-    public class GrupoComboItem
-    {
-        public int Id { get; set; }
-        public string Codigo { get; set; } = string.Empty;
-        public string Nombre { get; set; } = string.Empty;
-        public DateTime FechaInicio { get; set; }
-        public string Display => $"[{Codigo}] {Nombre} (Inicia: {FechaInicio:dd/MM/yyyy})";
-    }
-
     public partial class EstudiantesWindow : Window
     {
         private readonly EstudianteService _estudianteService = new EstudianteService();
@@ -28,11 +21,10 @@ namespace Sistema_de_Cobros_2._0
         private InscripcionInfo? _seleccionada;
         private List<Curso> _cursosActivos = new List<Curso>();
 
-        // Variables de balance para el cambio de curso
+        // Variables de balance para cambio de curso
+        private int _clasesPagadasOrigen = 0;
         private decimal _deudaActualOrigen = 0m;
-        private decimal _totalPagadoClasesOrigen = 0m;
-        private decimal _saldoAdelantadoOrigen = 0m;
-        private bool _pagoMatriculaOrigen = false;
+        private decimal _precioClaseOrigen = 14m;
         private Curso? _cursoOrigenActual;
         private Curso? _cursoDestinoSeleccionado;
 
@@ -43,6 +35,132 @@ namespace Sistema_de_Cobros_2._0
             CargarInscripciones();
         }
 
+        // ========================================================
+        // VALIDACIÓN DE DATOS EN TIEMPO REAL (TECLADO)
+        // ========================================================
+
+        private void ValidarSoloNumeros_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            // Solo permite ingresar dígitos del 0 al 9
+            e.Handled = !Regex.IsMatch(e.Text, "^[0-9]+$");
+        }
+
+        private bool ValidarFormularioRegistro(out string cedula, out string nombre, out string telefono, out string email, out int grupoId)
+        {
+            cedula = txtCedula.Text.Trim();
+            nombre = txtNombre.Text.Trim();
+            telefono = txtTelefono.Text.Trim();
+            email = txtEmail.Text.Trim();
+            grupoId = 0;
+
+            // 1. Validación de Cédula
+            if (string.IsNullOrWhiteSpace(cedula) || !Regex.IsMatch(cedula, "^[0-9]{6,10}$"))
+            {
+                AlertaWindow.MostrarAdvertencia("La cédula debe contener solo números y tener entre 6 y 10 dígitos.");
+                txtCedula.Focus();
+                return false;
+            }
+
+            // 2. Validación de Nombre
+            if (string.IsNullOrWhiteSpace(nombre) || nombre.Length < 3 || !Regex.IsMatch(nombre, @"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$"))
+            {
+                AlertaWindow.MostrarAdvertencia("Ingrese un nombre completo válido (mínimo 3 letras, sin números ni símbolos).");
+                txtNombre.Focus();
+                return false;
+            }
+
+            // 3. Validación de Teléfono
+            if (string.IsNullOrWhiteSpace(telefono) || !Regex.IsMatch(telefono, "^[0-9]{10,11}$"))
+            {
+                AlertaWindow.MostrarAdvertencia("El teléfono debe contener solo números y tener 11 dígitos (Ej: 04121234567).");
+                txtTelefono.Focus();
+                return false;
+            }
+
+            // 4. Validación de Correo (Opcional)
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+                {
+                    AlertaWindow.MostrarAdvertencia("El correo electrónico ingresado no tiene un formato válido (Ej: alumno@gmail.com).");
+                    txtEmail.Focus();
+                    return false;
+                }
+            }
+            else
+            {
+                email = "noposee@gmail.com";
+            }
+
+            // 5. Validación de Selección de Horario
+            if (cmbNuevoCurso.SelectedValue == null || cmbNuevoGrupo.SelectedValue == null)
+            {
+                AlertaWindow.MostrarAdvertencia("Debe seleccionar una Carrera y un Horario/Cohorte.");
+                return false;
+            }
+
+            grupoId = (int)cmbNuevoGrupo.SelectedValue;
+            return true;
+        }
+
+        // ========================================================
+        // REGISTRO DE ALUMNO CON REGLA MULTICURSO Y NO DUPLICIDAD
+        // ========================================================
+
+        private void BtnGuardar_Click(object sender, RoutedEventArgs e)
+        {
+            if (!ValidarFormularioRegistro(out string cedula, out string nombre, out string telefono, out string email, out int grupoId))
+                return;
+
+            string cursoCodigo = (cmbNuevoCurso.SelectedValue as string) ?? "";
+
+            // REGLAS 6 Y 7: VALIDAR INSCRIPCIÓN EN ESE CURSO
+            var historial = _inscripcionService.ValidarHistorialInscripcion(cedula, cursoCodigo);
+
+            if (historial.Existe)
+            {
+                if (historial.EstaActiva)
+                {
+                    // Bloqueo estricto: ya está cursando esa misma carrera actualmente
+                    AlertaWindow.MostrarError(
+                        $"El estudiante {nombre} (C.I. {cedula}) ya tiene una inscripción ACTIVA en el curso '{historial.CursoNombre}' ([{historial.GrupoCodigo}]).\n\nNo se permite duplicar la inscripción en el mismo curso.");
+                    return;
+                }
+                else
+                {
+                    // Alerta visual informativa si lo cursó antes y lo canceló/finalizó
+                    bool continuar = AlertaWindow.SolicitarConfirmacion(
+                        $"AVISO PREVIO:\nEl estudiante ya cursó anteriormente '{historial.CursoNombre}' (Estado previo: {historial.EstadoPrevio} en el grupo [{historial.GrupoCodigo}]).\n\n¿Desea registrar una nueva inscripción para que vuelva a cursar la carrera?",
+                        "Inscripción Previa Detectada");
+
+                    if (!continuar) return;
+                }
+            }
+
+            try
+            {
+                _estudianteService.CrearEstudiante(cedula, nombre, telefono, email, null);
+                _inscripcionService.RegistrarInscripcion(cedula, grupoId, "Inscripción en sistema");
+
+                AlertaWindow.MostrarExito($"Estudiante '{nombre}' inscrito exitosamente en {cmbNuevoCurso.Text}.");
+
+                txtCedula.Clear();
+                txtNombre.Clear();
+                txtTelefono.Clear();
+                txtEmail.Clear();
+                cmbNuevoCurso.SelectedIndex = -1;
+                CargarInscripciones();
+            }
+            catch (Exception ex)
+            {
+                AlertaWindow.MostrarError($"Error al inscribir: {ex.Message}");
+            }
+        }
+
+        // ========================================================
+        // CARGA EN CASCADA
+        // ========================================================
+
         private void CargarCursosEnCascada()
         {
             try
@@ -50,39 +168,29 @@ namespace Sistema_de_Cobros_2._0
                 _cursosActivos = _cursoService.ObtenerCursos().Where(c => c.Activo).ToList();
                 cmbNuevoCurso.ItemsSource = _cursosActivos;
             }
-            catch (Exception ex)
-            {
-                AlertaWindow.MostrarError($"Error cargando cursos: {ex.Message}");
-            }
+            catch (Exception ex) { AlertaWindow.MostrarError(ex.Message); }
         }
 
         private void CmbNuevoCurso_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (cmbNuevoCurso.SelectedItem is Curso cursoSeleccionado)
             {
-                try
-                {
-                    var grupos = _grupoService.ObtenerPorCurso(cursoSeleccionado.Codigo)
-                        .Where(g => g.Activo && g.Estado != "Cancelado")
-                        .Select(g => new GrupoComboItem
-                        {
-                            Id = g.Id,
-                            Codigo = g.Codigo,
-                            Nombre = string.IsNullOrWhiteSpace(g.Nombre) ? "Sin Horario" : g.Nombre,
-                            FechaInicio = g.FechaInicio
-                        }).ToList();
+                var grupos = _grupoService.ObtenerPorCurso(cursoSeleccionado.Codigo)
+                    .Where(g => g.Activo && g.Estado != "Cancelado")
+                    .Select(g => new GrupoComboItem
+                    {
+                        Id = g.Id,
+                        Codigo = g.Codigo,
+                        Nombre = string.IsNullOrWhiteSpace(g.Nombre) ? "Sin Horario" : g.Nombre,
+                        FechaInicio = g.FechaInicio
+                    }).ToList();
 
-                    cmbNuevoGrupo.ItemsSource = grupos;
-                    cmbNuevoGrupo.IsEnabled = grupos.Count > 0;
-                    if (grupos.Count > 0) cmbNuevoGrupo.SelectedIndex = 0;
+                cmbNuevoGrupo.ItemsSource = grupos;
+                cmbNuevoGrupo.IsEnabled = grupos.Count > 0;
+                if (grupos.Count > 0) cmbNuevoGrupo.SelectedIndex = 0;
 
-                    pnlInfoCurso.Visibility = Visibility.Visible;
-                    txtInfoCurso.Text = $"Curso: {cursoSeleccionado.Nombre} • Duración: {cursoSeleccionado.DuracionSemanas / 4} meses ({cursoSeleccionado.DuracionSemanas} clases) • Precio clase: {cursoSeleccionado.PrecioMensualidad:N2} $ • Matrícula: {cursoSeleccionado.PrecioInscripcion:N2} $";
-                }
-                catch (Exception ex)
-                {
-                    AlertaWindow.MostrarError(ex.Message);
-                }
+                pnlInfoCurso.Visibility = Visibility.Visible;
+                txtInfoCurso.Text = $"Curso: {cursoSeleccionado.Nombre} • Duración: {cursoSeleccionado.DuracionSemanas / 4} meses ({cursoSeleccionado.DuracionSemanas} clases) • Precio clase: {cursoSeleccionado.PrecioMensualidad:N2} $ • Matrícula: {cursoSeleccionado.PrecioInscripcion:N2} $";
             }
             else
             {
@@ -97,28 +205,17 @@ namespace Sistema_de_Cobros_2._0
         private void CargarInscripciones()
         {
             if (dgInscripciones == null) return;
-
             try
             {
                 string filtro = txtBuscar?.Text.Trim() ?? "";
                 string estado = (cmbFiltroEstado?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Todos";
                 dgInscripciones.ItemsSource = _inscripcionService.ObtenerTodasLasInscripciones(filtro, estado);
             }
-            catch (Exception ex)
-            {
-                AlertaWindow.MostrarError($"Error al listar inscripciones: {ex.Message}");
-            }
+            catch (Exception ex) { AlertaWindow.MostrarError(ex.Message); }
         }
 
-        private void TxtBuscar_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (dgInscripciones != null) CargarInscripciones();
-        }
-
-        private void CmbFiltroEstado_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (dgInscripciones != null) CargarInscripciones();
-        }
+        private void TxtBuscar_TextChanged(object sender, TextChangedEventArgs e) => CargarInscripciones();
+        private void CmbFiltroEstado_SelectionChanged(object sender, SelectionChangedEventArgs e) => CargarInscripciones();
 
         private void DgInscripciones_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -172,10 +269,7 @@ namespace Sistema_de_Cobros_2._0
             modalCambioGrupo.Visibility = Visibility.Visible;
         }
 
-        private void BtnCerrarModalCambio_Click(object sender, RoutedEventArgs e)
-        {
-            modalCambioGrupo.Visibility = Visibility.Collapsed;
-        }
+        private void BtnCerrarModalCambio_Click(object sender, RoutedEventArgs e) => modalCambioGrupo.Visibility = Visibility.Collapsed;
 
         private void BtnConfirmarCambioGrupo_Click(object sender, RoutedEventArgs e)
         {
@@ -193,25 +287,17 @@ namespace Sistema_de_Cobros_2._0
             try
             {
                 _inscripcionService.TrasladarEstudianteDeGrupo(
-                    _seleccionada.InscripcionId,
-                    nuevoGrupo.Id,
-                    _seleccionada.GrupoCodigo,
-                    nuevoGrupo.Codigo,
-                    _seleccionada.Observaciones ?? "",
-                    txtModalMotivo.Text);
+                    _seleccionada.InscripcionId, nuevoGrupo.Id, _seleccionada.GrupoCodigo, nuevoGrupo.Codigo, _seleccionada.Observaciones ?? "", txtModalMotivo.Text);
 
                 AlertaWindow.MostrarExito($"Estudiante trasladado al grupo [{nuevoGrupo.Codigo}]. Pagos conservados.");
                 modalCambioGrupo.Visibility = Visibility.Collapsed;
                 CargarInscripciones();
             }
-            catch (Exception ex)
-            {
-                AlertaWindow.MostrarError(ex.Message);
-            }
+            catch (Exception ex) { AlertaWindow.MostrarError(ex.Message); }
         }
 
         // ========================================================
-        // MODAL 2: CAMBIO DE CURSO / CARRERA (COMPLETO)
+        // MODAL 2: CAMBIO DE CURSO / CARRERA (POR CLASES 1 A 1)
         // ========================================================
 
         private void BtnAbrirModalCambioCurso_Click(object sender, RoutedEventArgs e)
@@ -219,18 +305,18 @@ namespace Sistema_de_Cobros_2._0
             if (_seleccionada == null) return;
 
             _cursoOrigenActual = _cursosActivos.FirstOrDefault(c => c.Codigo == _seleccionada.CursoCodigo);
-            decimal precioClaseOrigen = _cursoOrigenActual?.PrecioMensualidad ?? 14m;
+            _precioClaseOrigen = _cursoOrigenActual?.PrecioMensualidad ?? 14m;
 
-            // Obtener balance financiero actual del estudiante en este curso
-            var balance = _inscripcionService.ObtenerBalanceEstudianteEnCurso(_seleccionada.InscripcionId, _seleccionada.GrupoId, precioClaseOrigen);
-            _totalPagadoClasesOrigen = balance.TotalPagadoClasesUSD;
+            // Obtener balance actual del estudiante
+            var balance = _inscripcionService.ObtenerBalanceEstudianteEnCurso(_seleccionada.InscripcionId, _seleccionada.GrupoId, _precioClaseOrigen);
             _deudaActualOrigen = balance.DeudaUSD;
-            _saldoAdelantadoOrigen = balance.SaldoAdelantadoUSD;
-            _pagoMatriculaOrigen = balance.PagoMatricula;
+
+            // Cantidad de clases que pagó en el curso actual
+            _clasesPagadasOrigen = _precioClaseOrigen > 0 ? (int)(balance.TotalPagadoClasesUSD / _precioClaseOrigen) : 0;
 
             txtCursoModalAlumno.Text = $"Estudiante: {_seleccionada.NombreCompleto} (C.I. {_seleccionada.Cedula})";
             txtCursoModalOrigen.Text = $"Curso que abandona: {_seleccionada.CursoNombre} (Grupo: [{_seleccionada.GrupoCodigo}])";
-            txtCursoModalPagado.Text = $"Total pagado en clases: {_totalPagadoClasesOrigen:N2} $ • Saldo adelantado: {_saldoAdelantadoOrigen:N2} $";
+            txtCursoModalClases.Text = $"Clases pagadas en este curso: {_clasesPagadasOrigen} clases ({balance.TotalPagadoClasesUSD:N2} $)";
 
             // Alerta visual de deuda
             if (_deudaActualOrigen > 0)
@@ -252,16 +338,13 @@ namespace Sistema_de_Cobros_2._0
             txtAdminPass.Clear();
             txtCursoModalMotivo.Clear();
 
-            // Cargar cursos diferentes al actual
+            // Cursos disponibles distintos al actual
             var otrosCursos = _cursosActivos.Where(c => c.Codigo != _seleccionada.CursoCodigo).ToList();
             cmbCursoModalNuevoCurso.ItemsSource = otrosCursos;
             cmbCursoModalNuevoGrupo.ItemsSource = null;
             cmbCursoModalNuevoGrupo.IsEnabled = false;
 
-            chkTransferirTodoCredito.IsChecked = true;
-            chkConvalidarInscripcion.IsChecked = true;
-            ActualizarTextosComparativos();
-
+            ActualizarCondicionesClases();
             modalCambioCurso.Visibility = Visibility.Visible;
         }
 
@@ -290,51 +373,34 @@ namespace Sistema_de_Cobros_2._0
                 cmbCursoModalNuevoGrupo.ItemsSource = null;
                 cmbCursoModalNuevoGrupo.IsEnabled = false;
             }
-            ActualizarTextosComparativos();
+            ActualizarCondicionesClases();
         }
 
         private void CmbCursoModalNuevoGrupo_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
+        private void ChkCobrarDiferencia_Changed(object sender, RoutedEventArgs e) => ActualizarCondicionesClases();
 
-        private void ChkCredito_Changed(object sender, RoutedEventArgs e) => ActualizarTextosComparativos();
-        private void ChkInscripcion_Changed(object sender, RoutedEventArgs e) => ActualizarTextosComparativos();
-
-        private void ActualizarTextosComparativos()
+        private void ActualizarCondicionesClases()
         {
-            if (txtInfoCreditoClases == null || txtInfoDiferenciaInscripcion == null) return;
+            if (txtInfoClasesReconocidas == null) return;
 
-            // 1. Mensaje de Crédito
-            if (chkTransferirTodoCredito.IsChecked == true)
+            txtInfoClasesReconocidas.Text = $"• Se acreditarán {_clasesPagadasOrigen} clase(s) en la nueva carrera.";
+
+            if (_cursoDestinoSeleccionado != null && _cursoDestinoSeleccionado.PrecioMensualidad > _precioClaseOrigen)
             {
-                txtInfoCreditoClases.Text = $"* Se transferirán {_totalPagadoClasesOrigen:N2} $ completos como crédito para el nuevo curso.";
+                // Curso nuevo es más caro
+                pnlDiferenciaPrecio.Visibility = Visibility.Visible;
+                decimal difPorClase = _cursoDestinoSeleccionado.PrecioMensualidad - _precioClaseOrigen;
+                decimal totalDif = difPorClase * _clasesPagadasOrigen;
+                txtInfoDiferencia.Text = $"Diferencia por clase ({difPorClase:N2} $ c/u) • Total a pagar: {totalDif:N2} $";
             }
             else
             {
-                txtInfoCreditoClases.Text = $"* Clases vistas se consideran consumidas. Solo se transferirá el saldo adelantado: {_saldoAdelantadoOrigen:N2} $.";
-            }
-
-            // 2. Mensaje de Matrícula
-            if (chkConvalidarInscripcion.IsChecked == true)
-            {
-                decimal matOrigen = _cursoOrigenActual?.PrecioInscripcion ?? 0m;
-                decimal matDestino = _cursoDestinoSeleccionado?.PrecioInscripcion ?? 0m;
-                decimal diferencia = Math.Max(0, matDestino - matOrigen);
-
-                if (diferencia > 0)
-                    txtInfoDiferenciaInscripcion.Text = $"Matrícula convalidada. Debe pagar diferencia de: {diferencia:N2} $";
-                else
-                    txtInfoDiferenciaInscripcion.Text = "Matrícula convalidada al 100% (Diferencia: 0.00 $)";
-            }
-            else
-            {
-                decimal matCompleta = _cursoDestinoSeleccionado?.PrecioInscripcion ?? 0m;
-                txtInfoDiferenciaInscripcion.Text = $"Debe pagar inscripción completa del nuevo curso: {matCompleta:N2} $";
+                pnlDiferenciaPrecio.Visibility = Visibility.Collapsed;
+                chkCobrarDiferencia.IsChecked = false;
             }
         }
 
-        private void BtnCerrarModalCambioCurso_Click(object sender, RoutedEventArgs e)
-        {
-            modalCambioCurso.Visibility = Visibility.Collapsed;
-        }
+        private void BtnCerrarModalCambioCurso_Click(object sender, RoutedEventArgs e) => modalCambioCurso.Visibility = Visibility.Collapsed;
 
         private void BtnConfirmarCambioCurso_Click(object sender, RoutedEventArgs e)
         {
@@ -354,7 +420,7 @@ namespace Sistema_de_Cobros_2._0
                 return;
             }
 
-            // Validación de Administrador (Regla 5)
+            // Permiso Admin si es Cajero
             string adminAutoriza = SesionService.Instancia.UsuarioActual?.Username ?? "Admin";
             if (!SesionService.Instancia.EsAdministrador())
             {
@@ -364,42 +430,42 @@ namespace Sistema_de_Cobros_2._0
                 if (!_usuarioService.ValidarCredenciales(userAdmin, passAdmin, out var usuarioAdmin) ||
                     (usuarioAdmin!.Rol != "Admin" && usuarioAdmin.Rol != "Programador"))
                 {
-                    AlertaWindow.MostrarError("Autorización rechazada: Usuario o contraseña de Administrador incorrectos.");
+                    AlertaWindow.MostrarError("Autorización rechazada: Credenciales de Administrador incorrectas.");
                     return;
                 }
                 adminAutoriza = usuarioAdmin.Username;
             }
 
-            // Confirmación explícita de deuda (Regla 3)
+            // Confirmación explícita de deuda
             bool perdonar = chkPerdonarDeuda.IsChecked == true;
             if (_deudaActualOrigen > 0)
             {
-                string mensajeDeuda = perdonar
-                    ? $"El alumno debe {_deudaActualOrigen:N2} $. Ha seleccionado PERDONAR la deuda.\n¿Confirma condonar este monto y registrarlo en auditoría?"
-                    : $"El alumno debe {_deudaActualOrigen:N2} $. La deuda NO será perdonada y quedará registrada en su expediente.\n¿Desea continuar?";
+                string msg = perdonar
+                    ? $"El alumno adeuda {_deudaActualOrigen:N2} $. Ha elegido PERDONAR la deuda.\n¿Confirma condonar este monto?"
+                    : $"El alumno adeuda {_deudaActualOrigen:N2} $. La deuda NO será perdonada y quedará asentada.\n¿Desea continuar?";
 
-                if (!AlertaWindow.SolicitarConfirmacion(mensajeDeuda, "Gestión de Deuda"))
+                if (!AlertaWindow.SolicitarConfirmacion(msg, "Gestión de Deuda"))
                     return;
             }
 
             try
             {
-                bool transferirTodo = chkTransferirTodoCredito.IsChecked == true;
-                bool convalidarMatricula = chkConvalidarInscripcion.IsChecked == true;
+                bool cobrarDiferencia = chkCobrarDiferencia.IsChecked == true;
 
-                _inscripcionService.ProcesarCambioDeCurso(
+                _inscripcionService.ProcesarCambioCursoPorClases(
                     _seleccionada,
                     grupoNuevo.Id,
                     grupoNuevo.Codigo,
-                    cursoNuevo.Nombre,
-                    transferirTodo,
-                    convalidarMatricula,
+                    cursoNuevo,
+                    _clasesPagadasOrigen,
+                    cobrarDiferencia,
+                    _precioClaseOrigen,
                     perdonar,
                     _deudaActualOrigen,
                     motivo,
                     adminAutoriza);
 
-                AlertaWindow.MostrarExito($"Cambio de carrera procesado exitosamente hacia '{cursoNuevo.Nombre}'.");
+                AlertaWindow.MostrarExito($"Cambio de carrera procesado hacia '{cursoNuevo.Nombre}'. Se reconocieron {_clasesPagadasOrigen} clases.");
                 modalCambioCurso.Visibility = Visibility.Collapsed;
                 CargarInscripciones();
             }
@@ -417,8 +483,7 @@ namespace Sistema_de_Cobros_2._0
         {
             if (_seleccionada == null) return;
 
-            string confirmacion = $"¿Está seguro de marcar la inscripción de '{_seleccionada.NombreCompleto}' como {nuevoEstado.ToUpper()}?";
-            if (!AlertaWindow.SolicitarConfirmacion(confirmacion, $"Confirmar {accionNombre}"))
+            if (!AlertaWindow.SolicitarConfirmacion($"¿Está seguro de marcar la inscripción de '{_seleccionada.NombreCompleto}' como {nuevoEstado.ToUpper()}?", $"Confirmar {accionNombre}"))
                 return;
 
             try
@@ -436,39 +501,5 @@ namespace Sistema_de_Cobros_2._0
         private void BtnSuspender_Click(object sender, RoutedEventArgs e) => AplicarCambioEstado("Suspendida", "Suspensión");
         private void BtnCancelar_Click(object sender, RoutedEventArgs e) => AplicarCambioEstado("Cancelada", "Cancelación por Deserción");
         private void BtnReactivar_Click(object sender, RoutedEventArgs e) => AplicarCambioEstado("Activa", "Reactivación");
-
-        private void BtnGuardar_Click(object sender, RoutedEventArgs e)
-        {
-            string cedula = txtCedula.Text.Trim();
-            string nombre = txtNombre.Text.Trim();
-            string telefono = txtTelefono.Text.Trim();
-            string email = txtEmail.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(cedula) || string.IsNullOrWhiteSpace(nombre) || cmbNuevoGrupo.SelectedValue == null)
-            {
-                AlertaWindow.MostrarAdvertencia("Cédula, Nombre, Carrera y Horario son obligatorios.");
-                return;
-            }
-
-            int grupoId = (int)cmbNuevoGrupo.SelectedValue;
-
-            try
-            {
-                _estudianteService.CrearEstudiante(cedula, nombre, telefono, email, null);
-                _inscripcionService.RegistrarInscripcion(cedula, grupoId, "Inscripción en nuevo sistema");
-
-                AlertaWindow.MostrarExito("Estudiante registrado e inscrito exitosamente.");
-                txtCedula.Clear();
-                txtNombre.Clear();
-                txtTelefono.Clear();
-                txtEmail.Clear();
-                cmbNuevoCurso.SelectedIndex = -1;
-                CargarInscripciones();
-            }
-            catch (Exception ex)
-            {
-                AlertaWindow.MostrarError($"Error al registrar: {ex.Message}");
-            }
-        }
     }
 }

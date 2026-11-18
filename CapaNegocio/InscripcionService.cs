@@ -172,5 +172,84 @@ namespace CapaNegocio
             _auditoria.Registrar("CAMBIO_CURSO", "Inscripciones", inscripcionActual.InscripcionId.ToString(),
                 $"Curso anterior: {inscripcionActual.CursoNombre}", detalleAuditoria, true);
         }
+        // Agrega estos métodos en CapaNegocio/InscripcionService.cs:
+
+        public (bool Existe, bool EstaActiva, string EstadoPrevio, string GrupoCodigo, string CursoNombre)
+            ValidarHistorialInscripcion(string cedula, string cursoCodigo)
+        {
+            return _repository.VerificarHistorialEstudianteEnCurso(cedula, cursoCodigo);
+        }
+
+        public void ProcesarCambioCursoPorClases(
+            InscripcionInfo inscripcionActual,
+            int nuevoGrupoId,
+            string nuevoGrupoCodigo,
+            Curso cursoDestino,
+            int clasesAReconocer,
+            bool cobrarDiferenciaPrecio,
+            decimal precioClaseOrigen,
+            bool perdonarDeuda,
+            decimal deudaUSD,
+            string motivo,
+            string usuarioAdminAutoriza)
+        {
+            decimal precioClaseDestino = cursoDestino.PrecioMensualidad;
+            decimal montoCreditoFinalUSD = 0m;
+
+            // LÓGICA DE RECONOCIMIENTO DE CLASES (1 a 1)
+            if (clasesAReconocer > 0)
+            {
+                if (precioClaseDestino <= precioClaseOrigen)
+                {
+                    // Decisión 3: Se le reconocen las N clases completas, no se devuelven saldos sobrantes
+                    montoCreditoFinalUSD = clasesAReconocer * precioClaseDestino;
+                }
+                else
+                {
+                    // Decisión 4: Curso nuevo más caro
+                    if (cobrarDiferenciaPrecio)
+                    {
+                        // Solo se le transfiere el valor que pagó en el anterior, dejando la diferencia como deuda
+                        montoCreditoFinalUSD = clasesAReconocer * precioClaseOrigen;
+                    }
+                    else
+                    {
+                        // Se le reconocen las N clases al 100% en el nuevo curso sin cobrarle extra
+                        montoCreditoFinalUSD = clasesAReconocer * precioClaseDestino;
+                    }
+                }
+            }
+
+            // Decisión 5: Matrícula exonerada automáticamente
+            decimal matriculaConvalidadaUSD = cursoDestino.PrecioInscripcion;
+
+            string fechaHoy = DateTime.Now.ToString("dd/MM/yyyy");
+            string detalleDeuda = deudaUSD > 0
+                ? (perdonarDeuda ? $"Deuda de {deudaUSD:N2} $ PERDONADA." : $"Deuda de {deudaUSD:N2} $ NO perdonada (pendiente).")
+                : "Sin deuda previa.";
+
+            string notaOrigen = $"Cambio de carrera a '{cursoDestino.Nombre}' ([{nuevoGrupoCodigo}]) el {fechaHoy}. {detalleDeuda} Motivo: {motivo}. Autorizado por: {usuarioAdminAutoriza}";
+            string notaDestino = $"Inscripción por traslado desde '{inscripcionActual.CursoNombre}'. Se reconocieron {clasesAReconocer} clase(s) ({montoCreditoFinalUSD:N2} $ acreditados). Matrícula convalidada al 100%.";
+
+            _repository.EjecutarCambioCursoPorClases(
+                inscripcionActual.InscripcionId,
+                nuevoGrupoId,
+                inscripcionActual.Cedula,
+                montoCreditoFinalUSD,
+                matriculaConvalidadaUSD,
+                notaOrigen,
+                notaDestino,
+                inscripcionActual.CursoNombre);
+
+            // Auditoría estricta contra malversación
+            string detalleAuditoria = $"Cambio de Carrera para {inscripcionActual.NombreCompleto} ({inscripcionActual.Cedula}). " +
+                                      $"De: {inscripcionActual.CursoNombre} -> A: {cursoDestino.Nombre} ([{nuevoGrupoCodigo}]). " +
+                                      $"Clases reconocidas: {clasesAReconocer}. Matrícula exonerada: {matriculaConvalidadaUSD:N2} $. " +
+                                      $"Deuda previa: {deudaUSD:N2} $ ({(perdonarDeuda ? "PERDONADA" : "COBRABLE")}). " +
+                                      $"Autorizado por Administrador: '{usuarioAdminAutoriza}'. Motivo: {motivo}";
+
+            _auditoria.Registrar("CAMBIO_CURSO_CLASES", "Inscripciones", inscripcionActual.InscripcionId.ToString(),
+                $"Curso anterior: {inscripcionActual.CursoNombre}", detalleAuditoria, true);
+        }
     }
 }

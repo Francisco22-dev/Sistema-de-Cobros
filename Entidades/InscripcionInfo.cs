@@ -14,6 +14,6 @@
         public string Estado { get; set; } = "Activa";
         public string? Observaciones { get; set; }
 
-        public string Display => $"{Cedula} - {NombreCompleto} | {CursoNombre} ({GrupoNombre})";
+        public string Display => $"[{CursoNombre.ToUpper()}] • {Cedula} - {NombreCompleto} ({GrupoNombre})";
     }
 }

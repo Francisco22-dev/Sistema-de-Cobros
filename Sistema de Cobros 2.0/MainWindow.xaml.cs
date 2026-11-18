@@ -73,17 +73,21 @@ namespace Sistema_de_Cobros_2._0
         {
             try
             {
-                // 1. Tasa y Caja (Inmediato)
+                // 1. Tasa y Caja
                 await Task.Run(() => _tasas = _tasaService.ObtenerTasasDelDia());
                 RefrescarUIVistaTasa();
                 ValidarEstadoCaja();
 
-                // 2. Cargar lista de estudiantes en segundo plano
+                // 2. Cargar lista de estudiantes en segundo plano (Limpieza preventiva para evitar el error)
                 var estudiantes = await Task.Run(() => _inscripcionService.ObtenerInscripcionesActivas());
+                cmbEstudiante.ItemsSource = null;
+                cmbEstudiante.Items.Clear(); // Garantiza que la colección esté 100% vacía
                 cmbEstudiante.ItemsSource = estudiantes;
 
                 // 3. Cargar historial de pagos en segundo plano
                 var pagos = await Task.Run(() => _pagoService.ObtenerPagos(100, ""));
+                dgHistorial.ItemsSource = null;
+                dgHistorial.Items.Clear(); // Garantiza que la colección esté 100% vacía
                 dgHistorial.ItemsSource = pagos;
             }
             catch (Exception ex)
@@ -408,7 +412,12 @@ namespace Sistema_de_Cobros_2._0
                 var pagoTemp = new Pago(numeroRecibo, cedula, inscripcionId, conceptoId, totalFacturaConvertida, monedaFacturaUI, SesionService.Instancia.UsuarioActual?.Username ?? "Cajero", DateTime.Now)
                 { FechaPago = DateTime.Now, Observaciones = nota };
 
-                ImpresorRecibo.Imprimir(pagoTemp, nombre, ((ComboBoxItem)cmbConcepto.SelectedItem).Content.ToString()!, listaBd);
+                // Pregunta si desea ticket físico
+                bool imprimirFisico = AlertaWindow.SolicitarConfirmacion(
+                    "¿Desea imprimir el recibo físico en la impresora térmica POS-80?",
+                    "Impresión de Recibo");
+
+                ImpresorRecibo.Imprimir(pagoTemp, nombre, ((ComboBoxItem)cmbConcepto.SelectedItem).Content.ToString()!, listaBd, imprimirFisico);
 
                 AlertaWindow.MostrarExito("Factura procesada con éxito.");
 
@@ -435,18 +444,7 @@ namespace Sistema_de_Cobros_2._0
 
         // --- ACCIONES EN EL HISTORIAL (DATA GRID) ---
 
-        private void BtnImprimir_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is FrameworkElement element && element.DataContext is Pago pagoSeleccionado)
-            {
-                var detalles = _pagoService.ObtenerDetalles(pagoSeleccionado.Id);
-                // Convertimos el BCV en $ para que en el recibo se vea bien
-                foreach (var d in detalles) if (d.MonedaCodigo == "BCV") d.MonedaCodigo = "$";
-
-                ImpresorRecibo.Imprimir(pagoSeleccionado, pagoSeleccionado.NombreEstudiante, "Concepto ID: " + pagoSeleccionado.ConceptoId, detalles);
-            }
-        }
-
+        
         private void BtnDevolver_Click(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement element && element.DataContext is Pago pagoSeleccionado)
@@ -467,6 +465,29 @@ namespace Sistema_de_Cobros_2._0
                     }
                     catch (Exception ex) { AlertaWindow.MostrarError(ex.Message); }
                 }
+            }
+        }
+
+        private void BtnReimprimirFisico_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement el && el.DataContext is Pago pago)
+            {
+                var detalles = _pagoService.ObtenerDetalles(pago.Id);
+                ImpresorRecibo.Imprimir(pago, pago.NombreEstudiante, "Concepto ID: " + pago.ConceptoId, detalles, true);
+                AlertaWindow.MostrarExito($"Recibo {pago.NumeroRecibo} enviado a la impresora POS-80.");
+            }
+        }
+
+        private void BtnReimprimirDigital_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is FrameworkElement el && el.DataContext is Pago pago)
+            {
+                var detalles = _pagoService.ObtenerDetalles(pago.Id);
+                ImpresorRecibo.GuardarReciboDigital(pago, pago.NombreEstudiante, "Concepto ID: " + pago.ConceptoId, detalles);
+
+                string carpeta = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "Recibos Digitales");
+                AlertaWindow.MostrarExito($"Recibo digital regenerado en el Escritorio:\n{carpeta}");
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = carpeta, UseShellExecute = true });
             }
         }
 

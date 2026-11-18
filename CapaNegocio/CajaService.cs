@@ -20,16 +20,16 @@ namespace CapaNegocio
             return _repository.ObtenerCajaAbierta();
         }
 
-        public void AbrirCaja(decimal saldoInicial)
+        public void AbrirCajaBimoneda(decimal saldoBs, decimal saldoUsd)
         {
             if (ObtenerCajaAbierta() != null)
                 throw new InvalidOperationException("Ya existe una caja abierta. Debe cerrarla primero.");
 
             string usuario = SesionService.Instancia.UsuarioActual?.Username ?? "Desconocido";
-            var caja = new Caja(usuario, saldoInicial, "USD");
+            var caja = new Caja(usuario, saldoBs, saldoUsd);
 
             _repository.AbrirCaja(caja);
-            _auditoria.Registrar("APERTURA", "Caja", null, null, $"Saldo Inicial: {saldoInicial} USD", true);
+            _auditoria.Registrar("APERTURA", "Caja", null, null, $"Fondo Inicial: {saldoBs:N2} Bs | {saldoUsd:N2} $", true);
         }
 
         // NUEVO: Obtener la lista de ingresos agrupados
@@ -54,17 +54,7 @@ namespace CapaNegocio
 
             _auditoria.Registrar("CIERRE", "Caja", caja.Id.ToString(), null, $"Caja Cerrada por {usuario}", true);
         }
-        public void AbrirCajaConFondo(decimal saldoInicial, string moneda)
-        {
-            if (ObtenerCajaAbierta() != null)
-                throw new InvalidOperationException("Ya existe una caja abierta. Debe cerrarla primero.");
-
-            string usuario = SesionService.Instancia.UsuarioActual?.Username ?? "Desconocido";
-            var caja = new Caja(usuario, saldoInicial, moneda);
-
-            _repository.AbrirCaja(caja);
-            _auditoria.Registrar("APERTURA", "Caja", null, null, $"Fondo Inicial: {saldoInicial} {moneda}", true);
-        }
+        
         public List<(string Curso, int Cantidad)> ObtenerInscripcionesDelTurno()
         {
             var caja = ObtenerCajaAbierta();

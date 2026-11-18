@@ -311,6 +311,16 @@
                             <DataGridTextColumn Header="Nota" Binding="{Binding Observaciones}" Width="120"/>
                             
                         </DataGrid.Columns>
+                        <DataGridTemplateColumn Header="Reimpresión" Width="170">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Content="POS-80" Background="#4CAF50" Foreground="White" FontWeight="Bold" Padding="6,3" BorderThickness="0" Margin="0,0,5,0" Cursor="Hand" Click="BtnReimprimirFisico_Click" ToolTip="Imprimir ticket físico en POS-80"/>
+                                        <Button Content="Digital" Background="#2196F3" Foreground="White" FontWeight="Bold" Padding="6,3" BorderThickness="0" Cursor="Hand" Click="BtnReimprimirDigital_Click" ToolTip="Generar o abrir PDF/HTML digital"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid>
                 </Grid>
             </Border>

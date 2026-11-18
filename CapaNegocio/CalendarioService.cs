@@ -46,5 +46,18 @@ namespace CapaNegocio
             // NUEVO: Dejamos rastro de que se generó un calendario
             _auditoria.Registrar("INSERT", "CalendarioClases", null, null, $"Generadas {semanas} clases para el Grupo ID: {grupoId}", true);
         }
+        // Agrega este método en CapaNegocio/CalendarioService.cs:
+
+        public (int Impartidas, int Total, int Nulas, DateTime? ProximaFecha) ObtenerResumenAutomatico(int grupoId)
+        {
+            return _repository.ObtenerProgresoGrupoAutomatico(grupoId);
+        }
+
+        public void AnularYReprogramarClase(int claseId, int grupoId, string motivo)
+        {
+            _repository.ActualizarEstado(claseId, "Nula");
+            _repository.AgregarClaseAlFinal(grupoId, motivo);
+            _auditoria.Registrar("REPROGRAMAR_CLASE", "CalendarioClases", claseId.ToString(), null, $"Clase marcada NULA y añadida al final del grupo {grupoId}", true);
+        }
     }
 }
