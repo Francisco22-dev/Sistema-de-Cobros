@@ -51,5 +51,21 @@ namespace CapaNegocio
                 throw;
             }
         }
+       
+        private readonly CalendarioRepository _calendarioRepo = new CalendarioRepository();
+
+        public void ActualizarHorario(Grupo grupo, bool cambioFechaInicio)
+        {
+            _repository.Actualizar(grupo);
+
+            // Si la fecha de inicio cambió, reajustar automáticamente todas las clases del calendario
+            if (cambioFechaInicio)
+            {
+                _calendarioRepo.ReajustarFechasCalendario(grupo.Id, grupo.FechaInicio);
+            }
+
+            _auditoria.Registrar("UPDATE", "Grupos", grupo.Codigo, null,
+                $"Horario: {grupo.Nombre}, Fecha Inicio: {grupo.FechaInicio:d} (Calendario reajustado: {(cambioFechaInicio ? "SÍ" : "NO")})", true);
+        }
     }
 }

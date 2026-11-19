@@ -252,15 +252,14 @@
                         <TextBlock Text="Cambio de Carrera / Curso" FontSize="18" FontWeight="Bold" Foreground="#7C3AED" Margin="0,0,0,5"/>
                         <TextBlock Text="Traslada al estudiante a otra especialidad reconociendo las clases pagadas 1 a 1." Foreground="#666" FontSize="11" Margin="0,0,0,12"/>
 
-                        <!-- ALERTA VISUAL DE DEUDA PREVIA -->
-                        <Border x:Name="bdrAlertaDeuda" Background="#FEF2F2" BorderBrush="#EF4444" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,0,0,12" Visibility="Collapsed">
+                        <!-- ALERTA VISUAL DE DEUDA PREVIA (BLOQUEO ESTRICTO) -->
+                        <Border x:Name="bdrAlertaDeuda" Background="#FEF2F2" BorderBrush="#EF4444" BorderThickness="1.5" CornerRadius="6" Padding="12" Margin="0,0,0,12" Visibility="Collapsed">
                             <StackPanel>
-                                <TextBlock x:Name="txtAlertaDeudaTitulo" Text="⚠ ATENCIÓN: El estudiante presenta pagos pendientes" FontWeight="Bold" Foreground="#B91C1C" FontSize="12"/>
-                                <TextBlock x:Name="txtAlertaDeudaDetalle" Text="Debe: 0.00 $ en su curso actual." FontSize="11" Foreground="#7F1D1D" Margin="0,2,0,6"/>
-                                <CheckBox x:Name="chkPerdonarDeuda" Content="Perdonar/Condonar la deuda pendiente (Se registrará en auditoría)" Foreground="#B91C1C" FontWeight="SemiBold" FontSize="11"/>
+                                <TextBlock x:Name="txtAlertaDeudaTitulo" Text="⛔ TRASLADO BLOQUEADO: El estudiante tiene deuda por clases vistas" FontWeight="Bold" Foreground="#B91C1C" FontSize="12"/>
+                                <TextBlock x:Name="txtAlertaDeudaDetalle" Text="Debe: 0.00 $ en su curso actual." FontSize="11" Foreground="#7F1D1D" Margin="0,2,0,4" TextWrapping="Wrap"/>
+                                <TextBlock Text="* Es obligatorio que el estudiante pague las clases vistas en caja antes de solicitar el cambio de carrera." FontSize="11" FontWeight="Bold" Foreground="#991B1B" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
-
                         <!-- FICHA RESUMEN DEL ALUMNO -->
                         <Border Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="6" Padding="10" Margin="0,0,0,12">
                             <StackPanel>

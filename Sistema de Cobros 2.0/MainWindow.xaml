@@ -144,8 +144,9 @@
                             <StackPanel Grid.Column="0" Margin="0,0,10,0">
                                 <TextBlock Text="Buscar Estudiante (Cédula o Nombre)" FontSize="12" FontWeight="SemiBold" Foreground="#666" Margin="0,0,0,5"/>
                                 <ComboBox x:Name="cmbEstudiante" Style="{StaticResource ModernComboBox}" 
-                                          IsEditable="True" IsTextSearchEnabled="True" 
-                                          TextSearch.TextPath="Display" DisplayMemberPath="Display"/>
+          IsEditable="True" IsTextSearchEnabled="False" 
+          TextBoxBase.TextChanged="CmbEstudiante_TextChanged"
+          DisplayMemberPath="Display"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" VerticalAlignment="Bottom">
                                 <Button x:Name="btnNuevoEstudiante" Content="Nuevo" Style="{StaticResource BotonRedondeado}" 
@@ -316,7 +317,14 @@
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
                             <DataGridTextColumn Header="Mon." Binding="{Binding MonedaUI}" Width="50"/>
-                            <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="75"/>
+                            <DataGridTextColumn Header="Referencia" Binding="{Binding Referencia}" Width="120">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="SemiBold"/>
+                                        <Setter Property="Foreground" Value="#374151"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
                             <DataGridTextColumn Header="Fecha" Binding="{Binding FechaPago, StringFormat=dd/MM/yyyy}" Width="90"/>
 
                             <!-- BOTONES RÁPIDOS POR FILA -->

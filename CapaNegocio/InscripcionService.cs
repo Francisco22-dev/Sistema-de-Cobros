@@ -188,8 +188,6 @@ namespace CapaNegocio
             int clasesAReconocer,
             bool cobrarDiferenciaPrecio,
             decimal precioClaseOrigen,
-            bool perdonarDeuda,
-            decimal deudaUSD,
             string motivo,
             string usuarioAdminAutoriza)
         {
@@ -201,35 +199,27 @@ namespace CapaNegocio
             {
                 if (precioClaseDestino <= precioClaseOrigen)
                 {
-                    // Decisión 3: Se le reconocen las N clases completas, no se devuelven saldos sobrantes
                     montoCreditoFinalUSD = clasesAReconocer * precioClaseDestino;
                 }
                 else
                 {
-                    // Decisión 4: Curso nuevo más caro
                     if (cobrarDiferenciaPrecio)
                     {
-                        // Solo se le transfiere el valor que pagó en el anterior, dejando la diferencia como deuda
                         montoCreditoFinalUSD = clasesAReconocer * precioClaseOrigen;
                     }
                     else
                     {
-                        // Se le reconocen las N clases al 100% en el nuevo curso sin cobrarle extra
                         montoCreditoFinalUSD = clasesAReconocer * precioClaseDestino;
                     }
                 }
             }
 
-            // Decisión 5: Matrícula exonerada automáticamente
+            // Matrícula exonerada automáticamente
             decimal matriculaConvalidadaUSD = cursoDestino.PrecioInscripcion;
-
             string fechaHoy = DateTime.Now.ToString("dd/MM/yyyy");
-            string detalleDeuda = deudaUSD > 0
-                ? (perdonarDeuda ? $"Deuda de {deudaUSD:N2} $ PERDONADA." : $"Deuda de {deudaUSD:N2} $ NO perdonada (pendiente).")
-                : "Sin deuda previa.";
 
-            string notaOrigen = $"Cambio de carrera a '{cursoDestino.Nombre}' ([{nuevoGrupoCodigo}]) el {fechaHoy}. {detalleDeuda} Motivo: {motivo}. Autorizado por: {usuarioAdminAutoriza}";
-            string notaDestino = $"Inscripción por traslado desde '{inscripcionActual.CursoNombre}'. Se reconocieron {clasesAReconocer} clase(s) ({montoCreditoFinalUSD:N2} $ acreditados). Matrícula convalidada al 100%.";
+            string notaOrigen = $"Cambio de carrera a '{cursoDestino.Nombre}' ([{nuevoGrupoCodigo}]) el {fechaHoy}. Clases vistas saldadas al 100%. Motivo: {motivo}. Autorizado por: {usuarioAdminAutoriza}";
+            string notaDestino = $"Inscripción por traslado desde '{inscripcionActual.CursoNombre}'. Se reconocieron {clasesAReconocer} clase(s) ({montoCreditoFinalUSD:N2} $ acreditados). Matrícula convalidada.";
 
             _repository.EjecutarCambioCursoPorClases(
                 inscripcionActual.InscripcionId,
@@ -241,11 +231,9 @@ namespace CapaNegocio
                 notaDestino,
                 inscripcionActual.CursoNombre);
 
-            // Auditoría estricta contra malversación
             string detalleAuditoria = $"Cambio de Carrera para {inscripcionActual.NombreCompleto} ({inscripcionActual.Cedula}). " +
                                       $"De: {inscripcionActual.CursoNombre} -> A: {cursoDestino.Nombre} ([{nuevoGrupoCodigo}]). " +
                                       $"Clases reconocidas: {clasesAReconocer}. Matrícula exonerada: {matriculaConvalidadaUSD:N2} $. " +
-                                      $"Deuda previa: {deudaUSD:N2} $ ({(perdonarDeuda ? "PERDONADA" : "COBRABLE")}). " +
                                       $"Autorizado por Administrador: '{usuarioAdminAutoriza}'. Motivo: {motivo}";
 
             _auditoria.Registrar("CAMBIO_CURSO_CLASES", "Inscripciones", inscripcionActual.InscripcionId.ToString(),

@@ -2,9 +2,10 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Linq;
 using CapaNegocio;
 using Entidades;
-using System.Linq;
 
 namespace Sistema_de_Cobros_2._0
 {
@@ -12,7 +13,9 @@ namespace Sistema_de_Cobros_2._0
     {
         private readonly CursoService _cursoService = new CursoService();
         private readonly GrupoService _grupoService = new GrupoService();
+
         private Curso? _cursoSeleccionado;
+        private Grupo? _grupoSeleccionado;
 
         public CursosWindow()
         {
@@ -25,10 +28,12 @@ namespace Sistema_de_Cobros_2._0
         {
             dgCursos.ItemsSource = _cursoService.ObtenerCursos();
         }
+
         private void TxtBuscarCurso_TextChanged(object sender, TextChangedEventArgs e)
         {
             string filtro = txtBuscarCurso.Text.ToLower();
-            dgCursos.ItemsSource = _cursoService.ObtenerCursos().Where(c => c.Nombre.ToLower().Contains(filtro) || c.Codigo.ToLower().Contains(filtro)).ToList();
+            dgCursos.ItemsSource = _cursoService.ObtenerCursos()
+                .Where(c => c.Nombre.ToLower().Contains(filtro) || c.Codigo.ToLower().Contains(filtro)).ToList();
         }
 
         private void DgCursos_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -46,16 +51,130 @@ namespace Sistema_de_Cobros_2._0
 
                 btnActivarCurso.Visibility = Visibility.Visible;
                 btnActivarCurso.Content = curso.Activo ? "Desactivar" : "Activar";
-                btnActivarCurso.Background = new System.Windows.Media.SolidColorBrush(
-                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(curso.Activo ? "#F44336" : "#4CAF50"));
+                btnActivarCurso.Background = new SolidColorBrush(
+                    (Color)ColorConverter.ConvertFromString(curso.Activo ? "#F44336" : "#4CAF50"));
 
-                // Cargar panel derecho y sugerir código oficial
                 txtTituloHorarios.Text = $"Horarios para: {curso.Nombre}";
                 panelHorarios.IsEnabled = curso.Activo;
-                dgHorarios.ItemsSource = _grupoService.ObtenerPorCurso(curso.Codigo);
+                CargarHorariosDelCurso();
+                ResetearFormularioHorario();
+            }
+        }
 
-                // Sugerir código según la cohorte
-                txtCodigoGrupo.Text = _grupoService.SugerirCodigoGrupo(curso.Codigo);
+        private void CargarHorariosDelCurso()
+        {
+            if (_cursoSeleccionado != null)
+            {
+                dgHorarios.ItemsSource = _grupoService.ObtenerPorCurso(_cursoSeleccionado.Codigo);
+            }
+        }
+
+        private void ResetearFormularioHorario()
+        {
+            _grupoSeleccionado = null;
+            dgHorarios.SelectedItem = null;
+            if (_cursoSeleccionado != null)
+            {
+                txtTituloPanelHorario.Text = "Agregar Horario / Grupo al Curso";
+                txtTituloPanelHorario.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4CAF50"));
+                txtCodigoGrupo.IsEnabled = true;
+                txtCodigoGrupo.Text = _grupoService.SugerirCodigoGrupo(_cursoSeleccionado.Codigo);
+                dpFechaInicio.SelectedDate = DateTime.Now;
+                btnGuardarHorario.Content = "Agregar Horario (Grupo)";
+                btnGuardarHorario.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4CAF50"));
+                btnCancelarEdicionHorario.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        // ========================================================
+        // EDICIÓN DE HORARIO SELECCIONADO
+        // ========================================================
+
+        private void DgHorarios_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (dgHorarios.SelectedItem is Grupo grupo)
+            {
+                _grupoSeleccionado = grupo;
+                txtTituloPanelHorario.Text = $"Editando Grupo: {grupo.Codigo}";
+                txtTituloPanelHorario.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1976D2")); // Azul
+                txtCodigoGrupo.Text = grupo.Codigo;
+                txtCodigoGrupo.IsEnabled = false; // El código único no se altera
+                dpFechaInicio.SelectedDate = grupo.FechaInicio;
+
+                // Intentar coincidir los desplegables con el texto del nombre
+                string nombre = grupo.Nombre ?? "";
+                foreach (ComboBoxItem item in cmbDias.Items)
+                {
+                    if (nombre.Contains(item.Content.ToString()!))
+                    {
+                        cmbDias.SelectedItem = item;
+                        break;
+                    }
+                }
+                foreach (ComboBoxItem item in cmbHoras.Items)
+                {
+                    if (nombre.Contains(item.Content.ToString()!))
+                    {
+                        cmbHoras.SelectedItem = item;
+                        break;
+                    }
+                }
+
+                btnGuardarHorario.Content = "Actualizar Horario / Fecha";
+                btnGuardarHorario.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1976D2"));
+                btnCancelarEdicionHorario.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void BtnCancelarEdicionHorario_Click(object sender, RoutedEventArgs e)
+        {
+            ResetearFormularioHorario();
+        }
+
+        private void BtnGuardarHorario_Click(object sender, RoutedEventArgs e)
+        {
+            if (_cursoSeleccionado == null || dpFechaInicio.SelectedDate == null) return;
+
+            string codigoGrupo = txtCodigoGrupo.Text.Trim().ToUpper();
+            if (string.IsNullOrWhiteSpace(codigoGrupo))
+            {
+                AlertaWindow.MostrarAdvertencia("Debe ingresar un código para el grupo.");
+                return;
+            }
+
+            string horarioConcat = $"{((ComboBoxItem)cmbDias.SelectedItem).Content} {((ComboBoxItem)cmbHoras.SelectedItem).Content}";
+            DateTime fechaNueva = dpFechaInicio.SelectedDate.Value;
+
+            try
+            {
+                if (_grupoSeleccionado == null)
+                {
+                    // CREAR NUEVO
+                    _grupoService.GuardarHorario(_cursoSeleccionado.Codigo, codigoGrupo, horarioConcat, fechaNueva);
+                    AlertaWindow.MostrarExito($"Grupo '{codigoGrupo}' creado exitosamente.");
+                }
+                else
+                {
+                    // EDITAR EXISTENTE
+                    bool cambioFecha = _grupoSeleccionado.FechaInicio.Date != fechaNueva.Date;
+                    _grupoSeleccionado.Nombre = horarioConcat;
+                    _grupoSeleccionado.FechaInicio = fechaNueva;
+
+                    _grupoService.ActualizarHorario(_grupoSeleccionado, cambioFecha);
+
+                    string detalleMsg = cambioFecha
+                        ? $"Grupo '{_grupoSeleccionado.Codigo}' actualizado. Las 24 fechas del calendario fueron reajustadas automáticamente a la nueva fecha de inicio."
+                        : $"Horario del grupo '{_grupoSeleccionado.Codigo}' actualizado exitosamente.";
+
+                    AlertaWindow.MostrarExito(detalleMsg);
+                }
+
+                CargarHorariosDelCurso();
+                ResetearFormularioHorario();
+            }
+            catch (Exception ex)
+            {
+                AlertaWindow.MostrarError(ex.Message);
             }
         }
 
@@ -76,33 +195,6 @@ namespace Sistema_de_Cobros_2._0
             panelHorarios.IsEnabled = false;
             dgHorarios.ItemsSource = null;
             dgCursos.SelectedItem = null;
-        }
-
-        private void BtnAgregarHorario_Click(object sender, RoutedEventArgs e)
-        {
-            if (_cursoSeleccionado == null || dpFechaInicio.SelectedDate == null) return;
-
-            string codigoGrupo = txtCodigoGrupo.Text.Trim().ToUpper();
-            if (string.IsNullOrWhiteSpace(codigoGrupo))
-            {
-                AlertaWindow.MostrarAdvertencia("Debe ingresar un código para el grupo (Ej: AAD2610).");
-                return;
-            }
-
-            string horarioConcat = $"{((ComboBoxItem)cmbDias.SelectedItem).Content} {((ComboBoxItem)cmbHoras.SelectedItem).Content}";
-            try
-            {
-                _grupoService.GuardarHorario(_cursoSeleccionado.Codigo, codigoGrupo, horarioConcat, dpFechaInicio.SelectedDate.Value);
-                AlertaWindow.MostrarExito($"Grupo '{codigoGrupo}' guardado exitosamente.");
-
-                // Refrescar grilla y sugerir siguiente código
-                dgHorarios.ItemsSource = _grupoService.ObtenerPorCurso(_cursoSeleccionado.Codigo);
-                txtCodigoGrupo.Text = _grupoService.SugerirCodigoGrupo(_cursoSeleccionado.Codigo);
-            }
-            catch (Exception ex)
-            {
-                AlertaWindow.MostrarError(ex.Message);
-            }
         }
 
         private void BtnGuardarCurso_Click(object sender, RoutedEventArgs e)
@@ -143,7 +235,5 @@ namespace Sistema_de_Cobros_2._0
                 BtnLimpiarCurso_Click(null, null);
             }
         }
-
-        
     }
 }

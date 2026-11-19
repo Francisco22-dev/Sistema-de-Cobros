@@ -141,5 +141,22 @@ namespace CapaDatos
             cmd.Parameters.AddWithValue("@obs", $"Clase recuperativa: {motivo}");
             cmd.ExecuteNonQuery();
         }
+       
+        public void ReajustarFechasCalendario(int grupoId, DateTime nuevaFechaInicio)
+        {
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            var clases = ObtenerPorGrupo(grupoId);
+            DateTime fechaActual = nuevaFechaInicio;
+
+            foreach (var clase in clases)
+            {
+                using var cmd = new MySqlCommand("UPDATE CalendarioClases SET FechaClase = @fecha WHERE Id = @id", conn);
+                cmd.Parameters.AddWithValue("@fecha", fechaActual);
+                cmd.Parameters.AddWithValue("@id", clase.Id);
+                cmd.ExecuteNonQuery();
+
+                fechaActual = fechaActual.AddDays(7);
+            }
+        }
     }
 }

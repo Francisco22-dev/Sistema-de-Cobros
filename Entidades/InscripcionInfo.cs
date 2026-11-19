@@ -14,6 +14,7 @@
         public string Estado { get; set; } = "Activa";
         public string? Observaciones { get; set; }
 
-        public string Display => $"[{CursoNombre.ToUpper()}] • {Cedula} - {NombreCompleto} ({GrupoNombre})";
+        // Formato optimizado: Cédula y Nombre al inicio para búsqueda instantánea
+        public string Display => $"{Cedula} - {NombreCompleto} • [{CursoNombre.ToUpper()}] ({GrupoNombre})";
     }
 }

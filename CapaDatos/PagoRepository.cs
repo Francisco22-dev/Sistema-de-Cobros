@@ -11,31 +11,62 @@ namespace CapaDatos
         {
             var lista = new List<Pago>();
             using var conn = DatabaseConnection.AbrirConexionConReintento();
-            string query = "SELECT p.Id, p.NumeroRecibo, p.EstudianteCedula, e.NombreCompleto AS NombreEstudiante, " +
-                           "p.InscripcionId, p.ConceptoId, p.FechaPago, p.FechaVencimiento, p.Total, p.TotalEnVes, " +
-                           "p.MonedaCodigo, p.UsuarioRegistra, p.Estado, p.Observaciones, " +
-                           "CONCAT(c.Nombre, ' (', COALESCE(g.Nombre, 'Sin Horario'), ')') AS CursoHorario " +
-                           "FROM Pagos p " +
-                           "JOIN Estudiantes e ON p.EstudianteCedula = e.Cedula " +
-                           "LEFT JOIN Inscripciones i ON p.InscripcionId = i.Id " +
-                           "LEFT JOIN Grupos g ON i.GrupoId = g.Id " +
-                           "LEFT JOIN Cursos c ON g.CursoCodigo = c.Codigo ";
+
+            string query = @"
+        SELECT p.*, 
+               e.NombreCompleto AS NombreEstudiante, 
+               CONCAT(c.Nombre, ' (', g.Codigo, ')') AS CursoHorario,
+               COALESCE((
+                   SELECT GROUP_CONCAT(DISTINCT pd.Referencia SEPARATOR ' / ') 
+                   FROM PagoDetalles pd 
+                   WHERE pd.PagoId = p.Id AND pd.Referencia IS NOT NULL AND pd.Referencia != ''
+               ), 'S/R') AS Referencia
+        FROM Pagos p
+        JOIN Estudiantes e ON p.EstudianteCedula = e.Cedula
+        JOIN Inscripciones i ON p.InscripcionId = i.Id
+        JOIN Grupos g ON i.GrupoId = g.Id
+        JOIN Cursos c ON g.CursoCodigo = c.Codigo
+        WHERE 1=1 ";
 
             if (!string.IsNullOrWhiteSpace(filtro))
-                query += "WHERE p.EstudianteCedula LIKE @filtro OR e.NombreCompleto LIKE @filtro ";
-            query += "ORDER BY p.FechaPago DESC LIMIT @limite";
+            {
+                query += @" AND (
+            p.NumeroRecibo LIKE @filtro OR 
+            e.Cedula LIKE @filtro OR 
+            e.NombreCompleto LIKE @filtro OR
+            EXISTS (SELECT 1 FROM PagoDetalles pd2 WHERE pd2.PagoId = p.Id AND pd2.Referencia LIKE @filtro)
+        ) ";
+            }
+
+            query += " ORDER BY p.FechaPago DESC, p.Id DESC LIMIT @limite;";
 
             using var cmd = new MySqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@limite", limite);
-            if (!string.IsNullOrWhiteSpace(filtro)) cmd.Parameters.AddWithValue("@filtro", "%" + filtro + "%");
+            if (!string.IsNullOrWhiteSpace(filtro))
+                cmd.Parameters.AddWithValue("@filtro", $"%{filtro.Trim()}%");
 
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                var pago = MapearPago(reader);
-                pago.NombreEstudiante = reader.GetString("NombreEstudiante");
-                pago.CursoHorario = reader.IsDBNull(reader.GetOrdinal("CursoHorario")) ? "" : reader.GetString("CursoHorario");
-                lista.Add(pago);
+                lista.Add(new Pago(
+                    reader.GetString("NumeroRecibo"),
+                    reader.GetString("EstudianteCedula"),
+                    reader.GetInt32("InscripcionId"),
+                    reader.GetInt32("ConceptoId"),
+                    reader.GetDecimal("Total"),
+                    reader.GetString("MonedaCodigo"),
+                    reader.GetString("UsuarioRegistra"),
+                    reader.GetDateTime("FechaVencimiento"))
+                {
+                    Id = reader.GetInt32("Id"),
+                    TotalEnVes = reader.GetDecimal("TotalEnVes"),
+                    FechaPago = reader.GetDateTime("FechaPago"),
+                    Estado = reader.GetString("Estado"),
+                    Observaciones = reader.IsDBNull(reader.GetOrdinal("Observaciones")) ? "" : reader.GetString("Observaciones"),
+                    NombreEstudiante = reader.IsDBNull(reader.GetOrdinal("NombreEstudiante")) ? "" : reader.GetString("NombreEstudiante"),
+                    CursoHorario = reader.IsDBNull(reader.GetOrdinal("CursoHorario")) ? "" : reader.GetString("CursoHorario"),
+                    Referencia = reader.IsDBNull(reader.GetOrdinal("Referencia")) ? "S/R" : reader.GetString("Referencia")
+                });
             }
             return lista;
         }

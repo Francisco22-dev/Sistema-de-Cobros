@@ -38,7 +38,13 @@ namespace CapaDatos
             using var conn = DatabaseConnection.AbrirConexionConReintento();
             using var cmd = new MySqlCommand(
                 "INSERT INTO Estudiantes (Cedula, NombreCompleto, Telefono, Email, FechaNacimiento, Direccion, Activo) " +
-                "VALUES (@cedula, @nombre, @telefono, @email, @nacimiento, @direccion, @activo)", conn);
+                "VALUES (@cedula, @nombre, @telefono, @email, @nacimiento, @direccion, @activo) " +
+                "ON DUPLICATE KEY UPDATE " +
+                "NombreCompleto = VALUES(NombreCompleto), " +
+                "Telefono = VALUES(Telefono), " +
+                "Email = COALESCE(VALUES(Email), Email), " +
+                "Activo = TRUE", conn);
+
             cmd.Parameters.AddWithValue("@cedula", estudiante.Cedula);
             cmd.Parameters.AddWithValue("@nombre", estudiante.NombreCompleto);
             cmd.Parameters.AddWithValue("@telefono", estudiante.Telefono);

@@ -74,5 +74,16 @@ namespace CapaDatos
             cmd.Parameters.AddWithValue("@codigo", codigo.Trim());
             return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
         }
+       
+        public void Actualizar(Grupo grupo)
+        {
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            using var cmd = new MySqlCommand(
+                "UPDATE Grupos SET Nombre = @nombre, FechaInicio = @inicio WHERE Id = @id", conn);
+            cmd.Parameters.AddWithValue("@nombre", grupo.Nombre ?? (object)System.DBNull.Value);
+            cmd.Parameters.AddWithValue("@inicio", grupo.FechaInicio);
+            cmd.Parameters.AddWithValue("@id", grupo.Id);
+            cmd.ExecuteNonQuery();
+        }
     }
 }

@@ -9,24 +9,24 @@ namespace Entidades
         public string EstudianteCedula { get; set; } = string.Empty;
         public int InscripcionId { get; set; }
         public int ConceptoId { get; set; }
-        public DateTime FechaPago { get; set; }
-        public DateTime FechaVencimiento { get; set; }
         public decimal Total { get; set; }
         public decimal TotalEnVes { get; set; }
         public string MonedaCodigo { get; set; } = string.Empty;
         public string UsuarioRegistra { get; set; } = string.Empty;
+        public DateTime FechaVencimiento { get; set; }
+        public DateTime FechaPago { get; set; }
         public string Estado { get; set; } = "Vigente";
         public string? Observaciones { get; set; }
-
-        // Propiedades de UI (Traídas por los JOINs)
         public string NombreEstudiante { get; set; } = string.Empty;
         public string CursoHorario { get; set; } = string.Empty;
+        public string Referencia { get; set; } = string.Empty; // <-- NUEVA PROPIEDAD
+
         public string MonedaUI => MonedaCodigo == "BCV" ? "$" : MonedaCodigo;
 
         public Pago() { }
 
         public Pago(string numeroRecibo, string estudianteCedula, int inscripcionId, int conceptoId,
-            decimal total, string monedaCodigo, string usuarioRegistra, DateTime fechaVencimiento)
+                    decimal total, string monedaCodigo, string usuarioRegistra, DateTime fechaVencimiento)
         {
             NumeroRecibo = numeroRecibo;
             EstudianteCedula = estudianteCedula;
@@ -35,8 +35,8 @@ namespace Entidades
             Total = total;
             MonedaCodigo = monedaCodigo;
             UsuarioRegistra = usuarioRegistra;
-            FechaPago = DateTime.Now;
             FechaVencimiento = fechaVencimiento;
+            FechaPago = DateTime.Now;
         }
     }
 }

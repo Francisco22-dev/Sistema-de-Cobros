@@ -332,16 +332,15 @@ namespace Sistema_de_Cobros_2._0
             txtCursoModalOrigen.Text = $"Curso que abandona: {_seleccionada.CursoNombre} (Grupo: [{_seleccionada.GrupoCodigo}])";
             txtCursoModalClases.Text = $"Clases pagadas en este curso: {_clasesPagadasOrigen} clases ({balance.TotalPagadoClasesUSD:N2} $)";
 
+            // BLOQUEO ESTRICTO: Si debe clases vistas, se alerta en rojo
             if (_deudaActualOrigen > 0)
             {
                 bdrAlertaDeuda.Visibility = Visibility.Visible;
-                txtAlertaDeudaDetalle.Text = $"Presenta una deuda pendiente de {_deudaActualOrigen:N2} $ ({balance.ClasesVistas} clases vistas).";
-                chkPerdonarDeuda.IsChecked = false;
+                txtAlertaDeudaDetalle.Text = $"Presenta una deuda pendiente de {_deudaActualOrigen:N2} $ ({balance.ClasesVistas} clases impartidas vistas sin pagar).";
             }
             else
             {
                 bdrAlertaDeuda.Visibility = Visibility.Collapsed;
-                chkPerdonarDeuda.IsChecked = false;
             }
 
             bool esAdmin = SesionService.Instancia.EsAdministrador();
@@ -357,6 +356,72 @@ namespace Sistema_de_Cobros_2._0
 
             ActualizarCondicionesClases();
             modalCambioCurso.Visibility = Visibility.Visible;
+        }
+
+        private void BtnConfirmarCambioCurso_Click(object sender, RoutedEventArgs e)
+        {
+            if (_seleccionada == null) return;
+
+            // REGLA ESTRICTA: NO SE PERMITE TRASLADAR SI DEBE CLASES VISTAS
+            if (_deudaActualOrigen > 0)
+            {
+                AlertaWindow.MostrarError(
+                    $"TRASLADO BLOQUEADO:\n\nEl estudiante adeuda {_deudaActualOrigen:N2} $ por clases ya vistas en '{_seleccionada.CursoNombre}'.\n\nEs obligatorio que el estudiante pague las clases vistas en caja antes de realizar el cambio de carrera.");
+                return;
+            }
+
+            if (cmbCursoModalNuevoCurso.SelectedItem is not Curso cursoNuevo ||
+                cmbCursoModalNuevoGrupo.SelectedItem is not GrupoComboItem grupoNuevo)
+            {
+                AlertaWindow.MostrarAdvertencia("Debe seleccionar la nueva carrera y el horario correspondiente.");
+                return;
+            }
+
+            string motivo = txtCursoModalMotivo.Text.Trim();
+            if (string.IsNullOrWhiteSpace(motivo) || motivo.Length < 4)
+            {
+                AlertaWindow.MostrarAdvertencia("Debe indicar el motivo del cambio de carrera (mínimo 4 caracteres).");
+                return;
+            }
+
+            string adminAutoriza = SesionService.Instancia.UsuarioActual?.Username ?? "Admin";
+            if (!SesionService.Instancia.EsAdministrador())
+            {
+                string userAdmin = txtAdminUser.Text.Trim();
+                string passAdmin = txtAdminPass.Password;
+
+                if (!_usuarioService.ValidarCredenciales(userAdmin, passAdmin, out var usuarioAdmin) ||
+                    (usuarioAdmin!.Rol != "Admin" && usuarioAdmin.Rol != "Programador"))
+                {
+                    AlertaWindow.MostrarError("Autorización rechazada: Credenciales de Administrador incorrectas.");
+                    return;
+                }
+                adminAutoriza = usuarioAdmin.Username;
+            }
+
+            try
+            {
+                bool cobrarDiferencia = chkCobrarDiferencia.IsChecked == true;
+
+                _inscripcionService.ProcesarCambioCursoPorClases(
+                    _seleccionada,
+                    grupoNuevo.Id,
+                    grupoNuevo.Codigo,
+                    cursoNuevo,
+                    _clasesPagadasOrigen,
+                    cobrarDiferencia,
+                    _precioClaseOrigen,
+                    motivo,
+                    adminAutoriza);
+
+                AlertaWindow.MostrarExito($"Cambio de carrera procesado hacia '{cursoNuevo.Nombre}'. Se reconocieron {_clasesPagadasOrigen} clases.");
+                modalCambioCurso.Visibility = Visibility.Collapsed;
+                CargarInscripciones();
+            }
+            catch (Exception ex)
+            {
+                AlertaWindow.MostrarError($"Error al cambiar de curso: {ex.Message}");
+            }
         }
 
         private void CmbCursoModalNuevoCurso_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -412,76 +477,7 @@ namespace Sistema_de_Cobros_2._0
 
         private void BtnCerrarModalCambioCurso_Click(object sender, RoutedEventArgs e) => modalCambioCurso.Visibility = Visibility.Collapsed;
 
-        private void BtnConfirmarCambioCurso_Click(object sender, RoutedEventArgs e)
-        {
-            if (_seleccionada == null) return;
-
-            if (cmbCursoModalNuevoCurso.SelectedItem is not Curso cursoNuevo ||
-                cmbCursoModalNuevoGrupo.SelectedItem is not GrupoComboItem grupoNuevo)
-            {
-                AlertaWindow.MostrarAdvertencia("Debe seleccionar la nueva carrera y el horario correspondiente.");
-                return;
-            }
-
-            string motivo = txtCursoModalMotivo.Text.Trim();
-            if (string.IsNullOrWhiteSpace(motivo) || motivo.Length < 4)
-            {
-                AlertaWindow.MostrarAdvertencia("Debe indicar el motivo del cambio de carrera (mínimo 4 caracteres).");
-                return;
-            }
-
-            string adminAutoriza = SesionService.Instancia.UsuarioActual?.Username ?? "Admin";
-            if (!SesionService.Instancia.EsAdministrador())
-            {
-                string userAdmin = txtAdminUser.Text.Trim();
-                string passAdmin = txtAdminPass.Password;
-
-                if (!_usuarioService.ValidarCredenciales(userAdmin, passAdmin, out var usuarioAdmin) ||
-                    (usuarioAdmin!.Rol != "Admin" && usuarioAdmin.Rol != "Programador"))
-                {
-                    AlertaWindow.MostrarError("Autorización rechazada: Credenciales de Administrador incorrectas.");
-                    return;
-                }
-                adminAutoriza = usuarioAdmin.Username;
-            }
-
-            bool perdonar = chkPerdonarDeuda.IsChecked == true;
-            if (_deudaActualOrigen > 0)
-            {
-                string msg = perdonar
-                    ? $"El alumno adeuda {_deudaActualOrigen:N2} $. Ha elegido PERDONAR la deuda.\n¿Confirma condonar este monto?"
-                    : $"El alumno adeuda {_deudaActualOrigen:N2} $. La deuda NO será perdonada y quedará asentada.\n¿Desea continuar?";
-
-                if (!AlertaWindow.SolicitarConfirmacion(msg, "Gestión de Deuda"))
-                    return;
-            }
-
-            try
-            {
-                bool cobrarDiferencia = chkCobrarDiferencia.IsChecked == true;
-
-                _inscripcionService.ProcesarCambioCursoPorClases(
-                    _seleccionada,
-                    grupoNuevo.Id,
-                    grupoNuevo.Codigo,
-                    cursoNuevo,
-                    _clasesPagadasOrigen,
-                    cobrarDiferencia,
-                    _precioClaseOrigen,
-                    perdonar,
-                    _deudaActualOrigen,
-                    motivo,
-                    adminAutoriza);
-
-                AlertaWindow.MostrarExito($"Cambio de carrera procesado hacia '{cursoNuevo.Nombre}'. Se reconocieron {_clasesPagadasOrigen} clases.");
-                modalCambioCurso.Visibility = Visibility.Collapsed;
-                CargarInscripciones();
-            }
-            catch (Exception ex)
-            {
-                AlertaWindow.MostrarError($"Error al cambiar de curso: {ex.Message}");
-            }
-        }
+        
 
         // ========================================================
         // GESTIÓN DE ESTADOS (DESERTORES / SUSPENSIONES)

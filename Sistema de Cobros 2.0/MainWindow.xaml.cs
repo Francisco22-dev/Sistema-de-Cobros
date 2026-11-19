@@ -441,10 +441,43 @@ namespace Sistema_de_Cobros_2._0
             new EstudiantesWindow { Owner = this }.ShowDialog();
             CargarEstudiantes();
         }
+        // Agrega este método en MainWindow.xaml.cs:
 
+        private void CmbEstudiante_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            // Si el usuario acaba de seleccionar un alumno de la lista, no re-filtrar
+            if (cmbEstudiante.SelectedItem is InscripcionInfo sel && cmbEstudiante.Text == sel.Display)
+                return;
+
+            string filtro = cmbEstudiante.Text.Trim();
+            var view = System.Windows.Data.CollectionViewSource.GetDefaultView(cmbEstudiante.ItemsSource);
+            if (view == null) return;
+
+            if (string.IsNullOrWhiteSpace(filtro))
+            {
+                view.Filter = null;
+            }
+            else
+            {
+                // Filtra simultáneamente por Cédula, Nombre, Curso o Grupo en tiempo real
+                view.Filter = item =>
+                {
+                    if (item is InscripcionInfo info)
+                    {
+                        return info.Cedula.Contains(filtro, StringComparison.OrdinalIgnoreCase) ||
+                               info.NombreCompleto.Contains(filtro, StringComparison.OrdinalIgnoreCase) ||
+                               info.CursoNombre.Contains(filtro, StringComparison.OrdinalIgnoreCase) ||
+                               info.GrupoCodigo.Contains(filtro, StringComparison.OrdinalIgnoreCase);
+                    }
+                    return false;
+                };
+            }
+
+            cmbEstudiante.IsDropDownOpen = true;
+        }
         // --- ACCIONES EN EL HISTORIAL (DATA GRID) ---
 
-        
+
         private void BtnDevolver_Click(object sender, RoutedEventArgs e)
         {
             if (sender is FrameworkElement element && element.DataContext is Pago pagoSeleccionado)

@@ -89,18 +89,34 @@
 
                 <TextBlock x:Name="txtTituloHorarios" Text="Seleccione un Curso..." FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
 
-                <DataGrid x:Name="dgHorarios" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True">
+                <!-- SELECCIÓN HABILITADA PARA EDITAR HORARIO -->
+                <DataGrid x:Name="dgHorarios" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" 
+                  SelectionChanged="DgHorarios_SelectionChanged">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Cód. Auto" Binding="{Binding Codigo}" Width="100"/>
+                        <DataGridTextColumn Header="Código" Binding="{Binding Codigo}" Width="100">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                    <Setter Property="Foreground" Value="#1976D2"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
                         <DataGridTextColumn Header="Horario Asignado" Binding="{Binding Nombre}" Width="*"/>
-                        <DataGridTextColumn Header="Inicia" Binding="{Binding FechaInicio, StringFormat=dd/MM/yyyy}" Width="80"/>
+                        <DataGridTextColumn Header="Inicia" Binding="{Binding FechaInicio, StringFormat=dd/MM/yyyy}" Width="90"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
+                <!-- PANEL DE CREACIÓN / EDICIÓN -->
                 <StackPanel Grid.Row="2" Margin="0,15,0,0" IsEnabled="False" x:Name="panelHorarios">
-                    <TextBlock Text="Agregar Horario / Grupo al Curso" FontWeight="SemiBold" Foreground="#4CAF50" Margin="0,0,0,10"/>
+                    <Grid Margin="0,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="txtTituloPanelHorario" Text="Agregar Horario / Grupo al Curso" FontWeight="SemiBold" Foreground="#4CAF50" VerticalAlignment="Center"/>
+                        <Button x:Name="btnCancelarEdicionHorario" Grid.Column="1" Content="✕ Nuevo Horario" Background="#E5E7EB" Foreground="#555" FontWeight="SemiBold" Padding="8,3" BorderThickness="0" Cursor="Hand" Visibility="Collapsed" Click="BtnCancelarEdicionHorario_Click"/>
+                    </Grid>
 
-                    <!-- CAMPO EDITABLE DE CÓDIGO (CON SUGERENCIA AUTOMÁTICA) -->
                     <TextBlock Text="Código del Grupo / Cohorte (Ej: AAD2610)" FontSize="11" Foreground="#666"/>
                     <TextBox x:Name="txtCodigoGrupo" Padding="6" BorderBrush="#ccc" BorderThickness="1" Margin="0,2,0,8" FontWeight="SemiBold"/>
 
@@ -129,7 +145,7 @@
                     <TextBlock Text="Fecha Oficial de Inicio" FontSize="11" Foreground="#666"/>
                     <DatePicker x:Name="dpFechaInicio" Margin="0,2,0,15"/>
 
-                    <Button Content="Agregar Horario (Grupo)" Background="#4CAF50" Foreground="White" Padding="10,8" BorderThickness="0" Cursor="Hand" Click="BtnAgregarHorario_Click"/>
+                    <Button x:Name="btnGuardarHorario" Content="Agregar Horario (Grupo)" Background="#4CAF50" Foreground="White" FontWeight="Bold" Padding="10,8" BorderThickness="0" Cursor="Hand" Click="BtnGuardarHorario_Click"/>
                 </StackPanel>
             </Grid>
         </Border>
