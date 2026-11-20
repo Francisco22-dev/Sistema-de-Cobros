@@ -23,7 +23,7 @@ namespace CapaNegocio
             return $"{cursoCodigo.Trim().ToUpper()}{anioDosDigitos}{cuenta:D2}";
         }
 
-        public void GuardarHorario(string cursoCodigo, string codigoGrupo, string nombreHorario, DateTime fechaInicio)
+        public void GuardarHorario(string cursoCodigo, string codigoGrupo, string nombreHorario, DateTime fechaInicio, decimal? precioInscripcion, decimal? precioClase)
         {
             codigoGrupo = codigoGrupo.Trim().ToUpper();
 
@@ -36,6 +36,8 @@ namespace CapaNegocio
             var grupo = new Grupo(cursoCodigo, codigoGrupo, fechaInicio)
             {
                 Nombre = nombreHorario,
+                PrecioInscripcion = precioInscripcion,
+                PrecioMensualidad = precioClase,
                 Activo = true,
                 Estado = "Planificado"
             };
@@ -43,7 +45,7 @@ namespace CapaNegocio
             try
             {
                 _repository.Agregar(grupo);
-                _auditoria.Registrar("INSERT", "Grupos", codigoGrupo, null, $"Horario: {nombreHorario}, Inicio: {fechaInicio:d}", true);
+                _auditoria.Registrar("INSERT", "Grupos", codigoGrupo, null, $"Horario: {nombreHorario}, Inicio: {fechaInicio:d}, Precio Clase: {precioClase}", true);
             }
             catch (Exception ex)
             {
@@ -51,7 +53,7 @@ namespace CapaNegocio
                 throw;
             }
         }
-       
+
         private readonly CalendarioRepository _calendarioRepo = new CalendarioRepository();
 
         public void ActualizarHorario(Grupo grupo, bool cambioFechaInicio)

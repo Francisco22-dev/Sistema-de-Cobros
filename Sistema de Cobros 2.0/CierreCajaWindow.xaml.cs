@@ -1,13 +1,14 @@
-﻿using System;
+﻿using CapaNegocio;
+using Entidades;
+using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows;
-using Microsoft.Win32;
-using CapaNegocio;
-using Entidades;
 
 namespace Sistema_de_Cobros_2._0
 {
@@ -84,6 +85,19 @@ namespace Sistema_de_Cobros_2._0
             }
 
             string nombrePdf = $"Arqueo_{DateTime.Now:yyyyMMdd_HHmm}.pdf";
+            return Path.Combine(carpeta, nombrePdf);
+        }
+        private string ObtenerRutaDestinoHtml()
+        {
+            string escritorio = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            string carpeta = Path.Combine(escritorio, "arqueo de caja");
+
+            if (!Directory.Exists(carpeta))
+            {
+                Directory.CreateDirectory(carpeta);
+            }
+
+            string nombrePdf = $"Arqueo_{DateTime.Now:yyyyMMdd_HHmm}.html";
             return Path.Combine(carpeta, nombrePdf);
         }
 
@@ -196,21 +210,88 @@ namespace Sistema_de_Cobros_2._0
             printDoc.Print();
         }
 
+        private void GenerarHtmlArqueo(string rutaArchivoHtml)
+        {
+            try
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine("<!DOCTYPE html><html><head><meta charset='utf-8'><title>Arqueo de Caja</title>");
+                sb.AppendLine("<style>");
+                sb.AppendLine("body { font-family: Arial, sans-serif; max-width: 650px; margin: 20px auto; padding: 25px; border: 1px solid #ddd; border-radius: 8px; }");
+                sb.AppendLine("h2, h3 { text-align: center; margin: 4px 0; color: #1565C0; }");
+                sb.AppendLine(".divider { border-top: 2px solid #1565C0; margin: 15px 0; }");
+                sb.AppendLine(".row { display: flex; justify-content: space-between; margin: 6px 0; font-size: 13px; }");
+                sb.AppendLine(".bold { font-weight: bold; }");
+                sb.AppendLine(".badge { background: #e3f2fd; padding: 10px; border-radius: 6px; font-weight: bold; color: #0d47a1; margin-bottom: 15px; }");
+                sb.AppendLine(".section { font-weight: bold; color: #333; margin-top: 15px; font-size: 14px; }");
+                sb.AppendLine("table { width: 100%; border-collapse: collapse; margin-top: 8px; }");
+                sb.AppendLine("th, td { text-align: left; padding: 6px; border-bottom: 1px solid #eee; font-size: 13px; }");
+                sb.AppendLine("th { background: #f8f9fa; }");
+                sb.AppendLine("</style></head><body>");
+
+                sb.AppendLine("<h2>CEVENCA</h2>");
+                sb.AppendLine("<h3 style='font-size:12px; color:#666;'>Rif: J-507629082 | Registro MPPE: 0016-1904</h3>");
+                sb.AppendLine("<h3 style='color:#333; font-size:15px;'>ARQUEO Y CIERRE OFICIAL DE CAJA</h3>");
+                sb.AppendLine("<div class='divider'></div>");
+
+                sb.AppendLine($"<div class='badge'>{txtFondoInicial.Text}</div>");
+
+                sb.AppendLine($"<div class='row'><span>Fecha Apertura:</span><span class='bold'>{_cajaActual?.FechaApertura:dd/MM/yyyy hh:mm tt}</span></div>");
+                sb.AppendLine($"<div class='row'><span>Fecha Cierre:</span><span class='bold'>{DateTime.Now:dd/MM/yyyy hh:mm tt}</span></div>");
+                sb.AppendLine($"<div class='row'><span>Cajero Turno:</span><span class='bold'>{_cajaActual?.UsuarioApertura}</span></div>");
+
+                sb.AppendLine("<div class='section'>INGRESOS RECAUDADOS EN EL TURNO</div>");
+                sb.AppendLine("<table><tr><th>Método de Pago</th><th>Moneda</th><th style='text-align:right;'>Monto</th></tr>");
+                foreach (var item in _arqueoItems)
+                {
+                    sb.AppendLine($"<tr><td>{item.Metodo}</td><td>{item.Moneda}</td><td style='text-align:right;' class='bold'>{item.Total:N2}</td></tr>");
+                }
+                sb.AppendLine("</table>");
+
+                sb.AppendLine("<div class='divider'></div>");
+                sb.AppendLine($"<div class='row bold' style='color:#e65100; font-size:14px;'><span>{txtTotalBs.Text}</span></div>");
+                sb.AppendLine($"<div class='row bold' style='color:#2e7d32; font-size:14px;'><span>{txtTotalUsd.Text}</span></div>");
+
+                sb.AppendLine("<div class='divider'></div>");
+                sb.AppendLine($"<div class='section'>{txtTotalInscripciones.Text}</div>");
+                sb.AppendLine("<ul>");
+                foreach (var ins in _inscripcionesPorCurso)
+                {
+                    sb.AppendLine($"<li><b>{ins.Curso}:</b> {ins.Cantidad} alumno(s)</li>");
+                }
+                sb.AppendLine("</ul>");
+
+                sb.AppendLine("<br><br><div class='row' style='margin-top:40px; text-align:center;'>");
+                sb.AppendLine("<div style='width:45%; border-top:1px solid #333;'>Firma Cajero</div>");
+                sb.AppendLine("<div style='width:45%; border-top:1px solid #333;'>Firma Administración</div>");
+                sb.AppendLine("</div>");
+
+                sb.AppendLine("</body></html>");
+
+                File.WriteAllText(rutaArchivoHtml, sb.ToString(), Encoding.UTF8);
+            }
+            catch { }
+        }
+
         private void BtnExportarDigital_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 string rutaPdf = ObtenerRutaDestinoPdf();
-                GenerarPdfArqueo(rutaPdf);
-                _arqueoImpresoManualmente = true; // Se marca como impreso manualmente
+                string rutaHtml = Path.ChangeExtension(rutaPdf, ".html");
 
-                AlertaWindow.MostrarExito($"Arqueo guardado en PDF exitosamente en el Escritorio:\n{rutaPdf}");
+                // Genera simultáneamente el PDF y el HTML de respaldo
+                GenerarPdfArqueo(rutaPdf);
+                GenerarHtmlArqueo(rutaHtml);
+                _arqueoImpresoManualmente = true;
+
+                AlertaWindow.MostrarExito($"Arqueo guardado exitosamente en el Escritorio:\n• PDF: {Path.GetFileName(rutaPdf)}\n• Respaldo HTML: {Path.GetFileName(rutaHtml)}");
 
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = rutaPdf, UseShellExecute = true });
             }
             catch (Exception ex)
             {
-                AlertaWindow.MostrarError($"Error al generar el PDF del arqueo:\n{ex.Message}");
+                AlertaWindow.MostrarError($"Error al generar arqueo digital: {ex.Message}");
             }
         }
 
@@ -221,11 +302,13 @@ namespace Sistema_de_Cobros_2._0
                 try
                 {
                     string rutaPdf = ObtenerRutaDestinoPdf();
+                    string rutaArchivoHtml = ObtenerRutaDestinoHtml();
 
                     // Regla: Solo genera el PDF al cerrar si el usuario NO lo imprimió antes manualmente
                     if (!_arqueoImpresoManualmente)
                     {
                         GenerarPdfArqueo(rutaPdf);
+                        GenerarHtmlArqueo(rutaArchivoHtml);
                     }
 
                     _cajaService.CerrarCaja();

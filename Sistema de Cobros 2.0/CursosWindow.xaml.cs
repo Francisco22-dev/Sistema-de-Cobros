@@ -48,6 +48,8 @@ namespace Sistema_de_Cobros_2._0
                 txtMeses.Text = (curso.DuracionSemanas / 4).ToString();
                 txtPrecioInsc.Text = curso.PrecioInscripcion.ToString();
                 txtPrecioClase.Text = curso.PrecioMensualidad.ToString();
+                txtPrecioInscGrupo.Text = curso.PrecioInscripcion.ToString("N2");
+                txtPrecioClaseGrupo.Text = curso.PrecioMensualidad.ToString("N2");
 
                 btnActivarCurso.Visibility = Visibility.Visible;
                 btnActivarCurso.Content = curso.Activo ? "Desactivar" : "Activar";
@@ -100,6 +102,8 @@ namespace Sistema_de_Cobros_2._0
                 txtCodigoGrupo.Text = grupo.Codigo;
                 txtCodigoGrupo.IsEnabled = false; // El código único no se altera
                 dpFechaInicio.SelectedDate = grupo.FechaInicio;
+                txtPrecioInscGrupo.Text = (grupo.PrecioInscripcion ?? _cursoSeleccionado?.PrecioInscripcion ?? 0m).ToString("N2");
+                txtPrecioClaseGrupo.Text = (grupo.PrecioMensualidad ?? _cursoSeleccionado?.PrecioMensualidad ?? 0m).ToString("N2");
 
                 // Intentar coincidir los desplegables con el texto del nombre
                 string nombre = grupo.Nombre ?? "";
@@ -147,10 +151,13 @@ namespace Sistema_de_Cobros_2._0
 
             try
             {
+                var cultura = new CultureInfo("es-VE");
+                decimal.TryParse(txtPrecioInscGrupo.Text.Trim(), NumberStyles.Any, cultura, out decimal pInscGrupo);
+                decimal.TryParse(txtPrecioClaseGrupo.Text.Trim(), NumberStyles.Any, cultura, out decimal pClaseGrupo);
                 if (_grupoSeleccionado == null)
                 {
                     // CREAR NUEVO
-                    _grupoService.GuardarHorario(_cursoSeleccionado.Codigo, codigoGrupo, horarioConcat, fechaNueva);
+                    _grupoService.GuardarHorario(_cursoSeleccionado.Codigo, codigoGrupo, horarioConcat, fechaNueva, pInscGrupo, pClaseGrupo);
                     AlertaWindow.MostrarExito($"Grupo '{codigoGrupo}' creado exitosamente.");
                 }
                 else
@@ -159,6 +166,8 @@ namespace Sistema_de_Cobros_2._0
                     bool cambioFecha = _grupoSeleccionado.FechaInicio.Date != fechaNueva.Date;
                     _grupoSeleccionado.Nombre = horarioConcat;
                     _grupoSeleccionado.FechaInicio = fechaNueva;
+                    _grupoSeleccionado.PrecioInscripcion = pInscGrupo;
+                    _grupoSeleccionado.PrecioMensualidad = pClaseGrupo;
 
                     _grupoService.ActualizarHorario(_grupoSeleccionado, cambioFecha);
 

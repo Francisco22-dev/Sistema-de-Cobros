@@ -43,5 +43,27 @@ namespace CapaNegocio
                 throw;
             }
         }
+        public Pago? BuscarPagoParaDevolucion(string numeroRecibo)
+        {
+            return _repository.ObtenerPagoPorRecibo(numeroRecibo);
+        }
+
+        public void AnularReciboYReembolsar(string numeroRecibo, string motivo, string metodoSalida)
+        {
+            var pago = _repository.ObtenerPagoPorRecibo(numeroRecibo);
+            if (pago == null)
+                throw new InvalidOperationException($"No se encontró ningún recibo con el número '{numeroRecibo}'.");
+
+            if (pago.Estado == "Devuelto" || pago.Estado == "Anulado")
+                throw new InvalidOperationException($"El recibo '{numeroRecibo}' ya se encuentra devuelto o anulado.");
+
+            // Procesa la devolución atómica (Cambia Estado a 'Devuelto' e inserta en Devoluciones)
+            RealizarDevolucion(pago, motivo);
+
+            // Registra la salida física del dinero en la caja
+            var movService = new MovimientoCajaService();
+            string monSalida = pago.MonedaCodigo == "BCV" ? "BCV" : "BS";
+            movService.RegistrarEgreso(pago.Total, monSalida, "Devolución de Pago", $"Reembolso Recibo {numeroRecibo} - Motivo: {motivo}", metodoSalida);
+        }
     }
 }

@@ -14,7 +14,10 @@
         public string Estado { get; set; } = "Activa";
         public string? Observaciones { get; set; }
 
-        // Formato optimizado: Cédula y Nombre al inicio para búsqueda instantánea
+        // Muestra ÚNICAMENTE el curso y horario (sin cédula ni nombre repetido)
+        public string CursoHorarioSolo => $"{CursoNombre} ({GrupoNombre})";
+
+        // Formato para el desplegable de facturación
         public string Display => $"{Cedula} - {NombreCompleto} • [{CursoNombre.ToUpper()}] ({GrupoNombre})";
     }
 }

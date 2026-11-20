@@ -2,9 +2,6 @@ using System;
 
 namespace Entidades
 {
-    /// <summary>
-    /// Representa un grupo/cohorte específico de un curso.
-    /// </summary>
     public class Grupo
     {
         public int Id { get; set; }
@@ -13,6 +10,8 @@ namespace Entidades
         public string? Nombre { get; set; }
         public DateTime FechaInicio { get; set; }
         public DateTime? FechaFin { get; set; }
+        public decimal? PrecioInscripcion { get; set; }
+        public decimal? PrecioMensualidad { get; set; }
         public string Estado { get; set; }
         public bool Activo { get; set; }
 

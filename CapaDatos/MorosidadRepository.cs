@@ -31,12 +31,12 @@ namespace CapaDatos
             // 2. Consulta con Código de Grupo y concatenación limpia
             string query = @"
         SELECT 
-            e.Cedula, e.NombreCompleto, e.Telefono,
-            c.Codigo AS CursoCodigo,
-            c.Nombre AS CursoNombre,
-            g.Codigo AS GrupoCodigo,
-            CONCAT(c.Nombre, ' (', g.Codigo, ')') AS CursoConGrupo,
-            c.PrecioMensualidad AS PrecioClase,
+           e.Cedula, e.NombreCompleto, e.Telefono,
+    c.Codigo AS CursoCodigo,
+    c.Nombre AS CursoNombre,
+    g.Codigo AS GrupoCodigo,
+    CONCAT(c.Nombre, ' (', g.Codigo, ')') AS CursoConGrupo,
+    COALESCE(g.PrecioMensualidad, c.PrecioMensualidad) AS PrecioClase,
             
             (SELECT COUNT(*) FROM CalendarioClases cc WHERE cc.GrupoId = i.GrupoId AND cc.FechaClase <= @hoy AND cc.Estado NOT IN ('Nula', 'Festivo')) AS ClasesImpartidas,
             

@@ -19,6 +19,8 @@ namespace CapaDatos
                 {
                     Id = reader.GetInt32("Id"),
                     Nombre = reader.IsDBNull(reader.GetOrdinal("Nombre")) ? "" : reader.GetString("Nombre"),
+                    PrecioInscripcion = reader.IsDBNull(reader.GetOrdinal("PrecioInscripcion")) ? null : reader.GetDecimal("PrecioInscripcion"),
+                    PrecioMensualidad = reader.IsDBNull(reader.GetOrdinal("PrecioMensualidad")) ? null : reader.GetDecimal("PrecioMensualidad"),
                     Estado = reader.GetString("Estado"),
                     Activo = reader.GetBoolean("Activo")
                 });
@@ -49,12 +51,14 @@ namespace CapaDatos
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
             using var cmd = new MySqlCommand(
-                "INSERT INTO Grupos (CursoCodigo, Codigo, Nombre, FechaInicio, Estado, Activo) " +
-                "VALUES (@curso, @codigo, @nombre, @inicio, @estado, @activo)", conn);
+                "INSERT INTO Grupos (CursoCodigo, Codigo, Nombre, FechaInicio, PrecioInscripcion, PrecioMensualidad, Estado, Activo) " +
+                "VALUES (@curso, @codigo, @nombre, @inicio, @pInsc, @pClase, @estado, @activo)", conn);
             cmd.Parameters.AddWithValue("@curso", grupo.CursoCodigo);
             cmd.Parameters.AddWithValue("@codigo", grupo.Codigo);
             cmd.Parameters.AddWithValue("@nombre", grupo.Nombre ?? (object)System.DBNull.Value);
             cmd.Parameters.AddWithValue("@inicio", grupo.FechaInicio);
+            cmd.Parameters.AddWithValue("@pInsc", grupo.PrecioInscripcion ?? (object)System.DBNull.Value);
+            cmd.Parameters.AddWithValue("@pClase", grupo.PrecioMensualidad ?? (object)System.DBNull.Value);
             cmd.Parameters.AddWithValue("@estado", grupo.Estado);
             cmd.Parameters.AddWithValue("@activo", grupo.Activo);
             cmd.ExecuteNonQuery();
@@ -74,14 +78,18 @@ namespace CapaDatos
             cmd.Parameters.AddWithValue("@codigo", codigo.Trim());
             return Convert.ToInt32(cmd.ExecuteScalar()) > 0;
         }
-       
+
         public void Actualizar(Grupo grupo)
         {
             using var conn = DatabaseConnection.AbrirConexionConReintento();
             using var cmd = new MySqlCommand(
-                "UPDATE Grupos SET Nombre = @nombre, FechaInicio = @inicio WHERE Id = @id", conn);
+                "UPDATE Grupos SET Nombre = @nombre, FechaInicio = @inicio, " +
+                "PrecioInscripcion = @pInsc, PrecioMensualidad = @pClase " +
+                "WHERE Id = @id", conn);
             cmd.Parameters.AddWithValue("@nombre", grupo.Nombre ?? (object)System.DBNull.Value);
             cmd.Parameters.AddWithValue("@inicio", grupo.FechaInicio);
+            cmd.Parameters.AddWithValue("@pInsc", grupo.PrecioInscripcion ?? (object)System.DBNull.Value);
+            cmd.Parameters.AddWithValue("@pClase", grupo.PrecioMensualidad ?? (object)System.DBNull.Value);
             cmd.Parameters.AddWithValue("@id", grupo.Id);
             cmd.ExecuteNonQuery();
         }

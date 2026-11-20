@@ -91,7 +91,7 @@
                                         </Style>
                                     </DataGridTextColumn.ElementStyle>
                                 </DataGridTextColumn>
-                                <DataGridTextColumn Header="Curso y Horario" Binding="{Binding Display}" Width="250"/>
+                                <DataGridTextColumn Header="Curso y Horario" Binding="{Binding CursoHorarioSolo}" Width="250"/>
                                 <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Width="90">
                                     <DataGridTextColumn.ElementStyle>
                                         <Style TargetType="TextBlock">

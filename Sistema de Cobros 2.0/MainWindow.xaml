@@ -255,7 +255,7 @@
                 </ScrollViewer>
             </Border>
 
-            <!-- PANEL DERECHO: HISTORIAL DE PAGOS Y REIMPRESIÓN -->
+            <!-- PANEL DERECHO: HISTORIAL DE PAGOS, COPIADO Y REIMPRESIÓN -->
             <Border Grid.Column="1" Background="White" CornerRadius="10" Padding="20">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.1"/>
@@ -278,25 +278,41 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="Buscar:" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="#666" FontWeight="SemiBold"/>
                             <TextBox x:Name="txtBuscarPago" Width="180" Style="{StaticResource ModernTextBox}" 
-                                     Margin="0,0,6,0" KeyDown="TxtBuscarPago_KeyDown"/>
+                         Margin="0,0,6,0" KeyDown="TxtBuscarPago_KeyDown"/>
 
                             <Button x:Name="btnBuscarPago" Content="Buscar" Style="{StaticResource BotonRedondeado}" 
-                                    Background="{StaticResource Primary}" Foreground="White" FontWeight="Bold" 
-                                    Padding="12,7" Click="BtnBuscarPago_Click"/>
+                        Background="{StaticResource Primary}" Foreground="White" FontWeight="Bold" 
+                        Padding="12,7" Click="BtnBuscarPago_Click"/>
 
                             <Button x:Name="btnLimpiarBuscarPago" Content="✕" Style="{StaticResource BotonRedondeado}" 
-                                    Background="#E5E7EB" Foreground="#555" FontWeight="Bold" 
-                                    Padding="8,7" Margin="5,0,0,0" ToolTip="Limpiar búsqueda" 
-                                    Click="BtnLimpiarBuscarPago_Click"/>
+                        Background="#E5E7EB" Foreground="#555" FontWeight="Bold" 
+                        Padding="8,7" Margin="5,0,0,0" ToolTip="Limpiar búsqueda" 
+                        Click="BtnLimpiarBuscarPago_Click"/>
                         </StackPanel>
                     </Grid>
 
-                    <!-- TABLA DE HISTORIAL CON COLUMNA DE REIMPRESIÓN DENTRO DE COLUMNS -->
+                    <!-- TABLA DE HISTORIAL CON MENÚ DE CLIC DERECHO Y COLUMNA ESTADO OCULTA -->
                     <DataGrid Grid.Row="1" x:Name="dgHistorial" AutoGenerateColumns="False" IsReadOnly="True" 
-                              GridLinesVisibility="None" BorderThickness="1" BorderBrush="#E5E7EB" 
-                              Background="Transparent" RowBackground="White" AlternatingRowBackground="#F9FAFB" 
-                              HeadersVisibility="Column" SelectionChanged="DgHistorial_SelectionChanged">
+                  GridLinesVisibility="None" BorderThickness="1" BorderBrush="#E5E7EB" 
+                  Background="Transparent" RowBackground="White" AlternatingRowBackground="#F9FAFB" 
+                  HeadersVisibility="Column" SelectionChanged="DgHistorial_SelectionChanged">
+
+                        <!-- MENÚ DE CLIC DERECHO (CONTEXT MENU) PARA COPIAR RÁPIDO -->
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="📋 Copiar Número de Recibo" FontWeight="Bold" Click="MenuCopiarRecibo_Click"/>
+                                <MenuItem Header="📋 Copiar Cédula del Alumno" Click="MenuCopiarCedula_Click"/>
+                                <MenuItem Header="📋 Copiar Referencia Bancaria" Click="MenuCopiarReferencia_Click"/>
+                                <Separator/>
+                                <MenuItem Header="🖨 Imprimir en POS-80" Click="MenuImprimirFisico_Click"/>
+                                <MenuItem Header="📄 Abrir Copia Digital" Click="MenuAbrirDigital_Click"/>
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+
                         <DataGrid.Columns>
+                            <!-- COLUMNA ESTADO INVISIBLE (SEGÚN TU SOLICITUD) -->
+                            <DataGridTextColumn Header="Estado" Binding="{Binding Estado}" Visibility="Collapsed"/>
+
                             <DataGridTextColumn Header="Recibo" Binding="{Binding NumeroRecibo}" Width="110">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
@@ -317,7 +333,7 @@
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
                             <DataGridTextColumn Header="Mon." Binding="{Binding MonedaUI}" Width="50"/>
-                            <DataGridTextColumn Header="Referencia" Binding="{Binding Referencia}" Width="120">
+                            <DataGridTextColumn Header="Referencia" Binding="{Binding Referencia}" Width="115">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="FontWeight" Value="SemiBold"/>
@@ -333,11 +349,11 @@
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                             <Button Content="POS-80" Background="#4CAF50" Foreground="White" FontWeight="Bold" 
-                                                    Padding="6,3" BorderThickness="0" Margin="0,0,4,0" Cursor="Hand" 
-                                                    Click="BtnReimprimirFisico_Click" ToolTip="Imprimir ticket en POS-80"/>
+                                        Padding="6,3" BorderThickness="0" Margin="0,0,4,0" Cursor="Hand" 
+                                        Click="BtnReimprimirFisico_Click" ToolTip="Imprimir ticket en POS-80"/>
                                             <Button Content="Digital" Background="#2196F3" Foreground="White" FontWeight="Bold" 
-                                                    Padding="6,3" BorderThickness="0" Cursor="Hand" 
-                                                    Click="BtnReimprimirDigital_Click" ToolTip="Abrir / Regenerar copia digital"/>
+                                        Padding="6,3" BorderThickness="0" Cursor="Hand" 
+                                        Click="BtnReimprimirDigital_Click" ToolTip="Abrir / Regenerar copia digital"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -345,23 +361,37 @@
                         </DataGrid.Columns>
                     </DataGrid>
 
-                    <!-- BARRA INFERIOR DE ACCIÓN RÁPIDA PARA EL RECIBO SELECCIONADO -->
-                    <Border Grid.Row="2" Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1,0,1,1" Padding="12" Margin="0,0,0,0">
+                    <!-- BARRA INFERIOR CON BOTONES DE COPIADO RÁPIDO Y REIMPRESIÓN -->
+                    <Border Grid.Row="2" Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1,0,1,1" Padding="10" Margin="0,0,0,0">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock x:Name="txtReciboSeleccionadoInfo" 
-                                       Text="Seleccione un recibo de la tabla para reimprimirlo o ver su copia digital." 
-                                       VerticalAlignment="Center" Foreground="#555" FontSize="12" FontWeight="SemiBold"/>
+
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock x:Name="txtReciboSeleccionadoInfo" 
+                               Text="Seleccione un recibo de la tabla." 
+                               VerticalAlignment="Center" Foreground="#555" FontSize="11" FontWeight="SemiBold" Margin="0,0,8,0"/>
+
+                                <!-- BOTONES RÁPIDOS DE COPIADO AL PORTAPAPELES -->
+                                <Button x:Name="btnCopiarReciboBarra" Content="📋 Copiar Recibo" Style="{StaticResource BotonRedondeado}"
+                            Background="#E0E7FF" Foreground="#3730A3" FontWeight="Bold" Padding="8,4" FontSize="11" Margin="0,0,4,0"
+                            IsEnabled="False" Click="BtnCopiarReciboBarra_Click" ToolTip="Copia el número de recibo al portapapeles"/>
+
+                                <Button x:Name="btnCopiarCedulaBarra" Content="📋 Copiar Cédula" Style="{StaticResource BotonRedondeado}"
+                            Background="#E0E7FF" Foreground="#3730A3" FontWeight="Bold" Padding="8,4" FontSize="11"
+                            IsEnabled="False" Click="BtnCopiarCedulaBarra_Click" ToolTip="Copia la cédula del alumno al portapapeles"/>
+                            </StackPanel>
+
+                            <!-- BOTONES DE REIMPRESIÓN -->
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
                                 <Button x:Name="btnReimprimirFisicoBarra" Content="🖨 Imprimir en POS-80" Style="{StaticResource BotonRedondeado}" 
-                                        Background="#4CAF50" Foreground="White" FontWeight="Bold" Padding="12,6" Margin="0,0,8,0" 
-                                        IsEnabled="False" Click="BtnReimprimirFisicoBarra_Click"/>
+                            Background="#4CAF50" Foreground="White" FontWeight="Bold" Padding="10,6" Margin="0,0,6,0" 
+                            IsEnabled="False" Click="BtnReimprimirFisicoBarra_Click"/>
                                 <Button x:Name="btnReimprimirDigitalBarra" Content="📄 Abrir Copia Digital" Style="{StaticResource BotonRedondeado}" 
-                                        Background="#2196F3" Foreground="White" FontWeight="Bold" Padding="12,6" 
-                                        IsEnabled="False" Click="BtnReimprimirDigitalBarra_Click"/>
+                            Background="#2196F3" Foreground="White" FontWeight="Bold" Padding="10,6" 
+                            IsEnabled="False" Click="BtnReimprimirDigitalBarra_Click"/>
                             </StackPanel>
                         </Grid>
                     </Border>

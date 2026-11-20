@@ -67,6 +67,9 @@ namespace Sistema_de_Cobros_2._0
 
             // CARGA ASÍNCRONA: No bloquea la interfaz de Windows
             Loaded += MainWindow_Loaded;
+
+            // BLOQUEO DE CIERRE ACCIDENTAL DE VENTANA CON CAJA ABIERTA
+            Closing += MainWindow_Closing;
         }
 
         private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -519,6 +522,7 @@ namespace Sistema_de_Cobros_2._0
         // 2. Selección en la tabla de pagos
         private Pago? _pagoSeleccionadoHistorial;
 
+        // 1. Al cambiar la selección en la tabla, activar los botones de copiado y reimpresión
         private void DgHistorial_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (dgHistorial.SelectedItem is Pago p)
@@ -526,15 +530,76 @@ namespace Sistema_de_Cobros_2._0
                 _pagoSeleccionadoHistorial = p;
                 btnReimprimirFisicoBarra.IsEnabled = true;
                 btnReimprimirDigitalBarra.IsEnabled = true;
-                txtReciboSeleccionadoInfo.Text = $"Recibo: {p.NumeroRecibo} • Alumno: {p.NombreEstudiante} • Total: {p.Total:N2} {p.MonedaUI}";
+                btnCopiarReciboBarra.IsEnabled = true;
+                btnCopiarCedulaBarra.IsEnabled = true;
+                txtReciboSeleccionadoInfo.Text = $"{p.NumeroRecibo} • C.I: {p.EstudianteCedula} • {p.Total:N2} {p.MonedaUI}";
             }
             else
             {
                 _pagoSeleccionadoHistorial = null;
                 btnReimprimirFisicoBarra.IsEnabled = false;
                 btnReimprimirDigitalBarra.IsEnabled = false;
-                txtReciboSeleccionadoInfo.Text = "Seleccione un recibo de la tabla para reimprimirlo o ver su copia digital.";
+                btnCopiarReciboBarra.IsEnabled = false;
+                btnCopiarCedulaBarra.IsEnabled = false;
+                txtReciboSeleccionadoInfo.Text = "Seleccione un recibo de la tabla.";
             }
+        }
+
+        // 2. Método auxiliar de copiado seguro
+        private void CopiarAlPortapapeles(string texto, string tipoDato)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(texto)) return;
+                Clipboard.SetDataObject(texto, true);
+                AlertaWindow.MostrarExito($"¡{tipoDato} copiado al portapapeles!\n({texto})\nYa puede pegarlo con Ctrl+V.");
+            }
+            catch (Exception ex)
+            {
+                AlertaWindow.MostrarError($"No se pudo copiar al portapapeles: {ex.Message}");
+            }
+        }
+
+        // 3. Eventos de los botones de copiado de la barra inferior
+        private void BtnCopiarReciboBarra_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pagoSeleccionadoHistorial != null)
+                CopiarAlPortapapeles(_pagoSeleccionadoHistorial.NumeroRecibo, "Número de Recibo");
+        }
+
+        private void BtnCopiarCedulaBarra_Click(object sender, RoutedEventArgs e)
+        {
+            if (_pagoSeleccionadoHistorial != null)
+                CopiarAlPortapapeles(_pagoSeleccionadoHistorial.EstudianteCedula, "Cédula");
+        }
+
+        // 4. Eventos del Menú de Clic Derecho (Context Menu)
+        private void MenuCopiarRecibo_Click(object sender, RoutedEventArgs e)
+        {
+            if (dgHistorial.SelectedItem is Pago p)
+                CopiarAlPortapapeles(p.NumeroRecibo, "Número de Recibo");
+        }
+
+        private void MenuCopiarCedula_Click(object sender, RoutedEventArgs e)
+        {
+            if (dgHistorial.SelectedItem is Pago p)
+                CopiarAlPortapapeles(p.EstudianteCedula, "Cédula");
+        }
+
+        private void MenuCopiarReferencia_Click(object sender, RoutedEventArgs e)
+        {
+            if (dgHistorial.SelectedItem is Pago p)
+                CopiarAlPortapapeles(p.Referencia, "Referencia");
+        }
+
+        private void MenuImprimirFisico_Click(object sender, RoutedEventArgs e)
+        {
+            if (dgHistorial.SelectedItem is Pago p) EjecutarReimpresionFisica(p);
+        }
+
+        private void MenuAbrirDigital_Click(object sender, RoutedEventArgs e)
+        {
+            if (dgHistorial.SelectedItem is Pago p) EjecutarReimpresionDigital(p);
         }
 
         // 3. Reimpresión física
@@ -593,11 +658,34 @@ namespace Sistema_de_Cobros_2._0
 
         private void BtnCerrarSesion_Click(object sender, RoutedEventArgs e)
         {
+            // REGLA: Bloquea si la caja sigue abierta
+            var cajaAbierta = _cajaService.ObtenerCajaAbierta();
+            if (cajaAbierta != null)
+            {
+                AlertaWindow.MostrarError(
+                    "NO PUEDE CERRAR SESIÓN CON LA CAJA ABIERTA.\n\n" +
+                    "Debe realizar el Arqueo y Cierre Definitivo de Caja antes de salir del sistema.");
+                return;
+            }
+
             if (AlertaWindow.SolicitarConfirmacion("¿Está seguro de que desea cerrar la sesión actual?", "Cerrar Sesión"))
             {
                 SesionService.Instancia.CerrarSesion();
                 new LoginWindow().Show();
                 this.Close();
+            }
+        }
+        private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // Si la caja sigue abierta, bloquea el cierre accidental por la 'X' o Alt+F4
+            var cajaAbierta = _cajaService.ObtenerCajaAbierta();
+            if (cajaAbierta != null)
+            {
+                e.Cancel = true; // Cancela el cierre de la ventana
+                AlertaWindow.MostrarError(
+                    "LA APLICACIÓN NO PUEDE CERRARSE CON LA CAJA ABIERTA.\n\n" +
+                    "Debe realizar el Arqueo y Cierre Definitivo de Caja antes de salir del sistema.");
+                return;
             }
         }
     }

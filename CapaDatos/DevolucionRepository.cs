@@ -1,5 +1,6 @@
-﻿using System;
+﻿using Entidades;
 using MySqlConnector;
+using System;
 
 namespace CapaDatos
 {
@@ -38,6 +39,33 @@ namespace CapaDatos
                 transaction.Rollback();
                 throw;
             }
+        }
+        public Pago? ObtenerPagoPorRecibo(string numeroRecibo)
+        {
+            using var conn = DatabaseConnection.AbrirConexionConReintento();
+            using var cmd = new MySqlCommand("SELECT * FROM Pagos WHERE NumeroRecibo = @recibo LIMIT 1", conn);
+            cmd.Parameters.AddWithValue("@recibo", numeroRecibo.Trim());
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                return new Pago(
+                    reader.GetString("NumeroRecibo"),
+                    reader.GetString("EstudianteCedula"),
+                    reader.GetInt32("InscripcionId"),
+                    reader.GetInt32("ConceptoId"),
+                    reader.GetDecimal("Total"),
+                    reader.GetString("MonedaCodigo"),
+                    reader.GetString("UsuarioRegistra"),
+                    reader.GetDateTime("FechaVencimiento"))
+                {
+                    Id = reader.GetInt32("Id"),
+                    TotalEnVes = reader.GetDecimal("TotalEnVes"),
+                    FechaPago = reader.GetDateTime("FechaPago"),
+                    Estado = reader.GetString("Estado"),
+                    Observaciones = reader.IsDBNull(reader.GetOrdinal("Observaciones")) ? "" : reader.GetString("Observaciones")
+                };
+            }
+            return null;
         }
     }
 }

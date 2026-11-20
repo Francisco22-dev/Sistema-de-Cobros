@@ -13,29 +13,29 @@ namespace CapaDatos
             using var conn = DatabaseConnection.AbrirConexionConReintento();
 
             string query = @"
-        SELECT p.*, 
-               e.NombreCompleto AS NombreEstudiante, 
-               CONCAT(c.Nombre, ' (', g.Codigo, ')') AS CursoHorario,
-               COALESCE((
-                   SELECT GROUP_CONCAT(DISTINCT pd.Referencia SEPARATOR ' / ') 
-                   FROM PagoDetalles pd 
-                   WHERE pd.PagoId = p.Id AND pd.Referencia IS NOT NULL AND pd.Referencia != ''
-               ), 'S/R') AS Referencia
-        FROM Pagos p
-        JOIN Estudiantes e ON p.EstudianteCedula = e.Cedula
-        JOIN Inscripciones i ON p.InscripcionId = i.Id
-        JOIN Grupos g ON i.GrupoId = g.Id
-        JOIN Cursos c ON g.CursoCodigo = c.Codigo
-        WHERE 1=1 ";
+    SELECT p.*, 
+           e.NombreCompleto AS NombreEstudiante, 
+           CONCAT(c.Nombre, ' (', g.Codigo, ')') AS CursoHorario,
+           COALESCE((
+               SELECT GROUP_CONCAT(DISTINCT pd.Referencia SEPARATOR ' / ') 
+               FROM PagoDetalles pd 
+               WHERE pd.PagoId = p.Id AND pd.Referencia IS NOT NULL AND pd.Referencia != ''
+           ), 'S/R') AS Referencia
+    FROM Pagos p
+    JOIN Estudiantes e ON p.EstudianteCedula = e.Cedula
+    JOIN Inscripciones i ON p.InscripcionId = i.Id
+    JOIN Grupos g ON i.GrupoId = g.Id
+    JOIN Cursos c ON g.CursoCodigo = c.Codigo
+    WHERE p.Estado = 'Vigente' "; // <-- FILTRO: SOLO PAGOS VIGENTES (EXCLUYE DEVUELTOS)
 
             if (!string.IsNullOrWhiteSpace(filtro))
             {
                 query += @" AND (
-            p.NumeroRecibo LIKE @filtro OR 
-            e.Cedula LIKE @filtro OR 
-            e.NombreCompleto LIKE @filtro OR
-            EXISTS (SELECT 1 FROM PagoDetalles pd2 WHERE pd2.PagoId = p.Id AND pd2.Referencia LIKE @filtro)
-        ) ";
+        p.NumeroRecibo LIKE @filtro OR 
+        e.Cedula LIKE @filtro OR 
+        e.NombreCompleto LIKE @filtro OR
+        EXISTS (SELECT 1 FROM PagoDetalles pd2 WHERE pd2.PagoId = p.Id AND pd2.Referencia LIKE @filtro)
+    ) ";
             }
 
             query += " ORDER BY p.FechaPago DESC, p.Id DESC LIMIT @limite;";
